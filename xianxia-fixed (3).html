@@ -1,0 +1,3531 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>仙侠传奇 — 全功能版</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+/* ============================================================
+   仙侠传奇 — MMORPG Mobile UI CSS
+   Pixel-sharp, layered, no blur
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+/* ── Reset & Root ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+:root {
+  --gold: #C8A84B;
+  --gold-light: #FFE07A;
+  --gold-dark: #7A5A10;
+  --gold-shine: #FFF0A0;
+  --jade: #3ECFA0;
+  --red: #C02020;
+  --red-bright: #FF4040;
+  --blue: #1A3A7A;
+  --blue-bright: #4080FF;
+  --purple: #4A1A8A;
+  --purple-bright: #9040FF;
+  --dark-bg: #06060F;
+  --panel-bg: #0C1030;
+  --panel-mid: #141840;
+  --panel-light: #1E2460;
+  --text-white: #F0E8D0;
+  --text-gold: #FFD060;
+  --text-dim: #8A7A50;
+
+  font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  color: var(--text-white);
+}
+
+/* ── Game Root ────────────────────────────────────────────── */
+.game-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--dark-bg);
+  display: flex;
+  flex-direction: column;
+  /* Simulate mobile portrait layout, max 430px wide centered */
+  max-width: 430px;
+  margin: 0 auto;
+  box-shadow: 0 0 80px #000;
+}
+
+/* ── Background Layers ────────────────────────────────────── */
+.game-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-layer-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #020510 0%, #060820 40%, #080C28 70%, #0A1035 100%);
+}
+
+.bg-layer-mist {
+  position: absolute;
+  bottom: 30%;
+  left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, rgba(100,120,200,0.06) 50%, transparent);
+  animation: mistDrift 12s ease-in-out infinite alternate;
+}
+
+.bg-layer-mountains {
+  position: absolute;
+  bottom: 15%;
+  left: 0; right: 0;
+  height: 160px;
+  background:
+    radial-gradient(ellipse at 30% 100%, rgba(20,30,60,0.5) 0%, transparent 70%),
+    radial-gradient(ellipse at 70% 100%, rgba(10,20,50,0.5) 0%, transparent 70%);
+}
+
+.bg-layer-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 20%;
+  background: linear-gradient(180deg, #080C1A 0%, #050810 100%);
+}
+
+@keyframes mistDrift {
+  from { transform: translateX(-20px); opacity: 0.6; }
+  to   { transform: translateX(20px);  opacity: 1; }
+}
+
+/* ── Cloud Decorations ────────────────────────────────────── */
+.cloud-deco {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  animation: cloudFloat 20s ease-in-out infinite;
+}
+.cloud-1 { top: 15%; left: -10%; animation-duration: 24s; }
+.cloud-2 { top: 25%; right: -5%; animation-duration: 18s; animation-delay: -6s; }
+.cloud-3 { top: 35%; left: 20%; animation-duration: 30s; animation-delay: -12s; }
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(30px); }
+}
+
+/* ── HUD Top ──────────────────────────────────────────────── */
+.hud-top {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 6px 6px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hud-player-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  padding: 5px 8px 5px 5px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.hud-player-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.hud-player-block::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.hud-avatar {
+  cursor: pointer;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+.hud-avatar:hover { filter: brightness(1.2); }
+
+.hud-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 4px;
+}
+
+.hud-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-bar-icon {
+  font-size: 10px;
+  font-weight: bold;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.hp-icon  { color: #FF6060; }
+.mp-icon  { color: #6090FF; }
+.exp-icon { color: #FFD040; }
+
+.hud-bar-num {
+  font-size: 9px;
+  color: var(--text-dim);
+  min-width: 28px;
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── Target frame ─────────────────────────────────────────── */
+.hud-target {
+  background: linear-gradient(135deg, rgba(48,8,8,0.9) 0%, rgba(20,4,4,0.85) 100%);
+  border: 1px solid #7A1010;
+  border-radius: 3px;
+  padding: 5px 8px;
+  min-width: 120px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.7);
+}
+
+.target-label {
+  font-size: 10px;
+  color: #FF8080;
+  margin-bottom: 3px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.target-hp-num {
+  font-size: 9px;
+  color: #FF6060;
+  text-align: right;
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+/* ── Minimap ──────────────────────────────────────────────── */
+.hud-minimap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.minimap-zone {
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 4px rgba(200,168,75,0.5);
+}
+
+/* ── Boss Bar ─────────────────────────────────────────────── */
+.boss-bar-area {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 4px 12px 2px;
+  flex-shrink: 0;
+}
+
+.boss-bar-wrap {
+  width: 100%;
+  max-width: 340px;
+}
+
+.boss-bar-title {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #FF6060;
+  text-shadow: 0 0 6px rgba(255,0,0,0.5);
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+
+.boss-bar-outer {
+  position: relative;
+  height: 16px;
+  background: #1A0000;
+  border: 1px solid #7A0000;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(255,0,0,0.2);
+}
+
+.boss-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FF2020 0%, #FF6020 60%, #FF2020 100%);
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.boss-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: rgba(255,120,120,0.3);
+}
+
+.boss-bar-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: monospace;
+  color: white;
+  text-shadow: 0 0 3px black, 0 0 3px black;
+}
+
+.boss-bar-phase {
+  text-align: center;
+  font-size: 9px;
+  color: #FF8060;
+  margin-top: 1px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Game World ───────────────────────────────────────────── */
+.game-world {
+  position: relative;
+  flex: 1;
+  z-index: 10;
+  cursor: crosshair;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.world-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(200,168,75,0.4);
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+
+/* ── Floating damage numbers ──────────────────────────────── */
+.float-wrap {
+  position: absolute;
+  pointer-events: none;
+  animation: floatUp 1.8s ease-out forwards;
+  z-index: 50;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0); opacity: 1; }
+  60%  { transform: translateY(-50px); opacity: 1; }
+  100% { transform: translateY(-80px); opacity: 0; }
+}
+
+/* ── Quest Tracker ────────────────────────────────────────── */
+.quest-tracker {
+  position: absolute;
+  top: 110px;
+  right: 6px;
+  z-index: 20;
+  background: linear-gradient(135deg, rgba(8,12,32,0.88) 0%, rgba(4,6,20,0.85) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  padding: 6px 8px;
+  min-width: 145px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.7);
+}
+
+.tracker-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.tracker-head {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(200,168,75,0.5);
+}
+
+.tracker-quest {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(200,168,75,0.1);
+}
+.tracker-quest:last-child { border-bottom: none; }
+
+.tracker-qname {
+  font-size: 9px;
+  color: var(--text-white);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tq-active { color: var(--gold); font-size: 8px; }
+.tq-done   { color: #40FF80; font-size: 8px; }
+
+.tracker-prog {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── System Menu ──────────────────────────────────────────── */
+.sys-menu {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+  background: linear-gradient(180deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border-left: 2px solid var(--gold-dark);
+  border-top: 1px solid var(--gold-dark);
+  border-bottom: 1px solid var(--gold-dark);
+  border-radius: 4px 0 0 4px;
+}
+
+.sys-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  gap: 1px;
+  transition: background 0.1s;
+  border-bottom: 1px solid rgba(200,168,75,0.15);
+  width: 44px;
+}
+.sys-btn:last-child { border-bottom: none; }
+.sys-btn:hover { background: rgba(200,168,75,0.1); }
+.sys-btn:active { background: rgba(200,168,75,0.2); }
+
+.sys-icon {
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 0 0 4px rgba(200,168,75,0.4);
+  font-family: 'Noto Serif SC', serif;
+}
+
+.sys-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* ── Buff row ─────────────────────────────────────────────── */
+.buff-row {
+  position: absolute;
+  left: 8px;
+  bottom: 120px;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+}
+
+.buff-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: rgba(8,10,24,0.9);
+  border: 1px solid rgba(200,168,75,0.4);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.buff-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  opacity: 0.85;
+  box-shadow: 0 0 4px var(--buff-color, white);
+}
+
+.buff-time {
+  font-size: 7px;
+  font-family: monospace;
+  color: var(--text-dim);
+  margin-top: 1px;
+}
+
+.buff-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8,10,24,0.96);
+  border: 1px solid var(--gold-dark);
+  padding: 3px 6px;
+  font-size: 9px;
+  color: var(--gold);
+  white-space: nowrap;
+  margin-bottom: 3px;
+  z-index: 100;
+  border-radius: 2px;
+}
+.buff-icon:hover .buff-tooltip { display: block; }
+
+/* ── Skill Bar ────────────────────────────────────────────── */
+.skill-bar-wrap {
+  position: relative;
+  z-index: 20;
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.skill-bar-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6,8,24,0.95) 0%, rgba(4,4,16,0.98) 100%);
+  border-top: 2px solid var(--gold-dark);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.8);
+}
+
+.skill-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+}
+
+.skill-aux-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aux-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(180deg, #2A2010 0%, #160E04 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--gold);
+  font-size: 12px;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: bold;
+  transition: filter 0.1s;
+  gap: 1px;
+}
+.aux-btn:hover  { filter: brightness(1.3); }
+.aux-btn:active { filter: brightness(0.8); transform: translateY(1px); }
+.aux-btn.aux-blue {
+  background: linear-gradient(180deg, #101A3A 0%, #080C20 100%);
+  border-color: #203060;
+  color: #80B0FF;
+}
+
+.aux-label {
+  font-size: 7px;
+  font-weight: normal;
+  color: var(--text-dim);
+}
+
+.skill-slots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.skill-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.skill-slot:active { transform: scale(0.92); }
+.skill-slot-active { filter: brightness(1.4); }
+
+.skill-name-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.3px;
+  max-width: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-attack-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auto-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(180deg, #2A1010 0%, #160808 100%);
+  border: 1px solid #602020;
+  border-radius: 3px;
+  cursor: pointer;
+  gap: 1px;
+  transition: filter 0.1s;
+}
+.auto-btn:hover { filter: brightness(1.2); }
+
+.auto-icon {
+  font-size: 13px;
+  color: #FF8060;
+}
+.auto-btn.auto-red .auto-icon { color: #FF4040; }
+
+.auto-label {
+  font-size: 7px;
+  color: var(--text-dim);
+}
+
+.bar-ornament {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 2px;
+}
+
+/* ── Info Bar ─────────────────────────────────────────────── */
+.hud-info-bar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 21;
+  display: flex;
+  gap: 10px;
+  background: rgba(4,4,16,0.8);
+  border-bottom: 1px solid var(--gold-dark);
+  padding: 2px 12px;
+  font-size: 9px;
+  font-family: monospace;
+  border-radius: 0 0 6px 6px;
+}
+
+.info-server { color: var(--jade); }
+.info-zone   { color: var(--gold); }
+.info-time   { color: var(--text-dim); }
+.info-fps    { color: #60FF80; }
+.info-sep    { color: rgba(200,168,75,0.3); }
+
+/* ── Panel Overlay ────────────────────────────────────────── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.panel-popup {
+  position: relative;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.88) translateY(12px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.panel-svg-wrap {
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(200,168,75,0.3)) drop-shadow(0 4px 20px rgba(0,0,0,0.8));
+}
+
+.panel-content {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 12px;
+  overflow-y: auto;
+  max-height: calc(100% - 50px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dark) transparent;
+}
+
+/* ── Character Panel ──────────────────────────────────────── */
+.char-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 6px;
+}
+
+.char-name-block {
+  flex: 1;
+}
+
+.char-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(200,168,75,0.5);
+}
+
+.char-title {
+  font-size: 10px;
+  color: var(--jade);
+  margin: 2px 0;
+}
+
+.char-server {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  padding: 4px 0;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 2px;
+  border: 1px solid rgba(200,168,75,0.08);
+}
+
+.stat-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-size: 10px;
+  color: var(--gold-light);
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.char-cultivation {
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cult-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.cult-num {
+  font-size: 9px;
+  color: var(--gold);
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── Inventory Panel ──────────────────────────────────────── */
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 4px;
+  font-size: 10px;
+}
+
+.inv-gold { color: var(--gold); font-weight: bold; }
+.inv-space { color: var(--text-dim); font-size: 9px; font-family: monospace; }
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.inv-slot {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  aspect-ratio: 1;
+}
+.inv-slot:hover { border-color: var(--gold); background: rgba(200,168,75,0.05); }
+.inv-slot-sel   { border-color: var(--gold-light) !important; background: rgba(200,168,75,0.12) !important; box-shadow: inset 0 0 6px rgba(200,168,75,0.2); }
+.inv-slot-empty { border-style: dashed; opacity: 0.4; }
+
+.inv-detail {
+  background: rgba(200,168,75,0.06);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.inv-item-name {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.inv-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Skill Panel ──────────────────────────────────────────── */
+.skill-points {
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 6px 0 4px;
+  border-bottom: 1px solid rgba(200,168,75,0.1);
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,168,75,0.1);
+  border-radius: 3px;
+}
+
+.skill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skill-name {
+  font-size: 11px;
+  color: var(--text-white);
+  font-weight: bold;
+}
+
+.skill-lv {
+  font-size: 9px;
+  color: var(--jade);
+  font-family: monospace;
+}
+
+.skill-desc {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* ── Quest Panel ──────────────────────────────────────────── */
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.quest-item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,168,75,0.1);
+  border-radius: 3px;
+  padding: 6px 8px;
+  position: relative;
+}
+
+.quest-item.quest-done {
+  border-color: rgba(64,255,128,0.2);
+  opacity: 0.8;
+}
+
+.quest-name {
+  font-size: 11px;
+  color: var(--text-white);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+.quest-indicator {
+  font-size: 9px;
+  color: var(--gold);
+}
+.quest-done .quest-indicator { color: #40FF80; }
+
+.quest-prog {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+.quest-complete-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 9px;
+  color: #40FF80;
+  background: rgba(64,255,128,0.1);
+  border: 1px solid rgba(64,255,128,0.3);
+  border-radius: 2px;
+  padding: 1px 5px;
+  font-weight: bold;
+}
+
+.quest-rewards {
+  padding: 6px 0;
+}
+
+.reward-title {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.reward-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reward-exp {
+  font-size: 10px;
+  color: var(--gold);
+  font-family: monospace;
+}
+
+/* ── Common Panel buttons ─────────────────────────────────── */
+.panel-btns {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+/* ── Dialogue ─────────────────────────────────────────────── */
+.dialogue-wrap {
+  position: fixed;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  padding: 0 8px;
+  max-width: 430px;
+  margin: 0 auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.dialogue-box {
+  background: linear-gradient(135deg, rgba(8,10,28,0.97) 0%, rgba(4,6,20,0.96) 100%);
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  padding: 10px;
+  position: relative;
+  box-shadow: 0 -4px 20px rgba(200,168,75,0.15), 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.dialogue-box::before,
+.dialogue-box::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--gold);
+}
+.dialogue-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.dialogue-box::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.dialogue-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dialogue-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.dialogue-name {
+  font-size: 9px;
+  color: var(--gold);
+  text-align: center;
+  font-weight: bold;
+}
+
+.dialogue-text-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialogue-text {
+  font-size: 11px;
+  color: var(--text-white);
+  line-height: 1.6;
+  min-height: 44px;
+}
+
+.dialogue-next {
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  font-size: 10px;
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'Noto Serif SC', serif;
+  transition: background 0.1s;
+}
+.dialogue-next:hover { background: rgba(200,168,75,0.1); }
+
+.dialogue-responses {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dialogue-response {
+  background: linear-gradient(90deg, rgba(200,168,75,0.1) 0%, rgba(200,168,75,0.05) 100%);
+  border: 1px solid rgba(200,168,75,0.3);
+  color: var(--gold);
+  font-size: 10px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  text-align: left;
+  font-family: 'Noto Serif SC', serif;
+  transition: background 0.1s;
+}
+.dialogue-response:hover { background: rgba(200,168,75,0.15); border-color: var(--gold); }
+.dialogue-response::before { content: '▸ '; opacity: 0.6; }
+
+.dialogue-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+.dialogue-close:hover { color: var(--gold); }
+
+/* ── Chat Box ─────────────────────────────────────────────── */
+.chat-bubble {
+  position: absolute;
+  left: 8px;
+  bottom: 100px;
+  z-index: 18;
+  background: rgba(6,8,20,0.82);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  padding: 4px 8px;
+  max-width: 190px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.chat-bubble:hover { border-color: var(--gold-dark); }
+
+.chat-last-msg {
+  font-size: 9px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  overflow: hidden;
+}
+
+.chat-text-snip {
+  color: var(--text-white);
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.chat-panel {
+  position: absolute;
+  left: 8px;
+  bottom: 100px;
+  z-index: 18;
+  width: 210px;
+  background: linear-gradient(135deg, rgba(6,8,22,0.96) 0%, rgba(4,5,16,0.94) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(200,168,75,0.15);
+}
+
+.chat-title {
+  font-size: 10px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.chat-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+.chat-close-btn:hover { color: var(--gold); }
+
+.chat-messages {
+  padding: 4px 6px;
+  max-height: 100px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-msg {
+  font-size: 9px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  line-height: 1.4;
+}
+
+.chat-name {
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: 9px;
+}
+
+.chat-text {
+  color: var(--text-white);
+  opacity: 0.85;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  border-top: 1px solid rgba(200,168,75,0.1);
+  align-items: center;
+}
+
+.chat-input-fake {
+  flex: 1;
+  font-size: 9px;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(200,168,75,0.2);
+  border-radius: 2px;
+  padding: 2px 5px;
+  cursor: text;
+  font-style: italic;
+}
+
+.chat-send {
+  background: linear-gradient(180deg, #3A2A08 0%, #1A1204 100%);
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  font-size: 9px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'Noto Serif SC', serif;
+}
+.chat-send:hover { background: rgba(200,168,75,0.15); }
+
+/* ── System Notification ──────────────────────────────────── */
+.sys-notif {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: linear-gradient(90deg, rgba(8,10,28,0.95) 0%, rgba(20,16,8,0.95) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 5px 14px;
+  font-size: 11px;
+  color: var(--gold-light);
+  font-weight: bold;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  animation: notifSlide 0.3s ease, notifFade 3s ease forwards;
+  box-shadow: 0 0 12px rgba(200,168,75,0.3);
+}
+
+.notif-icon {
+  margin-right: 5px;
+}
+
+@keyframes notifSlide {
+  from { transform: translateX(-50%) translateY(-10px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes notifFade {
+  0%, 70% { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
+/* ── Skill list in panel ──────────────────────────────────── */
+.skill-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ── Glow animations ──────────────────────────────────────── */
+@keyframes goldPulse {
+  0%, 100% { text-shadow: 0 0 6px rgba(200,168,75,0.4); }
+  50%       { text-shadow: 0 0 12px rgba(200,168,75,0.8), 0 0 20px rgba(200,168,75,0.3); }
+}
+
+.char-name { animation: goldPulse 3s ease-in-out infinite; }
+.tracker-head { animation: goldPulse 4s ease-in-out infinite; }
+
+/* ── Responsive for desktop ───────────────────────────────── */
+@media (min-width: 431px) {
+  .game-root {
+    border-left: 2px solid var(--gold-dark);
+    border-right: 2px solid var(--gold-dark);
+  }
+}
+
+/* ── Special glow for boss bar pulse ─────────────────────── */
+@keyframes bossGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,0,0,0.2); }
+  50%       { box-shadow: 0 0 16px rgba(255,0,0,0.5); }
+}
+.boss-bar-outer { animation: bossGlow 2s ease-in-out infinite; }
+
+/* ── Skill slot active flash ──────────────────────────────── */
+@keyframes skillFlash {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(2) saturate(2); }
+  100% { filter: brightness(1); }
+}
+.skill-slot-active { animation: skillFlash 0.3s ease; }
+
+
+/* ── Enhanced: real chat input ───────────────────────────── */
+.chat-input-real {
+  flex: 1;
+  font-size: 9px;
+  color: var(--text-white);
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 2px;
+  padding: 2px 5px;
+  font-family: 'Noto Serif SC', serif;
+  outline: none;
+}
+.chat-input-real:focus { border-color: var(--gold-dark); }
+.chat-input-real::placeholder { color: var(--text-dim); font-style: italic; }
+
+/* ── Enhanced: auto-fight active state ──────────────────── */
+.auto-btn.auto-active {
+  background: linear-gradient(180deg, #400808 0%, #200404 100%) !important;
+  border-color: #FF4040 !important;
+  box-shadow: 0 0 8px rgba(255,64,64,0.4);
+}
+.auto-btn.auto-active .auto-icon { color: #FF8080; animation: goldPulse 0.8s ease-in-out infinite; }
+
+/* ── Enhanced: skill bar extended for 8 skills ──────────── */
+.skill-slots { gap: 3px; }
+
+/* ── Enhanced: shop/guild panel styles ──────────────────── */
+.shop-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  background: rgba(80,0,0,0.2);
+  border: 1px solid rgba(255,64,64,0.1);
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+.shop-item-name { font-size: 11px; color: var(--text-white); flex: 1; font-weight: bold; }
+.shop-item-price { font-size: 10px; color: #00FFFF; font-family: monospace; font-weight: bold; }
+.guild-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255,64,64,0.08);
+}
+.guild-member-name { font-size: 10px; color: var(--text-white); }
+.guild-member-rank { font-size: 9px; color: #FF8060; font-family: monospace; }
+.guild-contrib { font-size: 9px; color: #C09040; font-family: monospace; }
+
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#06060F">
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ============================================================
+// PIXEL ART SVG ASSET LIBRARY — Xianxia MMORPG UI System
+// All assets are vector-pixel SVG for crisp rendering
+// ============================================================
+
+const COLORS = {
+  gold: '#C8A84B',
+  goldLight: '#FFE07A',
+  goldDark: '#7A5A10',
+  goldShine: '#FFF0A0',
+  jade: '#3ECFA0',
+  jadeDark: '#1A7A58',
+  red: '#C02020',
+  redBright: '#FF4040',
+  redDark: '#600010',
+  blue: '#1A3A7A',
+  blueBright: '#4080FF',
+  blueGlow: '#80C0FF',
+  purple: '#4A1A8A',
+  purpleBright: '#9040FF',
+  darkBg: '#08081A',
+  panelBg: '#0C1030',
+  panelMid: '#141840',
+  panelLight: '#1E2460',
+  borderDark: '#2A1A00',
+  textWhite: '#F0E8D0',
+  textGold: '#FFD060',
+  textGoldDim: '#B08020',
+  cyan: '#00FFFF',
+  cyanDim: '#006080',
+};
+
+// ── PANEL FRAME ──────────────────────────────────────────────
+function PanelFrame({
+  width = 320,
+  height = 400,
+  title = '',
+  color = 'gold',
+}) {
+  const accentColor =
+    color === 'gold' ? COLORS.gold :
+    color === 'jade' ? COLORS.jade :
+    color === 'red'  ? COLORS.redBright :
+    COLORS.blueBright;
+  const accentDark =
+    color === 'gold' ? COLORS.goldDark :
+    color === 'jade' ? COLORS.jadeDark :
+    color === 'red'  ? COLORS.redDark :
+    COLORS.blue;
+
+  const b = 4; // border px
+  const co = 16; // corner ornament size
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`panelBg_${color}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={COLORS.panelLight} />
+          <stop offset="100%" stopColor={COLORS.panelBg} />
+        </linearGradient>
+        <linearGradient id={`borderGrad_${color}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={COLORS.goldShine} />
+          <stop offset="40%" stopColor={accentColor} />
+          <stop offset="100%" stopColor={accentDark} />
+        </linearGradient>
+        <filter id={`glow_${color}`}>
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {/* Shadow */}
+      <rect x="4" y="4" width={width} height={height} rx="3" fill="black" opacity="0.6" />
+
+      {/* Main background */}
+      <rect x="0" y="0" width={width} height={height} rx="2" fill={`url(#panelBg_${color})`} />
+
+      {/* Outer border - 4px pixel style */}
+      <rect x="0" y="0" width={width} height={height} rx="2" fill="none"
+        stroke={`url(#borderGrad_${color})`} strokeWidth={b} />
+
+      {/* Inner border */}
+      <rect x={b+2} y={b+2} width={width-b*2-4} height={height-b*2-4} rx="1" fill="none"
+        stroke={accentDark} strokeWidth="1" opacity="0.6" />
+
+      {/* Corner ornament TL */}
+      <CornerOrnament x={0} y={0} size={co} color={accentColor} rotate={0} />
+      <CornerOrnament x={width} y={0} size={co} color={accentColor} rotate={90} />
+      <CornerOrnament x={width} y={height} size={co} color={accentColor} rotate={180} />
+      <CornerOrnament x={0} y={height} size={co} color={accentColor} rotate={270} />
+
+      {/* Top decorative line */}
+      <line x1={co} y1={b/2} x2={width-co} y2={b/2}
+        stroke={accentColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Bottom decorative line */}
+      <line x1={co} y1={height-b/2} x2={width-co} y2={height-b/2}
+        stroke={accentColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Title bar */}
+      {title && (
+        <>
+          <rect x={b+2} y={b+2} width={width-b*2-4} height={24} rx="1"
+            fill={accentDark} opacity="0.5" />
+          <line x1={b+2} y1={b+26} x2={width-b-2} y2={b+26}
+            stroke={accentColor} strokeWidth="1" />
+          <text x={width/2} y={b+18}
+            textAnchor="middle"
+            fill={COLORS.textGold}
+            fontFamily="'Noto Serif SC', serif"
+            fontSize="12"
+            fontWeight="bold"
+            filter={`url(#glow_${color})`}
+          >{title}</text>
+        </>
+      )}
+
+      {/* Center diamond ornament top */}
+      <DiamondOrnament x={width/2} y={0} color={accentColor} />
+      {/* Center diamond ornament bottom */}
+      <DiamondOrnament x={width/2} y={height} color={accentColor} />
+    </svg>
+  );
+}
+
+function CornerOrnament({
+  x, y, size, color, rotate,
+}) {
+  return (
+    <g transform={`rotate(${rotate},${x},${y})`}>
+      {/* L-bracket style corner */}
+      <rect x={x} y={y} width={size} height={4} fill={color} />
+      <rect x={x} y={y} width={4} height={size} fill={color} />
+      {/* Inner dot */}
+      <rect x={x+4} y={y+4} width={4} height={4} fill={color} opacity="0.6" />
+      {/* Tiny ornament dot */}
+      <rect x={x+8} y={y} width={2} height={2} fill={color} opacity="0.4" />
+      <rect x={x} y={y+8} width={2} height={2} fill={color} opacity="0.4" />
+    </g>
+  );
+}
+
+function DiamondOrnament({ x, y, color }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <rect x={-4} y={-4} width={8} height={8} fill={color}
+        transform="rotate(45)" opacity="0.9" />
+      <rect x={-2} y={-2} width={4} height={4} fill={COLORS.goldShine}
+        transform="rotate(45)" opacity="0.7" />
+    </g>
+  );
+}
+
+// ── HP / MP BAR ──────────────────────────────────────────────
+function StatBar({
+  width = 160,
+  value = 75,
+  max = 100,
+  type = 'hp',
+}) {
+  const h = type === 'exp' ? 8 : 14;
+  const pct = Math.max(0, Math.min(1, value / max));
+  const fillW = Math.round((width - 8) * pct);
+
+  const fillStart =
+    type === 'hp'   ? '#FF6060' :
+    type === 'mp'   ? '#4090FF' :
+    type === 'exp'  ? '#FFD040' :
+    '#FF2020';
+  const fillEnd =
+    type === 'hp'   ? '#C01010' :
+    type === 'mp'   ? '#1040C0' :
+    type === 'exp'  ? '#FF8000' :
+    '#A00000';
+  const glowColor =
+    type === 'hp'   ? '#FF8080' :
+    type === 'mp'   ? '#80B0FF' :
+    type === 'exp'  ? '#FFE080' :
+    '#FF4040';
+  const frameColor =
+    type === 'hp'   ? '#7A1010' :
+    type === 'mp'   ? '#10207A' :
+    type === 'exp'  ? '#7A5010' :
+    '#7A0000';
+
+  const uid = `bar_${type}_${Math.random().toString(36).slice(2,6)}`;
+
+  return (
+    <svg width={width} height={h + 4} viewBox={`0 0 ${width} ${h + 4}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`fill_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={fillStart} />
+          <stop offset="50%" stopColor={fillEnd} />
+          <stop offset="100%" stopColor={frameColor} />
+        </linearGradient>
+        <linearGradient id={`frame_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={COLORS.gold} />
+          <stop offset="100%" stopColor={COLORS.goldDark} />
+        </linearGradient>
+        <clipPath id={`clip_${uid}`}>
+          <rect x="4" y="2" width={width - 8} height={h} rx="1" />
+        </clipPath>
+      </defs>
+
+      {/* Frame */}
+      <rect x="0" y="0" width={width} height={h + 4} rx="2"
+        fill={frameColor} stroke={`url(#frame_${uid})`} strokeWidth="2" />
+
+      {/* Dark inner bg */}
+      <rect x="4" y="2" width={width - 8} height={h} rx="1" fill="#000000" opacity="0.7" />
+
+      {/* Fill */}
+      <rect x="4" y="2" width={fillW} height={h} rx="1"
+        fill={`url(#fill_${uid})`} clipPath={`url(#clip_${uid})`} />
+
+      {/* Shine highlight */}
+      {fillW > 4 && (
+        <rect x="4" y="2" width={fillW} height={Math.floor(h / 3)}
+          fill={glowColor} opacity="0.35" clipPath={`url(#clip_${uid})`} />
+      )}
+
+      {/* Segment lines */}
+      {Array.from({ length: 9 }).map((_, i) => (
+        <line
+          key={i}
+          x1={4 + Math.round((width - 8) * (i + 1) / 10)}
+          y1={2}
+          x2={4 + Math.round((width - 8) * (i + 1) / 10)}
+          y2={h + 2}
+          stroke="black"
+          strokeWidth="1"
+          opacity="0.3"
+        />
+      ))}
+    </svg>
+  );
+}
+
+// ── SKILL BUTTON ─────────────────────────────────────────────
+function SkillButton({
+  size = 52,
+  cooldown = 0,
+  icon,
+  keyLabel,
+  active = false,
+}) {
+  const uid = `sk_${Math.random().toString(36).slice(2,6)}`;
+  const cdPct = Math.max(0, Math.min(1, cooldown));
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`skBg_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={active ? '#3A2A50' : '#1A1030'} />
+          <stop offset="100%" stopColor={active ? '#1A0A30' : '#0A0820'} />
+        </linearGradient>
+        <radialGradient id={`skGlow_${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={active ? '#8060FF' : '#4030A0'} stopOpacity="0.4" />
+          <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Outer glow when active */}
+      {active && (
+        <rect x="0" y="0" width={size} height={size} rx="4"
+          fill={`url(#skGlow_${uid})`} />
+      )}
+
+      {/* Main bg */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3"
+        fill={`url(#skBg_${uid})`} />
+
+      {/* Border - pixel style */}
+      <rect x="0" y="0" width={size} height={size} rx="4" fill="none"
+        stroke={active ? COLORS.purpleBright : COLORS.gold}
+        strokeWidth="2" />
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill="none"
+        stroke={active ? '#4020A0' : COLORS.goldDark}
+        strokeWidth="1" opacity="0.6" />
+
+      {/* Corner pixels */}
+      <rect x="0" y="0" width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x={size-4} y="0" width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x="0" y={size-4} width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x={size-4} y={size-4} width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+
+      {/* Icon area (foreign object for react children) */}
+      {icon && (
+        <foreignObject x="8" y="8" width={size-16} height={size-16}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {icon}
+          </div>
+        </foreignObject>
+      )}
+
+      {/* Cooldown overlay */}
+      {cdPct > 0 && (
+        <>
+          <rect x="2" y="2" width={size-4} height={Math.round((size-4)*cdPct)} rx="3"
+            fill="black" opacity="0.65" />
+          <text x={size/2} y={size/2+4}
+            textAnchor="middle" fill="white"
+            fontFamily="monospace" fontSize="11" fontWeight="bold"
+          >{Math.round(cdPct * 10)}s</text>
+        </>
+      )}
+
+      {/* Key label */}
+      {keyLabel && !cdPct && (
+        <text x={size-3} y={size-2}
+          textAnchor="end" fill={COLORS.textGold}
+          fontFamily="monospace" fontSize="8" fontWeight="bold"
+        >{keyLabel}</text>
+      )}
+    </svg>
+  );
+}
+
+// ── AVATAR FRAME ─────────────────────────────────────────────
+function AvatarFrame({ size = 56, hp = 85, showHp = true }) {
+  const uid = `av_${Math.random().toString(36).slice(2,6)}`;
+  return (
+    <svg width={size} height={size + (showHp ? 10 : 0)}
+      viewBox={`0 0 ${size} ${size + (showHp ? 10 : 0)}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`avBg_${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2A1060" />
+          <stop offset="100%" stopColor="#0A0830" />
+        </linearGradient>
+        <clipPath id={`avClip_${uid}`}>
+          <rect x="4" y="4" width={size-8} height={size-8} rx="2" />
+        </clipPath>
+      </defs>
+
+      {/* Outer glow */}
+      <rect x="0" y="0" width={size} height={size} rx="4"
+        fill={COLORS.gold} opacity="0.15" />
+
+      {/* Background */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3"
+        fill={`url(#avBg_${uid})`} />
+
+      {/* Avatar placeholder pattern */}
+      <rect x="4" y="4" width={size-8} height={size-8} rx="2"
+        fill="#1A0850" clipPath={`url(#avClip_${uid})`} />
+
+      {/* Silhouette placeholder */}
+      <ellipse cx={size/2} cy={size*0.4} rx={size*0.18} ry={size*0.18}
+        fill="#3A2080" clipPath={`url(#avClip_${uid})`} />
+      <ellipse cx={size/2} cy={size*0.75} rx={size*0.22} ry={size*0.25}
+        fill="#3A2080" clipPath={`url(#avClip_${uid})`} />
+
+      {/* Border */}
+      <rect x="0" y="0" width={size} height={size} rx="4" fill="none"
+        stroke={COLORS.gold} strokeWidth="2" />
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill="none"
+        stroke={COLORS.goldDark} strokeWidth="1" opacity="0.7" />
+
+      {/* Corner ornaments */}
+      <rect x="0" y="0" width="6" height="2" fill={COLORS.goldLight} />
+      <rect x="0" y="0" width="2" height="6" fill={COLORS.goldLight} />
+      <rect x={size-6} y="0" width="6" height="2" fill={COLORS.goldLight} />
+      <rect x={size-2} y="0" width="2" height="6" fill={COLORS.goldLight} />
+      <rect x="0" y={size-2} width="6" height="2" fill={COLORS.goldLight} />
+      <rect x="0" y={size-6} width="2" height="6" fill={COLORS.goldLight} />
+      <rect x={size-6} y={size-2} width="6" height="2" fill={COLORS.goldLight} />
+      <rect x={size-2} y={size-6} width="2" height="6" fill={COLORS.goldLight} />
+
+      {/* Level badge */}
+      <rect x={size-14} y={size-14} width="14" height="14" rx="2"
+        fill="#8B0000" stroke={COLORS.gold} strokeWidth="1" />
+      <text x={size-7} y={size-4}
+        textAnchor="middle" fill={COLORS.textGold}
+        fontFamily="monospace" fontSize="8" fontWeight="bold"
+      >99</text>
+
+      {/* HP mini bar */}
+      {showHp && (
+        <>
+          <rect x="2" y={size+2} width={size-4} height={6} rx="1"
+            fill="#3A0010" stroke={COLORS.gold} strokeWidth="1" />
+          <rect x="3" y={size+3} width={Math.round((size-6) * hp / 100)} height={4} rx="1"
+            fill="#FF3030" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+// ── MINIMAP ──────────────────────────────────────────────────
+function MinimapFrame({ size = 110 }) {
+  const uid = `mm_${Math.random().toString(36).slice(2,6)}`;
+  const half = size / 2;
+  return (
+    <svg width={size} height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`mmBg_${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#0A1830" />
+          <stop offset="100%" stopColor="#050C18" />
+        </radialGradient>
+        <clipPath id={`mmClip_${uid}`}>
+          <polygon points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`} />
+        </clipPath>
+      </defs>
+
+      {/* Outer diamond frame */}
+      <polygon
+        points={`${half},0 ${size},${half} ${half},${size} 0,${half}`}
+        fill={COLORS.goldDark} stroke={COLORS.gold} strokeWidth="2"
+      />
+      {/* Map bg */}
+      <polygon
+        points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`}
+        fill={`url(#mmBg_${uid})`}
+      />
+
+      {/* Map terrain dots */}
+      {[
+        [half-20, half-10], [half-10, half-25], [half+15, half-15],
+        [half+20, half+5], [half+5, half+20], [half-15, half+15],
+      ].map(([cx, cy], i) => (
+        <ellipse key={i} cx={cx} cy={cy}
+          rx={6+i%3*3} ry={4+i%2*2}
+          fill={`hsl(${140+i*20},30%,25%)`}
+          clipPath={`url(#mmClip_${uid})`}
+        />
+      ))}
+
+      {/* River */}
+      <polyline
+        points={`${half-20},${half-20} ${half},${half} ${half+15},${half+15}`}
+        stroke="#203060" strokeWidth="3" fill="none"
+        clipPath={`url(#mmClip_${uid})`}
+      />
+
+      {/* Player dot */}
+      <rect x={half-2} y={half-2} width="4" height="4"
+        fill="white" opacity="0.9" />
+      <rect x={half-3} y={half-3} width="6" height="6"
+        fill="none" stroke={COLORS.gold} strokeWidth="1" opacity="0.8" />
+
+      {/* NPC dots */}
+      <rect x={half-15} y={half+8} width="4" height="4" fill="#FFD040" opacity="0.8" />
+      <rect x={half+10} y={half-12} width="4" height="4" fill="#FF4040" opacity="0.8" />
+      <rect x={half+5} y={half+12} width="4" height="4" fill="#40FF80" opacity="0.8" />
+
+      {/* Compass marks */}
+      <text x={half} y={10} textAnchor="middle" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">N</text>
+      <text x={half} y={size-2} textAnchor="middle" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">S</text>
+      <text x={3} y={half+3} textAnchor="start" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">W</text>
+      <text x={size-3} y={half+3} textAnchor="end" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">E</text>
+
+      {/* Corner diamonds */}
+      {[[half,0],[size,half],[half,size],[0,half]].map(([px,py],i) => (
+        <rect key={i} x={px-4} y={py-4} width="8" height="8"
+          fill={COLORS.gold} transform={`rotate(45,${px},${py})`} />
+      ))}
+    </svg>
+  );
+}
+
+// ── ITEM ICON ────────────────────────────────────────────────
+
+function ItemIcon({
+  type = 'sword',
+  size = 40,
+  rarity = 1,
+  count,
+}) {
+  const uid = `item_${Math.random().toString(36).slice(2,6)}`;
+
+  const rarityColor =
+    rarity === 1 ? '#808080' :
+    rarity === 2 ? '#40A040' :
+    rarity === 3 ? '#4080FF' :
+    rarity === 4 ? '#A040FF' :
+    '#FF8000';
+
+  const rarityBg =
+    rarity === 1 ? '#1A1A1A' :
+    rarity === 2 ? '#0A200A' :
+    rarity === 3 ? '#0A1030' :
+    rarity === 4 ? '#1A0A30' :
+    '#301008';
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`itemBg_${uid}`} cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor={rarityBg} />
+          <stop offset="100%" stopColor="#000000" />
+        </radialGradient>
+      </defs>
+
+      {/* Background */}
+      <rect x="0" y="0" width={size} height={size} rx="3"
+        fill={`url(#itemBg_${uid})`}
+        stroke={rarityColor} strokeWidth="2" />
+
+      {/* Inner border */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="2"
+        fill="none" stroke={rarityColor} strokeWidth="1" opacity="0.4" />
+
+      {/* Rarity glow */}
+      {rarity >= 4 && (
+        <rect x="0" y="0" width={size} height={size} rx="3"
+          fill={rarityColor} opacity="0.08" />
+      )}
+
+      {/* Icon drawings */}
+      <IconShape type={type} size={size} color={rarityColor} />
+
+      {/* Count badge */}
+      {count !== undefined && count > 1 && (
+        <>
+          <rect x={size-16} y={size-12} width="16" height="12" rx="1"
+            fill="black" opacity="0.8" />
+          <text x={size-8} y={size-3}
+            textAnchor="middle" fill="white"
+            fontFamily="monospace" fontSize="9" fontWeight="bold"
+          >{count > 99 ? '99+' : count}</text>
+        </>
+      )}
+
+      {/* Rarity stars */}
+      {rarity >= 3 && (
+        <text x={size/2} y={size-1}
+          textAnchor="middle" fill={rarityColor}
+          fontFamily="monospace" fontSize="6"
+        >{'★'.repeat(rarity)}</text>
+      )}
+    </svg>
+  );
+}
+
+function IconShape({ type, size, color }) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const s = size;
+
+  if (type === 'sword') {
+    return (
+      <g>
+        {/* Blade */}
+        <polygon
+          points={`${cx},${s*0.1} ${cx+3},${s*0.45} ${cx},${s*0.5} ${cx-3},${s*0.45}`}
+          fill="#C0D8FF" stroke={color} strokeWidth="1" />
+        {/* Guard */}
+        <rect x={cx-8} y={s*0.5} width={16} height={4} rx="1"
+          fill={color} />
+        {/* Handle */}
+        <rect x={cx-2} y={s*0.54} width={4} height={s*0.3}
+          fill="#8B4513" stroke={color} strokeWidth="1" />
+        {/* Pommel */}
+        <rect x={cx-4} y={s*0.84} width={8} height={4} rx="2"
+          fill={color} />
+        {/* Shine */}
+        <line x1={cx-1} y1={s*0.12} x2={cx-1} y2={s*0.44}
+          stroke="white" strokeWidth="1" opacity="0.5" />
+      </g>
+    );
+  }
+  if (type === 'armor') {
+    return (
+      <g>
+        {/* Body plate */}
+        <path d={`M${cx-10},${s*0.25} L${cx-12},${s*0.3} L${cx-12},${s*0.72}
+          Q${cx},${s*0.82} ${cx+12},${s*0.72} L${cx+12},${s*0.3} L${cx+10},${s*0.25} Z`}
+          fill="#3A4A6A" stroke={color} strokeWidth="1.5" />
+        {/* Shoulder pieces */}
+        <path d={`M${cx-10},${s*0.25} Q${cx-16},${s*0.2} ${cx-15},${s*0.38} L${cx-12},${s*0.38}`}
+          fill="#2A3A5A" stroke={color} strokeWidth="1" />
+        <path d={`M${cx+10},${s*0.25} Q${cx+16},${s*0.2} ${cx+15},${s*0.38} L${cx+12},${s*0.38}`}
+          fill="#2A3A5A" stroke={color} strokeWidth="1" />
+        {/* Center emblem */}
+        <rect x={cx-3} y={s*0.38} width={6} height={s*0.2} rx="2"
+          fill={color} opacity="0.7" />
+        {/* Collar */}
+        <path d={`M${cx-8},${s*0.25} L${cx},${s*0.18} L${cx+8},${s*0.25}`}
+          fill="none" stroke={color} strokeWidth="2" />
+      </g>
+    );
+  }
+  if (type === 'ring') {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={s*0.3} fill="none"
+          stroke={color} strokeWidth="4" />
+        <circle cx={cx} cy={cy} r={s*0.3} fill="none"
+          stroke="#8080A0" strokeWidth="2" />
+        {/* Gem on top */}
+        <polygon
+          points={`${cx},${s*0.14} ${cx+5},${s*0.24} ${cx},${s*0.28} ${cx-5},${s*0.24}`}
+          fill={color} />
+        <polygon
+          points={`${cx},${s*0.16} ${cx+3},${s*0.23} ${cx-3},${s*0.23}`}
+          fill="white" opacity="0.5" />
+      </g>
+    );
+  }
+  if (type === 'pill') {
+    return (
+      <g>
+        {/* Pill bottle */}
+        <rect x={cx-7} y={s*0.2} width={14} height={s*0.56} rx="7"
+          fill="#C04020" stroke={color} strokeWidth="1.5" />
+        {/* Shine */}
+        <rect x={cx-4} y={s*0.24} width={4} height={s*0.1} rx="2"
+          fill="white" opacity="0.4" />
+        {/* Bottom glow */}
+        <ellipse cx={cx} cy={s*0.68} rx={5} ry={3}
+          fill={color} opacity="0.3" />
+        {/* Aura rings */}
+        <circle cx={cx} cy={cy} r={s*0.38}
+          fill="none" stroke={color} strokeWidth="1" opacity="0.2" />
+        <circle cx={cx} cy={cy} r={s*0.44}
+          fill="none" stroke={color} strokeWidth="1" opacity="0.1" />
+      </g>
+    );
+  }
+  if (type === 'book') {
+    return (
+      <g>
+        {/* Book base */}
+        <rect x={cx-12} y={s*0.2} width={24} height={s*0.6} rx="1"
+          fill="#4A2A0A" stroke={color} strokeWidth="1.5" />
+        {/* Pages */}
+        <rect x={cx-10} y={s*0.22} width={20} height={s*0.56} rx="1"
+          fill="#F0E8C0" />
+        {/* Spine */}
+        <rect x={cx-12} y={s*0.2} width={4} height={s*0.6} rx="1"
+          fill="#6A3A10" stroke={color} strokeWidth="1" />
+        {/* Text lines */}
+        {[0.32, 0.42, 0.52, 0.62].map((y, i) => (
+          <line key={i}
+            x1={cx-4} y1={s*y} x2={cx+8} y2={s*y}
+            stroke="#8A6040" strokeWidth="1" />
+        ))}
+        {/* Glowing rune */}
+        <text x={cx+2} y={s*0.5}
+          textAnchor="middle" fill={color}
+          fontFamily="monospace" fontSize="10" fontWeight="bold"
+          opacity="0.8"
+        >文</text>
+      </g>
+    );
+  }
+  if (type === 'gem') {
+    return (
+      <g>
+        {/* Hexagonal gem */}
+        <polygon
+          points={`
+            ${cx},${s*0.15}
+            ${cx+10},${s*0.3}
+            ${cx+10},${s*0.6}
+            ${cx},${s*0.75}
+            ${cx-10},${s*0.6}
+            ${cx-10},${s*0.3}
+          `}
+          fill="#A000C0" stroke={color} strokeWidth="1.5"
+        />
+        {/* Inner facets */}
+        <polygon
+          points={`${cx},${s*0.2} ${cx+7},${s*0.35} ${cx},${s*0.45} ${cx-7},${s*0.35}`}
+          fill={color} opacity="0.4"
+        />
+        <polygon
+          points={`${cx},${s*0.45} ${cx+7},${s*0.55} ${cx},${s*0.68} ${cx-7},${s*0.55}`}
+          fill="black" opacity="0.3"
+        />
+        {/* Shine */}
+        <polygon
+          points={`${cx-2},${s*0.2} ${cx+4},${s*0.28} ${cx+1},${s*0.35} ${cx-4},${s*0.28}`}
+          fill="white" opacity="0.5"
+        />
+      </g>
+    );
+  }
+  if (type === 'material') {
+    return (
+      <g>
+        {/* Crystal cluster */}
+        <polygon points={`${cx},${s*0.18} ${cx+6},${s*0.38} ${cx},${s*0.48} ${cx-6},${s*0.38}`}
+          fill="#40C0A0" stroke={color} strokeWidth="1" />
+        <polygon points={`${cx+6},${s*0.28} ${cx+11},${s*0.42} ${cx+6},${s*0.56} ${cx+1},${s*0.42}`}
+          fill="#30A080" stroke={color} strokeWidth="1" />
+        <polygon points={`${cx-6},${s*0.32} ${cx-1},${s*0.48} ${cx-6},${s*0.62} ${cx-11},${s*0.48}`}
+          fill="#50D0B0" stroke={color} strokeWidth="1" />
+        {/* Bottom roots */}
+        <rect x={cx-3} y={s*0.48} width={6} height={s*0.24} rx="2"
+          fill="#20604A" stroke={color} strokeWidth="1" />
+        {/* Shine */}
+        <line x1={cx-1} y1={s*0.2} x2={cx-2} y2={s*0.36}
+          stroke="white" strokeWidth="1" opacity="0.6" />
+      </g>
+    );
+  }
+  // empty
+  return (
+    <g>
+      <rect x={cx-10} y={cy-10} width={20} height={20} rx="3"
+        fill="none" stroke={color} strokeWidth="1" opacity="0.3" />
+    </g>
+  );
+}
+
+// ── BUTTON SVG ───────────────────────────────────────────────
+function GameButton({
+  width = 100,
+  height = 30,
+  label = '确认',
+  variant = 'gold',
+  state = 'normal',
+  onClick,
+}) {
+  const uid = `btn_${Math.random().toString(36).slice(2,6)}`;
+
+  const topColor =
+    variant === 'gold' ? (state === 'pressed' ? '#8B6010' : '#E8C050') :
+    variant === 'red'  ? (state === 'pressed' ? '#600010' : '#E04030') :
+    variant === 'jade' ? (state === 'pressed' ? '#0A5030' : '#30B070') :
+    (state === 'pressed' ? '#101020' : '#2A2A4A');
+
+  const botColor =
+    variant === 'gold' ? (state === 'pressed' ? '#5A3A00' : '#A06810') :
+    variant === 'red'  ? (state === 'pressed' ? '#400008' : '#900010') :
+    variant === 'jade' ? (state === 'pressed' ? '#053020' : '#107040') :
+    (state === 'pressed' ? '#080810' : '#181828');
+
+  const strokeColor =
+    variant === 'gold' ? COLORS.goldShine :
+    variant === 'red'  ? '#FF8080' :
+    variant === 'jade' ? '#80FFD0' :
+    COLORS.gold;
+
+  const textColor =
+    state === 'disabled' ? '#606060' :
+    variant === 'gold' ? '#1A0800' :
+    variant === 'jade' ? '#003020' :
+    '#F0E8D0';
+
+  const opacity = state === 'disabled' ? 0.5 : 1;
+
+  return (
+    <svg width={width} height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block', cursor: state === 'disabled' ? 'not-allowed' : 'pointer', opacity }}
+      onClick={state !== 'disabled' ? onClick : undefined}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`btnBg_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={topColor} />
+          <stop offset="100%" stopColor={botColor} />
+        </linearGradient>
+      </defs>
+
+      {/* Shadow */}
+      {state !== 'pressed' && (
+        <rect x="2" y="2" width={width} height={height} rx="3"
+          fill="black" opacity="0.4" />
+      )}
+
+      {/* Body */}
+      <rect x="0" y={state === 'pressed' ? 2 : 0} width={width} height={height} rx="3"
+        fill={`url(#btnBg_${uid})`}
+        stroke={strokeColor} strokeWidth="2" />
+
+      {/* Inner top highlight */}
+      {state !== 'pressed' && (
+        <rect x="3" y="2" width={width-6} height={4} rx="2"
+          fill="white" opacity="0.2" />
+      )}
+
+      {/* Side ornament lines */}
+      <line x1={8} y1={height/2} x2={14} y2={height/2}
+        stroke={strokeColor} strokeWidth="1" opacity="0.5" />
+      <line x1={width-8} y1={height/2} x2={width-14} y2={height/2}
+        stroke={strokeColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Label */}
+      <text x={width/2} y={height/2 + (state === 'pressed' ? 6 : 5)}
+        textAnchor="middle" fill={textColor}
+        fontFamily="'Noto Serif SC', 'Source Han Serif CN', serif"
+        fontSize={height * 0.42} fontWeight="bold"
+      >{label}</text>
+    </svg>
+  );
+}
+
+// ── DAMAGE NUMBER ────────────────────────────────────────────
+function DamageNumber({ value, type = 'normal', x = 0, y = 0 }) {
+  const color =
+    type === 'crit'  ? '#FF8000' :
+    type === 'miss'  ? '#A0A0A0' :
+    type === 'heal'  ? '#40FF80' :
+    '#FF4040';
+  const size = type === 'crit' ? 22 : 16;
+  const text = type === 'miss' ? 'MISS' : type === 'heal' ? `+${value}` : `-${value}`;
+
+  return (
+    <svg width={80} height={40} viewBox="0 0 80 40"
+      style={{
+        imageRendering: 'pixelated',
+        position: 'absolute',
+        left: x,
+        top: y,
+        pointerEvents: 'none',
+        animation: 'floatUp 1.8s ease-out forwards',
+        zIndex: 50,
+      }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <text x="40" y={size+4}
+        textAnchor="middle"
+        fill={color}
+        fontFamily="monospace"
+        fontSize={size}
+        fontWeight="bold"
+        stroke="black"
+        strokeWidth="3"
+        paintOrder="stroke"
+      >{text}</text>
+      {type === 'crit' && (
+        <text x="40" y={size+18}
+          textAnchor="middle"
+          fill="#FFE040"
+          fontFamily="monospace"
+          fontSize="10"
+          fontWeight="bold"
+          stroke="black"
+          strokeWidth="2"
+          paintOrder="stroke"
+        >暴击!</text>
+      )}
+    </svg>
+  );
+}
+
+// ── SKILL ICON ───────────────────────────────────────────────
+
+function SkillIcon({ type = 'fire', size = 36 }) {
+  const uid = `ski_${Math.random().toString(36).slice(2,6)}`;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const configs = {
+    fire:    { bg1: '#3A0800', bg2: '#180400', color: '#FF6020' },
+    ice:     { bg1: '#003080', bg2: '#001840', color: '#80D0FF' },
+    thunder: { bg1: '#303000', bg2: '#181800', color: '#FFE020' },
+    wind:    { bg1: '#003808', bg2: '#001804', color: '#40FF90' },
+    earth:   { bg1: '#302010', bg2: '#181008', color: '#C09040' },
+    light:   { bg1: '#303010', bg2: '#181808', color: '#FFFF80' },
+    dark:    { bg1: '#180030', bg2: '#0C0018', color: '#C060FF' },
+    sword:   { bg1: '#102030', bg2: '#081018', color: '#80C0FF' },
+  };
+
+  const { bg1, bg2, color } = configs[type];
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`skiBg_${uid}`} cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor={bg1} />
+          <stop offset="100%" stopColor={bg2} />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width={size} height={size} rx="4"
+        fill={`url(#skiBg_${uid})`} />
+
+      {type === 'fire' && (
+        <g>
+          <polygon points={`${cx},${size*0.1} ${cx+8},${size*0.4} ${cx+4},${size*0.35} ${cx+6},${size*0.65} ${cx},${size*0.85} ${cx-6},${size*0.65} ${cx-4},${size*0.35} ${cx-8},${size*0.4}`}
+            fill="#FF6020" stroke="#FF8040" strokeWidth="1" />
+          <polygon points={`${cx},${size*0.25} ${cx+4},${size*0.45} ${cx},${size*0.65} ${cx-4},${size*0.45}`}
+            fill="#FFD040" opacity="0.7" />
+        </g>
+      )}
+      {type === 'ice' && (
+        <g>
+          {/* Snowflake */}
+          {[0,60,120,180,240,300].map(angle => {
+            const rad = angle * Math.PI / 180;
+            const ex = cx + Math.cos(rad) * size*0.38;
+            const ey = cy + Math.sin(rad) * size*0.38;
+            return <line key={angle} x1={cx} y1={cy} x2={ex} y2={ey}
+              stroke={color} strokeWidth="2" />;
+          })}
+          <circle cx={cx} cy={cy} r={4} fill={color} />
+        </g>
+      )}
+      {type === 'thunder' && (
+        <polygon
+          points={`${cx+4},${size*0.1} ${cx-4},${size*0.45} ${cx+2},${size*0.45} ${cx-4},${size*0.9} ${cx+6},${size*0.5} ${cx-2},${size*0.5}`}
+          fill={color} stroke="#FFF080" strokeWidth="1"
+        />
+      )}
+      {type === 'wind' && (
+        <g>
+          {[0.3,0.5,0.7].map((y, i) => (
+            <path key={i}
+              d={`M${cx - size*0.35},${size*y} Q${cx},${size*(y-0.12)} ${cx+size*0.35},${size*y}`}
+              fill="none" stroke={color} strokeWidth={2-i*0.5}
+              opacity={1-i*0.2} />
+          ))}
+        </g>
+      )}
+      {type === 'earth' && (
+        <g>
+          <polygon points={`${cx-12},${size*0.6} ${cx},${size*0.25} ${cx+12},${size*0.6}`}
+            fill={color} stroke="#A06020" strokeWidth="1.5" />
+          <polygon points={`${cx-8},${size*0.7} ${cx+8},${size*0.7} ${cx+10},${size*0.85} ${cx-10},${size*0.85}`}
+            fill="#A06020" stroke={color} strokeWidth="1" />
+        </g>
+      )}
+      {type === 'light' && (
+        <g>
+          <circle cx={cx} cy={cy} r={size*0.2} fill={color} opacity="0.9" />
+          {[0,45,90,135].map(angle => {
+            const rad = angle * Math.PI / 180;
+            return (
+              <line key={angle}
+                x1={cx + Math.cos(rad)*size*0.22}
+                y1={cy + Math.sin(rad)*size*0.22}
+                x2={cx + Math.cos(rad)*size*0.42}
+                y2={cy + Math.sin(rad)*size*0.42}
+                stroke={color} strokeWidth="2"
+              />
+            );
+          })}
+        </g>
+      )}
+      {type === 'dark' && (
+        <g>
+          <circle cx={cx} cy={cy} r={size*0.35} fill={color} opacity="0.15" />
+          <circle cx={cx} cy={cy} r={size*0.22} fill={color} opacity="0.35" />
+          <circle cx={cx} cy={cy} r={size*0.12} fill={color} opacity="0.8" />
+          {[0,72,144,216,288].map(angle => {
+            const rad = angle * Math.PI / 180;
+            return <circle key={angle}
+              cx={cx + Math.cos(rad)*size*0.32}
+              cy={cy + Math.sin(rad)*size*0.32}
+              r={2} fill={color}
+            />;
+          })}
+        </g>
+      )}
+      {type === 'sword' && (
+        <g>
+          <line x1={cx-size*0.3} y1={size*0.8} x2={cx+size*0.3} y2={size*0.2}
+            stroke={color} strokeWidth="3" />
+          <line x1={cx-size*0.2} y1={size*0.45} x2={cx+size*0.15} y2={size*0.55}
+            stroke={color} strokeWidth="2" opacity="0.7" />
+          <circle cx={cx-size*0.3} cy={size*0.8} r={3} fill={COLORS.gold} />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+// ── DECORATIVE ORNAMENT ──────────────────────────────────────
+function Ornament({ width = 200, height = 20, color = COLORS.gold }) {
+  const cx = width / 2;
+  const cy = height / 2;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Left line */}
+      <line x1={4} y1={cy} x2={cx-16} y2={cy} stroke={color} strokeWidth="1" opacity="0.7" />
+      {/* Left small diamonds */}
+      <rect x={14} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,16,${cy})`} />
+      <rect x={22} y={cy-2} width={4} height={4} fill={color} opacity="0.4" transform={`rotate(45,24,${cy})`} />
+
+      {/* Center diamond */}
+      <rect x={cx-6} y={cy-6} width={12} height={12} fill={color} transform={`rotate(45,${cx},${cy})`} />
+      <rect x={cx-3} y={cy-3} width={6} height={6} fill="white" opacity="0.4" transform={`rotate(45,${cx},${cy})`} />
+
+      {/* Right line */}
+      <line x1={cx+16} y1={cy} x2={width-4} y2={cy} stroke={color} strokeWidth="1" opacity="0.7" />
+      {/* Right small diamonds */}
+      <rect x={width-18} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,${width-16},${cy})`} />
+      <rect x={width-26} y={cy-2} width={4} height={4} fill={color} opacity="0.4" transform={`rotate(45,${width-24},${cy})`} />
+    </svg>
+  );
+}
+
+// ── CLOUD DECORATION ─────────────────────────────────────────
+function CloudDecoration({ width = 120, color = '#C0E0FF' }) {
+  const h = 24;
+  return (
+    <svg width={width} height={h} viewBox={`0 0 ${width} ${h}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Pixel cloud shape */}
+      {[
+        [8,12,16,8],[16,8,24,12],[24,8,16,12],[40,12,20,8],
+        [56,14,24,8],[72,12,16,8],[80,10,16,10],[88,12,20,8],
+      ].map(([x,y,w,hh],i) => (
+        <rect key={i} x={x} y={y} width={w} height={hh} rx="4"
+          fill={color} opacity={0.12 + (i%3)*0.04} />
+      ))}
+    </svg>
+  );
+}
+
+{};
+
+
+
+// Particle system for ambient mystical effects
+function ParticleCanvas() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Particle types: dust, spark, spirit
+
+    const COLORS = ['#C8A84B', '#FFE07A', '#3ECFA0', '#9040FF', '#FF6060', '#80C0FF'];
+    const particles = [];
+
+    const spawn = () => {
+      if (particles.length > 60) return;
+      const type = Math.random() < 0.5 ? 'dust' : Math.random() < 0.6 ? 'spark' : 'spirit';
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: canvas.height * (0.2 + Math.random() * 0.6),
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -Math.random() * 0.5 - 0.1,
+        life: 0,
+        maxLife: 120 + Math.random() * 180,
+        size: type === 'spirit' ? 2 : 1,
+        type,
+        color,
+      });
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Spawn new particles
+      if (Math.random() < 0.2) spawn();
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+
+        if (p.life >= p.maxLife) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const progress = p.life / p.maxLife;
+        const alpha = progress < 0.2
+          ? progress / 0.2
+          : progress > 0.8
+          ? 1 - (progress - 0.8) / 0.2
+          : 1;
+
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+
+        if (p.type === 'dust') {
+          ctx.fillStyle = p.color;
+          // Pixel-style square particle
+          ctx.fillRect(
+            Math.round(p.x),
+            Math.round(p.y),
+            p.size, p.size
+          );
+        } else if (p.type === 'spark') {
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 3;
+          ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+        } else {
+          // Spirit orb - small glow
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 3);
+          gradient.addColorStop(0, p.color);
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 5,
+      }}
+    />
+  );
+}
+
+
+
+// ─── Types ───────────────────────────────────────────────────
+
+
+
+// ─── Constants ───────────────────────────────────────────────
+const QUESTS = [
+  { id: 1, name: '斩杀魔族散兵', progress: 7, total: 10, done: false },
+  { id: 2, name: '收集灵草三株', progress: 3, total: 3, done: true },
+  { id: 3, name: '拜访青云长老', progress: 0, total: 1, done: false },
+];
+
+const INVENTORY_ITEMS = [
+  { type: 'sword', rarity: 5, name: '青虹剑', count: 1 },
+  { type: 'armor', rarity: 4, name: '玄龟甲', count: 1 },
+  { type: 'ring', rarity: 4, name: '碧玉环', count: 1 },
+  { type: 'pill', rarity: 3, name: '大还丹', count: 12 },
+  { type: 'book', rarity: 5, name: '御剑诀', count: 1 },
+  { type: 'gem', rarity: 4, name: '紫晶石', count: 5 },
+  { type: 'material', rarity: 2, name: '寒铁矿', count: 30 },
+  { type: 'pill', rarity: 2, name: '回灵丹', count: 8 },
+  { type: 'sword', rarity: 3, name: '流光剑', count: 1 },
+  { type: 'gem', rarity: 3, name: '血玉', count: 3 },
+  { type: 'material', rarity: 1, name: '普通石', count: 99 },
+  { type: 'empty', rarity: 1, name: '', count: 0 },
+];
+
+// ✅ ENHANCED: Added earth & dark skill types (previously unused SkillIcon variants)
+const SKILLS = [
+  { type: 'sword', name: '御剑斩', key: 'Q', baseCd: 0 },
+  { type: 'fire', name: '烈焰诀', key: 'W', baseCd: 8 },
+  { type: 'thunder', name: '雷霆击', key: 'E', baseCd: 0 },
+  { type: 'ice', name: '寒冰锋', key: 'R', baseCd: 12 },
+  { type: 'wind', name: '疾风步', key: 'A', baseCd: 5 },
+  { type: 'light', name: '护体光', key: 'S', baseCd: 0 },
+  { type: 'earth', name: '地裂击', key: 'Z', baseCd: 6 },   // ✅ earth - previously unused
+  { type: 'dark', name: '暗影术', key: 'X', baseCd: 9 },    // ✅ dark - previously unused
+];
+
+const CHAR_STATS = [
+  { label: '境界', value: '金丹期·三重天' },
+  { label: '攻击', value: '18,450' },
+  { label: '防御', value: '9,820' },
+  { label: '法力', value: '24,100' },
+  { label: '速度', value: '3,200' },
+  { label: '暴击', value: '35%' },
+  { label: '命中', value: '98%' },
+  { label: '悟性', value: '極品' },
+];
+
+const INITIAL_CHAT = [
+  { id: 1, name: '系统', text: '魔族统帅已降临青云山脉！', color: '#FF8060' },
+  { id: 2, name: '青云子', text: '魔族又来了！大家集合！', color: '#FFD060' },
+  { id: 3, name: '天剑客', text: '已到位，随时可以开打', color: '#80D0FF' },
+  { id: 4, name: '凌霄仙', text: '我来治疗，放心冲！', color: '#80FF80' },
+  { id: 5, name: '剑魔', text: '哈哈，今天必斩魔首！', color: '#C880FF' },
+];
+
+// ─── Sub-components ──────────────────────────────────────────
+function BossHPBar({ hp, maxHp, name }) {
+  const pct = hp / maxHp;
+  return (
+    <div className="boss-bar-wrap">
+      <div className="boss-bar-title">{name}</div>
+      <div className="boss-bar-outer">
+        <div className="boss-bar-fill" style={{ width: `${pct * 100}%` }} />
+        <div className="boss-bar-text">{hp.toLocaleString()} / {maxHp.toLocaleString()}</div>
+      </div>
+      <div className="boss-bar-phase">
+        {pct > 0.66 ? '第一阶段' : pct > 0.33 ? '第二阶段 · 狂暴' : '第三阶段 · 绝境'}
+      </div>
+    </div>
+  );
+}
+
+function CharacterPanel({ onClose }) {
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={460} title="人物属性" color="gold" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 16px' }}>
+          <div className="char-avatar-section">
+            <AvatarFrame size={64} hp={85} showHp={false} />
+            <div className="char-name-block">
+              <div className="char-name">青云子</div>
+              <div className="char-title">太上长老</div>
+              <div className="char-server">青云门 · 碧落区</div>
+            </div>
+          </div>
+          <Ornament width={268} height={16} color={COLORS.gold} />
+          <div className="stat-grid">
+            {CHAR_STATS.map(s => (
+              <div key={s.label} className="stat-row">
+                <span className="stat-label">{s.label}</span>
+                <span className="stat-value">{s.value}</span>
+              </div>
+            ))}
+          </div>
+          <Ornament width={268} height={16} color={COLORS.gold} />
+          <div className="char-cultivation">
+            <div className="cult-label">修为进度</div>
+            <StatBar width={260} value={68} max={100} type="exp" />
+            <div className="cult-num">68 / 100 万修为</div>
+          </div>
+          <div className="panel-btns">
+            <GameButton width={80} height={28} label="装备" variant="gold" />
+            <GameButton width={80} height={28} label="技能" variant="jade" />
+            <GameButton width={80} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InventoryPanel({ onClose }) {
+  const [selected, setSelected] = useState(null);
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={420} title="行囊" color="gold" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 12px' }}>
+          <div className="inv-header">
+            <span className="inv-gold">元石: <b>2,480,000</b></span>
+            <span className="inv-space">背包: 12/40</span>
+          </div>
+          <div className="inv-grid">
+            {INVENTORY_ITEMS.map((item, i) => (
+              <div
+                key={i}
+                className={`inv-slot ${selected === i ? 'inv-slot-sel' : ''} ${item.type === 'empty' ? 'inv-slot-empty' : ''}`}
+                onClick={() => setSelected(selected === i ? null : i)}
+                title={item.name}
+              >
+                <ItemIcon
+                  type={item.type}
+                  size={38}
+                  rarity={item.rarity}
+                  count={item.count > 1 ? item.count : undefined}
+                />
+              </div>
+            ))}
+          </div>
+          {selected !== null && INVENTORY_ITEMS[selected].type !== 'empty' && (
+            <div className="inv-detail">
+              <span className="inv-item-name">{INVENTORY_ITEMS[selected].name}</span>
+              <div className="inv-actions">
+                <GameButton width={58} height={24} label="使用" variant="jade" />
+                <GameButton width={58} height={24} label="出售" variant="red" />
+                <GameButton width={58} height={24} label="丢弃" variant="dark" />
+              </div>
+            </div>
+          )}
+          <div className="panel-btns" style={{ marginTop: 4 }}>
+            <GameButton width={100} height={28} label="整理背包" variant="gold" />
+            <GameButton width={80} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillPanel({ onClose }) {
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={440} title="修炼技能" color="blue" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 14px' }}>
+          <div className="skill-points">
+            可用悟道点: <b style={{ color: COLORS.goldLight }}>5</b>
+          </div>
+          <div className="skill-list-panel">
+            {[
+              { type: 'sword', name: '御剑斩', lv: 10, maxLv: 10, desc: '以剑意斩敌，造成大量伤害' },
+              { type: 'fire', name: '烈焰诀', lv: 8, maxLv: 10, desc: '释放烈焰，灼烧目标' },
+              { type: 'thunder', name: '雷霆击', lv: 7, maxLv: 10, desc: '引雷降世，群体攻击' },
+              { type: 'ice', name: '寒冰锋', lv: 6, maxLv: 10, desc: '冰封敌人，降低速度' },
+              { type: 'wind', name: '疾风步', lv: 9, maxLv: 10, desc: '御风而行，速度倍增' },
+              { type: 'light', name: '护体光', lv: 5, maxLv: 10, desc: '金光护体，减少伤害' },
+              { type: 'earth', name: '地裂击', lv: 4, maxLv: 10, desc: '地气涌动，震裂大地' },
+              { type: 'dark', name: '暗影术', lv: 3, maxLv: 10, desc: '以暗影之力迷惑敌人' },
+            ].map((sk, i) => (
+              <div key={i} className="skill-row">
+                <SkillIcon type={sk.type} size={36} />
+                <div className="skill-info">
+                  <div className="skill-name">
+                    {sk.name} <span className="skill-lv">Lv.{sk.lv}</span>
+                  </div>
+                  <div className="skill-desc">{sk.desc}</div>
+                  <StatBar width={120} value={sk.lv} max={sk.maxLv} type="exp" />
+                </div>
+                <GameButton
+                  width={44}
+                  height={22}
+                  label={sk.lv < sk.maxLv ? '升级' : '满级'}
+                  variant={sk.lv < sk.maxLv ? 'gold' : 'dark'}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="panel-btns">
+            <GameButton width={100} height={28} label="重置技能" variant="red" />
+            <GameButton width={80} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuestPanel({ onClose }) {
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={400} title="任务日志" color="jade" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 14px' }}>
+          <div className="quest-list">
+            {QUESTS.map(q => (
+              <div key={q.id} className={`quest-item ${q.done ? 'quest-done' : ''}`}>
+                <div className="quest-name">
+                  <span className="quest-indicator">{q.done ? '✓' : '►'}</span>
+                  {q.name}
+                </div>
+                <StatBar
+                  width={200}
+                  value={q.progress}
+                  max={q.total}
+                  type={q.done ? 'exp' : 'hp'}
+                />
+                <div className="quest-prog">{q.progress}/{q.total}</div>
+                {q.done && <div className="quest-complete-badge">已完成</div>}
+              </div>
+            ))}
+          </div>
+          <Ornament width={272} height={16} color={COLORS.jade} />
+          <div className="quest-rewards">
+            <div className="reward-title">任务奖励:</div>
+            <div className="reward-list">
+              <ItemIcon type="gem" size={28} rarity={4} />
+              <ItemIcon type="pill" size={28} rarity={3} count={5} />
+              <span className="reward-exp">+50,000 修为</span>
+            </div>
+          </div>
+          <div className="panel-btns">
+            <GameButton width={100} height={28} label="提交任务" variant="jade" />
+            <GameButton width={80} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ ENHANCED ="red" (previously unused variant)
+function ShopPanel({ onClose, showNotif }) {
+  const shopItems = [
+    { icon: 'pill', rarity: 4, name: '大还丹', price: '12,000', desc: '恢复大量气血' },
+    { icon: 'pill', rarity: 3, name: '回灵丹', price: '8,000', desc: '快速回复灵力' },
+    { icon: 'gem', rarity: 5, name: '龙魂晶', price: '88,000', desc: '极品强化材料' },
+    { icon: 'book', rarity: 4, name: '破魔诀', price: '50,000', desc: '克制魔族技能' },
+    { icon: 'ring', rarity: 3, name: '聚灵环', price: '30,000', desc: '提升灵力上限' },
+    { icon: 'material', rarity: 2, name: '精钢锭', price: '3,500', desc: '锻造装备材料' },
+  ];
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={450} title="灵宝阁" color="red" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 14px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 0 4px', fontSize:10 }}>
+            <span style={{ color: COLORS.gold }}>元石: <b>2,480,000</b></span>
+            <span style={{ color: COLORS.cyan, fontSize:9 }}>限时特卖</span>
+          </div>
+          <Ornament width={272} height={12} color={COLORS.red} />
+          <div style={{ padding:'4px 0' }}>
+            {shopItems.map((item, i) => (
+              <div key={i} className="shop-item-row">
+                <ItemIcon type={item.icon} size={32} rarity={item.rarity} />
+                <div style={{ flex:1 }}>
+                  <div className="shop-item-name">{item.name}</div>
+                  <div style={{ fontSize:9, color: COLORS.textGoldDim }}>{item.desc}</div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:3 }}>
+                  <span className="shop-item-price">{item.price}</span>
+                  <GameButton width={44} height={20} label="购买" variant="red"
+                    onClick={() => showNotif(`购买 ${item.name} 成功！`)} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="panel-btns">
+            <GameButton width={100} height={28} label="出售物品" variant="gold" />
+            <GameButton width={80} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ ENHANCED ="red" (previously unused variant)
+function GuildPanel({ onClose }) {
+  const members = [
+    { name: '青云子', rank: '帮主', contrib: '980,000', online: true },
+    { name: '天剑客', rank: '长老', contrib: '620,000', online: true },
+    { name: '凌霄仙', rank: '长老', contrib: '540,000', online: false },
+    { name: '剑魔', rank: '精英', contrib: '310,000', online: true },
+    { name: '紫霞仙子', rank: '精英', contrib: '280,000', online: false },
+    { name: '落花剑仙', rank: '成员', contrib: '95,000', online: false },
+  ];
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={440} title="青云帮派" color="red" />
+        </div>
+        <div className="panel-content" style={{ top: 38, padding: '0 14px' }}>
+          <div style={{ padding:'6px 0 4px', display:'flex', gap:12, fontSize:9 }}>
+            <span style={{ color: COLORS.jade }}>成员: 38/50</span>
+            <span style={{ color: COLORS.gold }}>等级: Lv.8</span>
+            <span style={{ color: COLORS.cyan }}>排名: #12</span>
+          </div>
+          <Ornament width={272} height={12} color={COLORS.redBright} />
+          <StatBar width={272} value={72} max={100} type="exp" />
+          <div style={{ fontSize:9, color: COLORS.textGoldDim, textAlign:'right', marginBottom:6 }}>帮派经验: 72%</div>
+          <div>
+            {members.map((m, i) => (
+              <div key={i} className="guild-member-row">
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <div style={{ width:6, height:6, borderRadius:'50%', background: m.online ? '#40FF80' : '#404040' }} />
+                  <span className="guild-member-name">{m.name}</span>
+                </div>
+                <span className="guild-member-rank">[{m.rank}]</span>
+                <span className="guild-contrib">{m.contrib}</span>
+              </div>
+            ))}
+          </div>
+          <div className="panel-btns" style={{ marginTop:8 }}>
+            <GameButton width={90} height={28} label="帮派战" variant="red" />
+            <GameButton width={90} height={28} label="捐献" variant="jade" />
+            <GameButton width={70} height={28} label="关闭" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DialogueBox({ onClose }) {
+  const [line, setLine] = useState(0);
+  const lines = [
+    '道友，你终于来了。近日魔族频繁侵扰边境，青云门危在旦夕...',
+    '我已年迈，无法亲自出征。还望道友能代我青云门，斩除这股魔患。',
+    '完成此任，老夫必以青云诀相赠，望道友早日飞升成仙！',
+  ];
+  const responses = ['接受任务', '问询更多', '暂不接受'];
+  return (
+    <div className="dialogue-wrap">
+      <div className="dialogue-box">
+        <div className="dialogue-inner">
+          <div className="dialogue-portrait">
+            <AvatarFrame size={52} hp={100} showHp={false} />
+            <div className="dialogue-name">青云长老</div>
+          </div>
+          <div className="dialogue-text-area">
+            <div className="dialogue-text">{lines[line]}</div>
+            {line < lines.length - 1 ? (
+              <button className="dialogue-next" onClick={() => setLine(l => l + 1)}>
+                ▶ 继续
+              </button>
+            ) : (
+              <div className="dialogue-responses">
+                {responses.map((r, i) => (
+                  <button key={i} className="dialogue-response" onClick={onClose}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <button className="dialogue-close" onClick={onClose}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+// ✅ ENHANCED: ChatBox with real functional input + onSend callback
+function ChatBox({
+  messages,
+  onClose,
+  onSend,
+}) {
+  const [inputVal, setInputVal] = useState('');
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    const t = inputVal.trim();
+    if (!t) return;
+    onSend(t);
+    setInputVal('');
+  };
+
+  return (
+    <div className="chat-panel">
+      <div className="chat-header">
+        <span className="chat-title">频道: 世界</span>
+        <button className="chat-close-btn" onClick={onClose}>✕</button>
+      </div>
+      <div className="chat-messages">
+        {messages.map(m => (
+          <div key={m.id} className="chat-msg">
+            <span className="chat-name" style={{ color: m.color }}>[{m.name}]</span>
+            <span className="chat-text">{m.text}</span>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      <div className="chat-input-row">
+        <input
+          type="text"
+          className="chat-input-real"
+          value={inputVal}
+          onChange={e => setInputVal(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
+          placeholder="输入消息..."
+          maxLength={50}
+        />
+        <button className="chat-send" onClick={handleSend}>发</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ────────────────────────────────────────────────
+function App() {
+  const [showChar, setShowChar] = useState(false);
+  const [showInv, setShowInv] = useState(false);
+  const [showSkill, setShowSkill] = useState(false);
+  const [showQuest, setShowQuest] = useState(false);
+  const [showDialogue, setShowDialogue] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showShop, setShowShop] = useState(false);      // ✅ NEW
+  const [showGuild, setShowGuild] = useState(false);    // ✅ NEW
+  const [hp, setHp] = useState(82);
+  const [mp, setMp] = useState(65);
+  const [exp, setExp] = useState(68);
+  const [bossHp, setBossHp] = useState(234500);
+  const [floats, setFloats] = useState([]);
+  const [skillCDs, setSkillCDs] = useState([0, 0.4, 0, 0.6, 0, 0, 0, 0]); // ✅ 8 skills now
+  const [activeSkill, setActiveSkill] = useState(null);
+  const [chatMessages, setChatMessages] = useState(INITIAL_CHAT);
+  const [notifText, setNotifText] = useState(null);
+  const [autoFight, setAutoFight] = useState(false);    // ✅ NEW: real auto-fight state
+  const floatIdRef = useRef(0);
+  const chatIdRef = useRef(100);
+  const gameAreaRef = useRef(null);
+
+  const showNotif = useCallback((text) => {
+    setNotifText(text);
+    setTimeout(() => setNotifText(null), 3000);
+  }, []);
+
+  // ✅ ENHANCED: spawnFloat no longer needs wrapper div — x/y used by DamageNumber directly
+  const spawnFloat = useCallback((
+    x, y,
+    type: 'normal' | 'crit' | 'miss' | 'heal' = 'normal',
+  ) => {
+    const value = type === 'heal'
+      ? Math.floor(Math.random() * 3000 + 500)
+      : Math.floor(Math.random() * 8000 + 1000);
+    const id = floatIdRef.current++;
+    setFloats(f => [...f, { id, x, y, value, type }]);
+    setTimeout(() => setFloats(f => f.filter(ft => ft.id !== id)), 1800);
+  }, []);
+
+  const handleGameClick = useCallback((e) => {
+    const rect = gameAreaRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left - 40;
+    const y = e.clientY - rect.top - 20;
+    const roll = Math.random();
+    const type = roll < 0.15 ? 'crit' : roll < 0.25 ? 'miss' : 'normal';
+    spawnFloat(x, y, type);
+    if (type !== 'miss') {
+      setBossHp(h => Math.max(0, h - (type === 'crit' ? 15000 : 5000)));
+    }
+  }, [spawnFloat]);
+
+  const handleSkillClick = useCallback((i) => {
+    if (skillCDs[i] > 0) return;
+    setActiveSkill(i);
+    const rect = gameAreaRef.current?.getBoundingClientRect();
+    const x = rect ? Math.random() * (rect.width - 120) + 20 : 100;
+    const y = rect ? Math.random() * (rect.height * 0.6) + 20 : 80;
+    const isCrit = Math.random() < 0.35;
+    spawnFloat(x, y, isCrit ? 'crit' : 'normal');
+    setBossHp(h => Math.max(0, h - (isCrit ? 18000 : 9000)));
+    showNotif(`使用技能: ${SKILLS[i].name}`);
+    setTimeout(() => setActiveSkill(null), 300);
+
+    const cdTime = SKILLS[i].baseCd;
+    if (cdTime > 0) {
+      // ① Immediately lock CD=1 — prevents auto-fight from seeing CD=0
+      //    and double-triggering before the first interval tick fires
+      setSkillCDs(cds => { const n = [...cds]; n[i] = 1; return n; });
+      const steps = 60;
+      let elapsed = 0;
+      const interval = setInterval(() => {
+        elapsed++;
+        setSkillCDs(cds => {
+          const next = [...cds];
+          next[i] = Math.max(0, 1 - elapsed / steps);
+          return next;
+        });
+        if (elapsed >= steps) clearInterval(interval);
+      }, (cdTime * 1000) / steps);
+    }
+  }, [skillCDs, spawnFloat, showNotif]);
+
+  // HP/MP regen
+  useEffect(() => {
+    const t = setInterval(() => {
+      setHp(h => Math.min(100, h + 0.4));
+      setMp(m => Math.min(100, m + 0.8));
+      setExp(e => Math.min(100, e + 0.08));
+    }, 2000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Live clock
+  useEffect(() => {
+    const update = () => {
+      const el = document.getElementById('game-time');
+      if (el) el.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    };
+    update();
+    const t = setInterval(update, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Boss attacks player
+  useEffect(() => {
+    const t = setInterval(() => {
+      const rect = gameAreaRef.current?.getBoundingClientRect();
+      const x = rect ? Math.random() * (rect.width * 0.45) : 50;
+      const y = 30 + Math.random() * 60;
+      const isCrit = Math.random() < 0.2;
+      spawnFloat(x, y, isCrit ? 'crit' : 'normal');
+      setHp(h => Math.max(5, h - (isCrit ? 12 : Math.random() * 6 + 2)));
+      setMp(m => Math.max(0, m - (Math.random() * 4 + 1)));
+    }, 3200);
+    return () => clearInterval(t);
+  }, [spawnFloat]);
+
+  // Auto chat messages
+  useEffect(() => {
+    const msgs = [
+      { name: '剑魔', text: '一剑破魔！', color: '#C880FF' },
+      { name: '天剑客', text: '加油！', color: '#80D0FF' },
+      { name: '凌霄仙', text: '治疗放出，撑住！', color: '#80FF80' },
+      { name: '系统', text: '魔族统帅进入狂暴状态！', color: '#FF4040' },
+      { name: '青云子', text: '别怕，继续！', color: '#FFD060' },
+    ];
+    let idx = 0;
+    const t = setInterval(() => {
+      const m = msgs[idx % msgs.length];
+      const id = chatIdRef.current++;
+      setChatMessages(prev => [...prev.slice(-8), { ...m, id }]);
+      idx++;
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  // ✅ FIXED: Real auto-fight logic — side effects outside updater, CD locked immediately
+  useEffect(() => {
+    if (!autoFight) return;
+    const t = setInterval(() => {
+      // ① Pick skill + immediately lock it — one pure state update, no side effects inside
+      let chosenIdx = -1;
+      setSkillCDs(currentCDs => {
+        const available = SKILLS.map((_, i) => i).filter(i => currentCDs[i] === 0);
+        if (available.length === 0) return currentCDs;
+        const idx = available[Math.floor(Math.random() * available.length)];
+        chosenIdx = idx;
+        // ② Set CD=1 right now so no other trigger sees CD=0 before interval starts
+        const next = [...currentCDs];
+        next[idx] = 1;
+        return next;
+      });
+      // ③ All side effects (spawn, interval) outside the updater — updater stays pure
+      if (chosenIdx >= 0) {
+        const rect = gameAreaRef.current?.getBoundingClientRect();
+        const x = rect ? Math.random() * (rect.width - 120) + 20 : 100;
+        const y = rect ? Math.random() * (rect.height * 0.6) + 20 : 80;
+        const isCrit = Math.random() < 0.35;
+        spawnFloat(x, y, isCrit ? 'crit' : 'normal');
+        setBossHp(h => Math.max(0, h - (isCrit ? 18000 : 9000)));
+        setActiveSkill(chosenIdx);
+        setTimeout(() => setActiveSkill(null), 300);
+        const cdTime = SKILLS[chosenIdx].baseCd;
+        if (cdTime > 0) {
+          const steps = 60;
+          let elapsed = 0;
+          const interval = setInterval(() => {
+            elapsed++;
+            setSkillCDs(cds => {
+              const next = [...cds];
+              next[chosenIdx] = Math.max(0, 1 - elapsed / steps);
+              return next;
+            });
+            if (elapsed >= steps) clearInterval(interval);
+          }, (cdTime * 1000) / steps);
+        }
+      }
+    }, 1500);
+    return () => clearInterval(t);
+  }, [autoFight, spawnFloat]);
+
+  // ✅ ENHANCED: Send chat message as own player
+  const handleSendChat = useCallback((text) => {
+    const id = chatIdRef.current++;
+    setChatMessages(prev => [...prev.slice(-8), {
+      id,
+      name: '青云子',
+      text,
+      color: '#FFD060',
+    }]);
+  }, []);
+
+  return (
+    <div className="game-root">
+      {/* Background */}
+      <div className="game-bg">
+        <div className="bg-layer-sky" />
+        <div className="bg-layer-mist" />
+        <div className="bg-layer-mountains" />
+        <div className="bg-layer-ground" />
+      </div>
+
+      {/* Cloud decorations */}
+      <div className="cloud-deco cloud-1"><CloudDecoration width={200} color="#8090C0" /></div>
+      <div className="cloud-deco cloud-2"><CloudDecoration width={160} color="#9090B0" /></div>
+      <div className="cloud-deco cloud-3"><CloudDecoration width={120} color="#7080A0" /></div>
+
+      {/* ══ SYSTEM NOTIFICATION ══ */}
+      {notifText && (
+        <div className="sys-notif">
+          <span className="notif-icon">⚡</span>
+          {notifText}
+        </div>
+      )}
+
+      {/* ══ TOP HUD ══ */}
+      <div className="hud-top">
+        <div className="hud-player-block">
+          <div className="hud-avatar" onClick={() => setShowChar(true)}>
+            <AvatarFrame size={54} hp={hp} showHp={true} />
+          </div>
+          <div className="hud-bars">
+            <div className="hud-bar-row">
+              <span className="hud-bar-icon hp-icon">气</span>
+              <StatBar width={120} value={hp} max={100} type="hp" />
+              <span className="hud-bar-num">{Math.round(hp)}%</span>
+            </div>
+            <div className="hud-bar-row">
+              <span className="hud-bar-icon mp-icon">灵</span>
+              <StatBar width={120} value={mp} max={100} type="mp" />
+              <span className="hud-bar-num">{Math.round(mp)}%</span>
+            </div>
+            <div className="hud-bar-row">
+              <span className="hud-bar-icon exp-icon">悟</span>
+              <StatBar width={120} value={exp} max={100} type="exp" />
+              <span className="hud-bar-num">{Math.round(exp)}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="hud-target">
+          <div className="target-label">目标: 魔族统帅</div>
+          <StatBar width={100} value={bossHp} max={234500} type="boss" />
+          <div className="target-hp-num">{bossHp.toLocaleString()}</div>
+        </div>
+
+        <div className="hud-minimap">
+          <MinimapFrame size={104} />
+          <div className="minimap-zone">青云山脉</div>
+        </div>
+      </div>
+
+      {/* ══ BOSS HP BAR ══ */}
+      <div className="boss-bar-area">
+        <BossHPBar hp={bossHp} maxHp={234500} name="魔族统帅 · 血煞" />
+      </div>
+
+      {/* ══ GAME WORLD ══ */}
+      <div className="game-world" ref={gameAreaRef} onClick={handleGameClick}>
+        <svg
+          width="100%" height="100%"
+          viewBox="0 0 390 300"
+          preserveAspectRatio="xMidYMid slice"
+          style={{ position: 'absolute', top: 0, left: 0, imageRendering: 'pixelated' }}
+        >
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#030610" />
+              <stop offset="40%" stopColor="#060820" />
+              <stop offset="100%" stopColor="#080C28" />
+            </linearGradient>
+            <linearGradient id="mtFarGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0E1A28" />
+              <stop offset="100%" stopColor="#060C18" />
+            </linearGradient>
+            <linearGradient id="mtNearGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#080E1A" />
+              <stop offset="100%" stopColor="#040810" />
+            </linearGradient>
+            <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#081220" />
+              <stop offset="100%" stopColor="#040810" />
+            </linearGradient>
+            <radialGradient id="moonGlow" cx="76%" cy="16%" r="28%">
+              <stop offset="0%" stopColor="#A0C0F0" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="enemyAura" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FF0000" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+            <filter id="enemyGlow">
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <rect width="390" height="300" fill="url(#skyGrad)" />
+          <rect width="390" height="300" fill="url(#moonGlow)" />
+          {([
+            [22,12],[55,8],[92,28],[128,6],[165,15],[198,4],[228,20],[268,10],
+            [302,26],[338,7],[368,18],[14,42],[78,46],[148,38],[248,32],[352,44],
+            [42,58],[108,62],[178,52],[288,56],[354,68],[50,22],[180,30],[310,18],
+            [74,74],[200,68],[326,80],[18,80],[240,75],
+          ]).map(([x,y],i) => (
+            <rect key={i} x={x} y={y}
+              width={i % 4 === 0 ? 2 : 1}
+              height={i % 4 === 0 ? 2 : 1}
+              fill="white"
+              opacity={0.25 + (i % 5) * 0.12}
+            />
+          ))}
+          <circle cx="297" cy="36" r="20" fill="#DDE8FF" opacity="0.88" />
+          <circle cx="303" cy="30" r="18" fill="#06082A" opacity="0.55" />
+          <circle cx="290" cy="40" r="3" fill="#C0CDE8" opacity="0.4" />
+          <circle cx="302" cy="44" r="2" fill="#C0CDE8" opacity="0.3" />
+          <polygon points="0,165 35,88 70,128 110,72 152,112 196,62 238,102 278,56 318,96 358,64 390,88 390,185 0,185" fill="url(#mtFarGrad)" />
+          <polygon points="35,88 45,108 25,108" fill="#C0CDE8" opacity="0.15" />
+          <polygon points="196,62 206,82 186,82" fill="#C0CDE8" opacity="0.15" />
+          <polygon points="278,56 288,76 268,76" fill="#C0CDE8" opacity="0.15" />
+          <polygon points="0,205 45,138 84,168 136,118 186,155 238,108 285,148 336,112 390,142 390,225 0,225" fill="url(#mtNearGrad)" />
+          <rect x="0" y="220" width="390" height="80" fill="url(#groundGrad)" />
+          {([18,50,90,130,170,210,250,290,330,365]).map((x,i) => (
+            <rect key={i} x={x} y={222} width={2} height={4 + (i%3)*3} fill="#1A2A38" opacity="0.5" />
+          ))}
+          <ellipse cx="195" cy="225" rx="80" ry="8" fill="#200040" opacity="0.2" />
+          <g transform="translate(200,192)" filter="url(#enemyGlow)">
+            <circle cx="0" cy="-22" r="26" fill="url(#enemyAura)" />
+            <polygon points="-14,-38 -44,-14 -36,-2 -14,-22" fill="#280010" stroke="#500020" strokeWidth="0.5" />
+            <polygon points="14,-38 44,-14 36,-2 14,-22" fill="#280010" stroke="#500020" strokeWidth="0.5" />
+            <rect x="-13" y="-42" width="26" height="36" rx="3" fill="#3A0010" stroke="#700020" strokeWidth="0.8" />
+            <rect x="-10" y="-40" width="20" height="8" rx="1" fill="#500020" />
+            <rect x="-8" y="-30" width="16" height="22" rx="2" fill="#450018" />
+            <rect x="-9" y="-58" width="18" height="17" rx="2" fill="#3A0010" stroke="#600020" strokeWidth="0.8" />
+            <polygon points="-7,-57 -13,-74 -3,-59" fill="#700020" />
+            <polygon points="7,-57 13,-74 3,-59" fill="#700020" />
+            <rect x="-6" y="-52" width="4" height="4" fill="#FF2020" />
+            <rect x="2" y="-52" width="4" height="4" fill="#FF2020" />
+            <rect x="-5" y="-51" width="2" height="2" fill="#FFA0A0" opacity="0.7" />
+            <rect x="3" y="-51" width="2" height="2" fill="#FFA0A0" opacity="0.7" />
+            <line x1="14" y1="-20" x2="28" y2="-48" stroke="#8040A0" strokeWidth="3" />
+            <rect x="11" y="-22" width="8" height="2" fill="#6030C0" />
+          </g>
+          <g transform="translate(100,204)">
+            <polygon points="-8,-36 -20,-8 -10,-10" fill="#3040C0" opacity="0.8" />
+            <rect x="-8" y="-40" width="16" height="30" rx="2" fill="#2030A0" stroke="#4050D0" strokeWidth="0.8" />
+            <rect x="-6" y="-38" width="12" height="6" rx="1" fill="#3040C0" />
+            <rect x="-4" y="-30" width="8" height="18" rx="1" fill="#2838A8" />
+            <rect x="-5" y="-52" width="10" height="13" rx="2" fill="#2030A0" stroke="#4050D0" strokeWidth="0.8" />
+            <rect x="-5" y="-55" width="10" height="4" rx="1" fill="#101888" />
+            <line x1="9" y1="-30" x2="24" y2="-52" stroke="#A0D0FF" strokeWidth="2.5" />
+            <rect x="6" y="-32" width="8" height="2" fill="#C0A020" />
+            <circle cx="9" cy="-30" r="2" fill="#FFD040" />
+            <line x1="9" y1="-30" x2="24" y2="-52" stroke="#80C0FF" strokeWidth="4" opacity="0.2" />
+            <circle cx="0" cy="-25" r="16" fill="#4060FF" opacity="0.05" />
+          </g>
+          {([38,80,142,198,268,332]).map((x,i) => (
+            <rect key={i} x={x} y={221} width={1} height={1} fill={COLORS.goldLight} opacity={0.3 + (i%3)*0.15} />
+          ))}
+          <line x1="114" y1="190" x2="188" y2="195" stroke="#A0C0FF" strokeWidth="0.5" opacity="0.15" />
+        </svg>
+
+        <ParticleCanvas />
+        <div className="world-hint">点击战场攻击敌人</div>
+
+        {/* ✅ ENHANCED: DamageNumber now uses x/y props directly — no wrapper div */}
+        {floats.map(f => (
+          <DamageNumber key={f.id} value={f.value} type={f.type} x={f.x} y={f.y} />
+        ))}
+      </div>
+
+      {/* ══ QUEST TRACKER ══ */}
+      <div className="quest-tracker">
+        <div className="tracker-title">
+          <Ornament width={136} height={12} color={COLORS.gold} />
+          <div className="tracker-head">任务追踪</div>
+          <Ornament width={136} height={12} color={COLORS.gold} />
+        </div>
+        {QUESTS.map(q => (
+          <div key={q.id} className="tracker-quest">
+            <div className="tracker-qname">
+              <span className={q.done ? 'tq-done' : 'tq-active'}>{q.done ? '✓' : '►'}</span>
+              {q.name}
+            </div>
+            <div className="tracker-prog">{q.progress}/{q.total}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ══ SYSTEM MENU ══ */}
+      <div className="sys-menu">
+        {([
+          { label: '人物', icon: '人', action: () => setShowChar(true) },
+          { label: '背包', icon: '囊', action: () => setShowInv(true) },
+          { label: '技能', icon: '技', action: () => setShowSkill(true) },
+          { label: '任务', icon: '务', action: () => setShowQuest(true) },
+          { label: '商店', icon: '商', action: () => setShowShop(true) },    // ✅ real panel
+          { label: '帮派', icon: '帮', action: () => setShowGuild(true) },   // ✅ real panel
+          { label: '设置', icon: '设', action: () => showNotif('设置已打开') },
+        ]).map((btn, i) => (
+          <button key={i} className="sys-btn" onClick={btn.action}>
+            <span className="sys-icon">{btn.icon}</span>
+            <span className="sys-label">{btn.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ══ BUFF ROW ══ */}
+      <div className="buff-row">
+        {([
+          { name: '破魔诀', color: '#FF8040', time: '2:34' },
+          { name: '护体光', color: '#FFD040', time: '5:12' },
+          { name: '疾风步', color: '#40FF90', time: '0:45' },
+          { name: '中毒', color: '#80FF20', time: '0:08' },
+        ]).map((b, i) => (
+          <div key={i} className="buff-icon" style={{ '--buff-color': b.color }}>
+            <div className="buff-dot" style={{ backgroundColor: b.color }} />
+            <div className="buff-time">{b.time}</div>
+            <div className="buff-tooltip">{b.name}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ══ CHAT BOX ══ */}
+      {showChat ? (
+        <ChatBox messages={chatMessages} onClose={() => setShowChat(false)} onSend={handleSendChat} />
+      ) : (
+        <div className="chat-bubble" onClick={() => setShowChat(true)}>
+          <div className="chat-last-msg">
+            <span className="chat-name" style={{ color: chatMessages[chatMessages.length - 1]?.color }}>
+              [{chatMessages[chatMessages.length - 1]?.name}]
+            </span>
+            <span className="chat-text-snip">{chatMessages[chatMessages.length - 1]?.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ BOTTOM SKILL BAR ══ */}
+      <div className="skill-bar-wrap">
+        <div className="skill-bar-bg" />
+        <div className="skill-bar">
+          <div className="skill-aux-btns">
+            <button
+              className="aux-btn"
+              onClick={() => {
+                const rect = gameAreaRef.current?.getBoundingClientRect();
+                const x = rect ? Math.random() * 80 + 20 : 50;
+                const y = rect ? rect.height * 0.4 : 80;
+                spawnFloat(x, y, 'heal');
+                setHp(h => Math.min(100, h + 20));
+                setMp(m => Math.max(0, m - 30));
+                showNotif('使用回血丹，恢复气血');
+              }}
+            >
+              <span>气</span>
+              <span className="aux-label">回血</span>
+            </button>
+            <button
+              className="aux-btn aux-blue"
+              onClick={() => {
+                setMp(m => Math.min(100, m + 40));
+                showNotif('使用回灵丹，恢复灵力');
+              }}
+            >
+              <span>灵</span>
+              <span className="aux-label">回灵</span>
+            </button>
+          </div>
+
+          {/* ✅ ENHANCED: 8 skill slots (added earth + dark) */}
+          <div className="skill-slots">
+            {SKILLS.map((sk, i) => (
+              <div
+                key={i}
+                className={`skill-slot ${activeSkill === i ? 'skill-slot-active' : ''}`}
+                onClick={() => handleSkillClick(i)}
+              >
+                <SkillButton
+                  size={38}
+                  cooldown={skillCDs[i]}
+                  keyLabel={sk.key}
+                  active={activeSkill === i}
+                  icon={<SkillIcon type={sk.type} size={22} />}
+                />
+                <div className="skill-name-label">{sk.name}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="auto-attack-wrap">
+            <button className="auto-btn" onClick={() => setShowDialogue(true)}>
+              <span className="auto-icon">话</span>
+              <span className="auto-label">对话</span>
+            </button>
+            {/* ✅ ENHANCED: Real auto-fight toggle with active visual state */}
+            <button
+              className={`auto-btn auto-red ${autoFight ? 'auto-active' : ''}`}
+              onClick={() => {
+                setAutoFight(f => !f);
+                showNotif(autoFight ? '自动战斗已关闭' : '自动战斗已开启');
+              }}
+            >
+              <span className="auto-icon">自</span>
+              <span className="auto-label">{autoFight ? '停止' : '自动'}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="bar-ornament">
+          <Ornament width={340} height={10} color={COLORS.gold} />
+        </div>
+      </div>
+
+      {/* ══ INFO BAR ══ */}
+      <div className="hud-info-bar">
+        <span className="info-server">碧落区-1</span>
+        <span className="info-sep">·</span>
+        <span className="info-zone">青云山脉</span>
+        <span className="info-sep">·</span>
+        <span className="info-time" id="game-time">21:43:27</span>
+        <span className="info-sep">·</span>
+        <span className="info-fps">60 FPS</span>
+      </div>
+
+      {/* ══ PANELS ══ */}
+      {showChar && <CharacterPanel onClose={() => setShowChar(false)} />}
+      {showInv && <InventoryPanel onClose={() => setShowInv(false)} />}
+      {showSkill && <SkillPanel onClose={() => setShowSkill(false)} />}
+      {showQuest && <QuestPanel onClose={() => setShowQuest(false)} />}
+      {showShop && <ShopPanel onClose={() => setShowShop(false)} showNotif={showNotif} />}
+      {showGuild && <GuildPanel onClose={() => setShowGuild(false)} />}
+      {showDialogue && <DialogueBox onClose={() => setShowDialogue(false)} />}
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
