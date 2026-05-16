@@ -1,0 +1,4229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tiên Hiệp Truyền Kỳ — Phiên Bản Đầy Đủ</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+/* ============================================================
+   仙侠传奇 — MMORPG Mobile UI CSS
+   Pixel-sharp, layered, no blur
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+/* ── Reset & Root ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+:root {
+  --gold: #C8A84B;
+  --gold-light: #FFE07A;
+  --gold-dark: #7A5A10;
+  --gold-shine: #FFF0A0;
+  --jade: #3ECFA0;
+  --red: #C02020;
+  --red-bright: #FF4040;
+  --blue: #1A3A7A;
+  --blue-bright: #4080FF;
+  --purple: #4A1A8A;
+  --purple-bright: #9040FF;
+  --dark-bg: #06060F;
+  --panel-bg: #0C1030;
+  --panel-mid: #141840;
+  --panel-light: #1E2460;
+  --text-white: #F0E8D0;
+  --text-gold: #FFD060;
+  --text-dim: #8A7A50;
+
+  font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  color: var(--text-white);
+}
+
+/* ── Game Root ────────────────────────────────────────────── */
+.game-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--dark-bg);
+  display: flex;
+  flex-direction: column;
+  /* Simulate mobile portrait layout, max 430px wide centered */
+  max-width: 430px;
+  margin: 0 auto;
+  box-shadow: 0 0 80px #000;
+}
+
+/* ── Background Layers ────────────────────────────────────── */
+.game-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-layer-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #020510 0%, #060820 40%, #080C28 70%, #0A1035 100%);
+}
+
+.bg-layer-mist {
+  position: absolute;
+  bottom: 30%;
+  left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, rgba(100,120,200,0.06) 50%, transparent);
+  animation: mistDrift 12s ease-in-out infinite alternate;
+}
+
+.bg-layer-mountains {
+  position: absolute;
+  bottom: 15%;
+  left: 0; right: 0;
+  height: 160px;
+  background:
+    radial-gradient(ellipse at 30% 100%, rgba(20,30,60,0.5) 0%, transparent 70%),
+    radial-gradient(ellipse at 70% 100%, rgba(10,20,50,0.5) 0%, transparent 70%);
+}
+
+.bg-layer-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 20%;
+  background: linear-gradient(180deg, #080C1A 0%, #050810 100%);
+}
+
+@keyframes mistDrift {
+  from { transform: translateX(-20px); opacity: 0.6; }
+  to   { transform: translateX(20px);  opacity: 1; }
+}
+
+/* ── Cloud Decorations ────────────────────────────────────── */
+.cloud-deco {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  animation: cloudFloat 20s ease-in-out infinite;
+}
+.cloud-1 { top: 15%; left: -10%; animation-duration: 24s; }
+.cloud-2 { top: 25%; right: -5%; animation-duration: 18s; animation-delay: -6s; }
+.cloud-3 { top: 35%; left: 20%; animation-duration: 30s; animation-delay: -12s; }
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(30px); }
+}
+
+/* ── HUD Top ──────────────────────────────────────────────── */
+.hud-top {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 6px 6px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hud-player-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  padding: 5px 8px 5px 5px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.hud-player-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.hud-player-block::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.hud-avatar {
+  cursor: pointer;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+.hud-avatar:hover { filter: brightness(1.2); }
+
+.hud-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 4px;
+}
+
+.hud-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-bar-icon {
+  font-size: 10px;
+  font-weight: bold;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.hp-icon  { color: #FF6060; }
+.mp-icon  { color: #6090FF; }
+.exp-icon { color: #FFD040; }
+
+.hud-bar-num {
+  font-size: 9px;
+  color: var(--text-dim);
+  min-width: 28px;
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── Target frame ─────────────────────────────────────────── */
+.hud-target {
+  background: linear-gradient(135deg, rgba(48,8,8,0.9) 0%, rgba(20,4,4,0.85) 100%);
+  border: 1px solid #7A1010;
+  border-radius: 3px;
+  padding: 5px 8px;
+  min-width: 120px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.7);
+}
+
+.target-label {
+  font-size: 10px;
+  color: #FF8080;
+  margin-bottom: 3px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.target-hp-num {
+  font-size: 9px;
+  color: #FF6060;
+  text-align: right;
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+/* ── Minimap ──────────────────────────────────────────────── */
+.hud-minimap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.minimap-zone {
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 4px rgba(200,168,75,0.5);
+}
+
+/* ── Boss Bar ─────────────────────────────────────────────── */
+.boss-bar-area {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 4px 12px 2px;
+  flex-shrink: 0;
+}
+
+.boss-bar-wrap {
+  width: 100%;
+  max-width: 340px;
+}
+
+.boss-bar-title {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #FF6060;
+  text-shadow: 0 0 6px rgba(255,0,0,0.5);
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+
+.boss-bar-outer {
+  position: relative;
+  height: 16px;
+  background: #1A0000;
+  border: 1px solid #7A0000;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(255,0,0,0.2);
+}
+
+.boss-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FF2020 0%, #FF6020 60%, #FF2020 100%);
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.boss-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: rgba(255,120,120,0.3);
+}
+
+.boss-bar-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: monospace;
+  color: white;
+  text-shadow: 0 0 3px black, 0 0 3px black;
+}
+
+.boss-bar-phase {
+  text-align: center;
+  font-size: 9px;
+  color: #FF8060;
+  margin-top: 1px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Game World ───────────────────────────────────────────── */
+.game-world {
+  position: relative;
+  flex: 1;
+  z-index: 10;
+  cursor: crosshair;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.world-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(200,168,75,0.4);
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+
+/* ── Floating damage numbers ──────────────────────────────── */
+.float-wrap {
+  position: absolute;
+  pointer-events: none;
+  animation: floatUp 1.8s ease-out forwards;
+  z-index: 50;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0); opacity: 1; }
+  60%  { transform: translateY(-50px); opacity: 1; }
+  100% { transform: translateY(-80px); opacity: 0; }
+}
+
+/* ── Quest Tracker ────────────────────────────────────────── */
+.quest-tracker {
+  position: absolute;
+  top: 110px;
+  left: 6px;
+  z-index: 20;
+  background: linear-gradient(135deg, rgba(8,12,32,0.88) 0%, rgba(4,6,20,0.85) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  padding: 6px 8px;
+  min-width: 145px;
+  max-width: 170px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.7);
+}
+
+.tracker-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.tracker-head {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(200,168,75,0.5);
+}
+
+.tracker-quest {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(200,168,75,0.1);
+}
+.tracker-quest:last-child { border-bottom: none; }
+
+.tracker-qname {
+  font-size: 9px;
+  color: var(--text-white);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tq-active { color: var(--gold); font-size: 8px; }
+.tq-done   { color: #40FF80; font-size: 8px; }
+
+.tracker-prog {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── System Menu ──────────────────────────────────────────── */
+.sys-menu {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+  background: linear-gradient(180deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border-left: 2px solid var(--gold-dark);
+  border-top: 1px solid var(--gold-dark);
+  border-bottom: 1px solid var(--gold-dark);
+  border-radius: 4px 0 0 4px;
+}
+
+.sys-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  gap: 1px;
+  transition: background 0.1s;
+  border-bottom: 1px solid rgba(200,168,75,0.15);
+  width: 44px;
+}
+.sys-btn:last-child { border-bottom: none; }
+.sys-btn:hover { background: rgba(200,168,75,0.1); }
+.sys-btn:active { background: rgba(200,168,75,0.2); }
+
+.sys-icon {
+  font-size: 13px;
+  color: var(--gold);
+  text-shadow: 0 0 4px rgba(200,168,75,0.4);
+  font-family: 'Noto Serif SC', serif;
+}
+
+.sys-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* ── Buff row ─────────────────────────────────────────────── */
+.buff-row {
+  position: absolute;
+  left: 8px;
+  bottom: 120px;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+}
+
+.buff-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: rgba(8,10,24,0.9);
+  border: 1px solid rgba(200,168,75,0.4);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.buff-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  opacity: 0.85;
+  box-shadow: 0 0 4px var(--buff-color, white);
+}
+
+.buff-time {
+  font-size: 7px;
+  font-family: monospace;
+  color: var(--text-dim);
+  margin-top: 1px;
+}
+
+.buff-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8,10,24,0.96);
+  border: 1px solid var(--gold-dark);
+  padding: 3px 6px;
+  font-size: 9px;
+  color: var(--gold);
+  white-space: nowrap;
+  margin-bottom: 3px;
+  z-index: 100;
+  border-radius: 2px;
+}
+.buff-icon:hover .buff-tooltip { display: block; }
+
+/* ── Skill Bar ────────────────────────────────────────────── */
+.skill-bar-wrap {
+  position: relative;
+  z-index: 20;
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.skill-bar-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6,8,24,0.95) 0%, rgba(4,4,16,0.98) 100%);
+  border-top: 2px solid var(--gold-dark);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.8);
+}
+
+.skill-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+}
+
+.skill-aux-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aux-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(180deg, #2A2010 0%, #160E04 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--gold);
+  font-size: 12px;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: bold;
+  transition: filter 0.1s;
+  gap: 1px;
+}
+.aux-btn:hover  { filter: brightness(1.3); }
+.aux-btn:active { filter: brightness(0.8); transform: translateY(1px); }
+.aux-btn.aux-blue {
+  background: linear-gradient(180deg, #101A3A 0%, #080C20 100%);
+  border-color: #203060;
+  color: #80B0FF;
+}
+
+.aux-label {
+  font-size: 7px;
+  font-weight: normal;
+  color: var(--text-dim);
+}
+
+.skill-slots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.skill-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.skill-slot:active { transform: scale(0.92); }
+.skill-slot-active { filter: brightness(1.4); }
+
+.skill-name-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.3px;
+  max-width: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-attack-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auto-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(180deg, #2A1010 0%, #160808 100%);
+  border: 1px solid #602020;
+  border-radius: 3px;
+  cursor: pointer;
+  gap: 1px;
+  transition: filter 0.1s;
+}
+.auto-btn:hover { filter: brightness(1.2); }
+
+.auto-icon {
+  font-size: 13px;
+  color: #FF8060;
+}
+.auto-btn.auto-red .auto-icon { color: #FF4040; }
+
+.auto-label {
+  font-size: 7px;
+  color: var(--text-dim);
+}
+
+.bar-ornament {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 2px;
+}
+
+/* ── Info Bar ─────────────────────────────────────────────── */
+.hud-info-bar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 21;
+  display: flex;
+  gap: 10px;
+  background: rgba(4,4,16,0.8);
+  border-bottom: 1px solid var(--gold-dark);
+  padding: 2px 12px;
+  font-size: 9px;
+  font-family: monospace;
+  border-radius: 0 0 6px 6px;
+}
+
+.info-server { color: var(--jade); }
+.info-zone   { color: var(--gold); }
+.info-time   { color: var(--text-dim); }
+.info-fps    { color: #60FF80; }
+.info-sep    { color: rgba(200,168,75,0.3); }
+
+/* ── Panel Overlay ────────────────────────────────────────── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.panel-popup {
+  position: relative;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.88) translateY(12px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.panel-svg-wrap {
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(200,168,75,0.3)) drop-shadow(0 4px 20px rgba(0,0,0,0.8));
+}
+
+.panel-content {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 12px;
+  overflow-y: auto;
+  max-height: calc(100% - 50px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dark) transparent;
+}
+
+/* ── Character Panel ──────────────────────────────────────── */
+.char-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 6px;
+}
+
+.char-name-block {
+  flex: 1;
+}
+
+.char-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(200,168,75,0.5);
+}
+
+.char-title {
+  font-size: 10px;
+  color: var(--jade);
+  margin: 2px 0;
+}
+
+.char-server {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  padding: 4px 0;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 2px;
+  border: 1px solid rgba(200,168,75,0.08);
+}
+
+.stat-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-size: 10px;
+  color: var(--gold-light);
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.char-cultivation {
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cult-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.cult-num {
+  font-size: 9px;
+  color: var(--gold);
+  text-align: right;
+  font-family: monospace;
+}
+
+/* ── Inventory Panel ──────────────────────────────────────── */
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 4px;
+  font-size: 10px;
+}
+
+.inv-gold { color: var(--gold); font-weight: bold; }
+.inv-space { color: var(--text-dim); font-size: 9px; font-family: monospace; }
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.inv-slot {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  aspect-ratio: 1;
+}
+.inv-slot:hover { border-color: var(--gold); background: rgba(200,168,75,0.05); }
+.inv-slot-sel   { border-color: var(--gold-light) !important; background: rgba(200,168,75,0.12) !important; box-shadow: inset 0 0 6px rgba(200,168,75,0.2); }
+.inv-slot-empty { border-style: dashed; opacity: 0.4; }
+
+.inv-detail {
+  background: rgba(200,168,75,0.06);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.inv-item-name {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.inv-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Skill Panel ──────────────────────────────────────────── */
+.skill-points {
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 6px 0 4px;
+  border-bottom: 1px solid rgba(200,168,75,0.1);
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,168,75,0.1);
+  border-radius: 3px;
+}
+
+.skill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skill-name {
+  font-size: 11px;
+  color: var(--text-white);
+  font-weight: bold;
+}
+
+.skill-lv {
+  font-size: 9px;
+  color: var(--jade);
+  font-family: monospace;
+}
+
+.skill-desc {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* ── Quest Panel ──────────────────────────────────────────── */
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.quest-item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,168,75,0.1);
+  border-radius: 3px;
+  padding: 6px 8px;
+  position: relative;
+}
+
+.quest-item.quest-done {
+  border-color: rgba(64,255,128,0.2);
+  opacity: 0.8;
+}
+
+.quest-name {
+  font-size: 11px;
+  color: var(--text-white);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+.quest-indicator {
+  font-size: 9px;
+  color: var(--gold);
+}
+.quest-done .quest-indicator { color: #40FF80; }
+
+.quest-prog {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+.quest-complete-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 9px;
+  color: #40FF80;
+  background: rgba(64,255,128,0.1);
+  border: 1px solid rgba(64,255,128,0.3);
+  border-radius: 2px;
+  padding: 1px 5px;
+  font-weight: bold;
+}
+
+.quest-rewards {
+  padding: 6px 0;
+}
+
+.reward-title {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.reward-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reward-exp {
+  font-size: 10px;
+  color: var(--gold);
+  font-family: monospace;
+}
+
+/* ── Common Panel buttons ─────────────────────────────────── */
+.panel-btns {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+/* ── Dialogue ─────────────────────────────────────────────── */
+.dialogue-wrap {
+  position: fixed;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  padding: 0 8px;
+  max-width: 430px;
+  margin: 0 auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.dialogue-box {
+  background: linear-gradient(135deg, rgba(8,10,28,0.97) 0%, rgba(4,6,20,0.96) 100%);
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px;
+  padding: 10px;
+  position: relative;
+  box-shadow: 0 -4px 20px rgba(200,168,75,0.15), 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.dialogue-box::before,
+.dialogue-box::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--gold);
+}
+.dialogue-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.dialogue-box::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.dialogue-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dialogue-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.dialogue-name {
+  font-size: 9px;
+  color: var(--gold);
+  text-align: center;
+  font-weight: bold;
+}
+
+.dialogue-text-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialogue-text {
+  font-size: 11px;
+  color: var(--text-white);
+  line-height: 1.6;
+  min-height: 44px;
+}
+
+.dialogue-next {
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  font-size: 10px;
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'Noto Serif SC', serif;
+  transition: background 0.1s;
+}
+.dialogue-next:hover { background: rgba(200,168,75,0.1); }
+
+.dialogue-responses {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dialogue-response {
+  background: linear-gradient(90deg, rgba(200,168,75,0.1) 0%, rgba(200,168,75,0.05) 100%);
+  border: 1px solid rgba(200,168,75,0.3);
+  color: var(--gold);
+  font-size: 10px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  text-align: left;
+  font-family: 'Noto Serif SC', serif;
+  transition: background 0.1s;
+}
+.dialogue-response:hover { background: rgba(200,168,75,0.15); border-color: var(--gold); }
+.dialogue-response::before { content: '▸ '; opacity: 0.6; }
+
+.dialogue-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+.dialogue-close:hover { color: var(--gold); }
+
+/* ── Chat Box ─────────────────────────────────────────────── */
+.chat-bubble {
+  position: absolute;
+  left: 8px;
+  bottom: 100px;
+  z-index: 18;
+  background: rgba(6,8,20,0.82);
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: 3px;
+  padding: 4px 8px;
+  max-width: 190px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.chat-bubble:hover { border-color: var(--gold-dark); }
+
+.chat-last-msg {
+  font-size: 9px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  overflow: hidden;
+}
+
+.chat-text-snip {
+  color: var(--text-white);
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.chat-panel {
+  position: absolute;
+  left: 8px;
+  bottom: 100px;
+  z-index: 18;
+  width: 210px;
+  background: linear-gradient(135deg, rgba(6,8,22,0.96) 0%, rgba(4,5,16,0.94) 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(200,168,75,0.15);
+}
+
+.chat-title {
+  font-size: 10px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.chat-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+.chat-close-btn:hover { color: var(--gold); }
+
+.chat-messages {
+  padding: 4px 6px;
+  max-height: 100px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-msg {
+  font-size: 9px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  line-height: 1.4;
+}
+
+.chat-name {
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: 9px;
+}
+
+.chat-text {
+  color: var(--text-white);
+  opacity: 0.85;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  border-top: 1px solid rgba(200,168,75,0.1);
+  align-items: center;
+}
+
+.chat-input-fake {
+  flex: 1;
+  font-size: 9px;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(200,168,75,0.2);
+  border-radius: 2px;
+  padding: 2px 5px;
+  cursor: text;
+  font-style: italic;
+}
+
+.chat-send {
+  background: linear-gradient(180deg, #3A2A08 0%, #1A1204 100%);
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  font-size: 9px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'Noto Serif SC', serif;
+}
+.chat-send:hover { background: rgba(200,168,75,0.15); }
+
+/* ── System Notification ──────────────────────────────────── */
+.sys-notif {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: linear-gradient(90deg, rgba(8,10,28,0.95) 0%, rgba(20,16,8,0.95) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 5px 14px;
+  font-size: 11px;
+  color: var(--gold-light);
+  font-weight: bold;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  animation: notifSlide 0.3s ease, notifFade 3s ease forwards;
+  box-shadow: 0 0 12px rgba(200,168,75,0.3);
+}
+
+.notif-icon {
+  margin-right: 5px;
+}
+
+@keyframes notifSlide {
+  from { transform: translateX(-50%) translateY(-10px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes notifFade {
+  0%, 70% { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
+/* ── Skill list in panel ──────────────────────────────────── */
+.skill-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ── Glow animations ──────────────────────────────────────── */
+@keyframes goldPulse {
+  0%, 100% { text-shadow: 0 0 6px rgba(200,168,75,0.4); }
+  50%       { text-shadow: 0 0 12px rgba(200,168,75,0.8), 0 0 20px rgba(200,168,75,0.3); }
+}
+
+.char-name { animation: goldPulse 3s ease-in-out infinite; }
+.tracker-head { animation: goldPulse 4s ease-in-out infinite; }
+
+/* ── Responsive for desktop ───────────────────────────────── */
+@media (min-width: 431px) {
+  .game-root {
+    border-left: 2px solid var(--gold-dark);
+    border-right: 2px solid var(--gold-dark);
+  }
+}
+
+/* ── Special glow for boss bar pulse ─────────────────────── */
+@keyframes bossGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,0,0,0.2); }
+  50%       { box-shadow: 0 0 16px rgba(255,0,0,0.5); }
+}
+.boss-bar-outer { animation: bossGlow 2s ease-in-out infinite; }
+
+/* ── Skill slot active flash ──────────────────────────────── */
+@keyframes skillFlash {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(2) saturate(2); }
+  100% { filter: brightness(1); }
+}
+.skill-slot-active { animation: skillFlash 0.3s ease; }
+
+
+/* ── chat input thực ──────────────────────────────────────── */
+.chat-input-real {
+  flex:1; font-size:9px; color:var(--text-white);
+  background:rgba(0,0,0,0.4); border:1px solid rgba(200,168,75,0.3);
+  border-radius:2px; padding:2px 5px; font-family:'Noto Serif SC',serif; outline:none;
+}
+.chat-input-real:focus { border-color:var(--gold-dark); }
+.chat-input-real::placeholder { color:var(--text-dim); font-style:italic; }
+/* ── auto-fight active ────────────────────────────────────── */
+.auto-btn.auto-active {
+  background:linear-gradient(180deg,#400808 0%,#200404 100%) !important;
+  border-color:#FF4040 !important; box-shadow:0 0 8px rgba(255,64,64,0.4);
+}
+.auto-btn.auto-active .auto-icon { color:#FF8080; animation:goldPulse 0.8s ease-in-out infinite; }
+/* ── skill bar: 8 skills nhỏ hơn ─────────────────────────── */
+.skill-slots { gap:2px; }
+.skill-bar { gap:3px; }
+/* ── shop / guild panel ───────────────────────────────────── */
+.shop-item-row {
+  display:flex; align-items:center; gap:8px; padding:5px 6px;
+  background:rgba(80,0,0,0.2); border:1px solid rgba(255,64,64,0.1);
+  border-radius:3px; margin-bottom:4px;
+}
+.shop-item-name { font-size:11px; color:var(--text-white); flex:1; font-weight:bold; }
+.shop-item-price { font-size:10px; color:#00FFFF; font-family:monospace; font-weight:bold; }
+.guild-member-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:4px 6px; border-bottom:1px solid rgba(255,64,64,0.08);
+}
+.guild-member-name { font-size:10px; color:var(--text-white); }
+.guild-member-rank { font-size:9px; color:#FF8060; font-family:monospace; }
+.guild-contrib { font-size:9px; color:#C09040; font-family:monospace; }
+
+/* ── Equipment Panel ──────────────────────────────────────── */
+.equip-power {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:5px 0 4px; font-size:9px;
+  border-bottom:1px solid rgba(200,168,75,0.15); margin-bottom:4px;
+}
+.equip-power-label { color:var(--text-dim); letter-spacing:0.5px; }
+.equip-power-val { color:#FF8040; font-weight:bold; font-family:monospace; font-size:13px;
+  text-shadow:0 0 6px rgba(255,128,64,0.5); }
+
+.equip-layout {
+  display:flex; gap:6px; padding:4px 0; align-items:center; justify-content:center;
+}
+.equip-col { display:flex; flex-direction:column; gap:5px; }
+.equip-silhouette { flex:1; display:flex; align-items:center; justify-content:center; }
+
+.equip-slot {
+  width:48px; height:52px;
+  background:rgba(0,0,0,0.5);
+  border:1px solid rgba(200,168,75,0.2);
+  border-radius:3px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  cursor:pointer; position:relative;
+  transition:border-color 0.1s, background 0.1s;
+  gap:1px;
+}
+.equip-slot:hover { border-color:var(--gold); background:rgba(200,168,75,0.05); }
+.equip-slot-active {
+  border-color:var(--gold-light) !important;
+  background:rgba(200,168,75,0.12) !important;
+  box-shadow:inset 0 0 6px rgba(200,168,75,0.2);
+}
+.equip-slot-empty { border-style:dashed; }
+.equip-slot-empty-icon { font-size:11px; color:rgba(200,168,75,0.15); }
+.equip-slot-label {
+  font-size:7px; color:var(--text-dim);
+  text-align:center; line-height:1.1; max-width:44px;
+}
+
+.equip-detail {
+  background:linear-gradient(135deg,rgba(20,16,8,0.9) 0%,rgba(8,8,16,0.85) 100%);
+  border:1px solid rgba(200,168,75,0.25);
+  border-radius:3px; padding:7px 9px; margin:4px 0;
+  animation:fadeIn 0.15s ease;
+}
+.equip-detail-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+.equip-detail-name { font-size:12px; font-weight:bold; }
+.equip-detail-rarity { font-size:9px; }
+.equip-detail-stars { font-size:10px; letter-spacing:1px; margin-bottom:3px; }
+.equip-detail-stats { display:flex; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
+.equip-stat { font-size:9px; font-family:monospace; padding:1px 4px;
+  background:rgba(0,0,0,0.3); border-radius:2px; }
+.equip-stat-atk { color:#FF8060; }
+.equip-stat-def { color:#80C0FF; }
+.equip-stat-hp  { color:#FF6060; }
+.equip-stat-mp  { color:#6090FF; }
+.equip-detail-desc { font-size:9px; color:var(--text-dim); line-height:1.5; margin-bottom:5px; }
+.equip-detail-btns { display:flex; gap:5px; }
+
+.equip-empty-hint {
+  font-size:9px; color:var(--text-dim); text-align:center;
+  padding:10px 0; font-style:italic;
+}
+
+/* Rarity colors utility */
+.rarity-5 { color:#FF8000 !important; }
+.rarity-4 { color:#A040FF !important; }
+.rarity-3 { color:#4080FF !important; }
+.rarity-2 { color:#40A040 !important; }
+.rarity-1 { color:#808080 !important; }
+
+/* ── Quest Tracker collapse ───────────────────────────────── */
+.tracker-toggle {
+  position: absolute; top: 5px; left: 5px;
+  background: none; border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 2px; color: var(--gold-dark); font-size: 9px;
+  width: 16px; height: 16px; cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.tracker-toggle:hover { background: rgba(200,168,75,0.12); color: var(--gold); }
+/* position: absolute giữ nguyên từ rule chính ở trên */
+.tracker-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease; }
+.tracker-body.collapsed { max-height: 0 !important; opacity: 0; }
+
+/* ── Guild tabs ───────────────────────────────────────────── */
+.guild-tabs {
+  display: flex; gap: 2px; margin-bottom: 5px;
+  border-bottom: 1px solid rgba(200,168,75,0.15); padding-bottom: 4px;
+}
+.guild-tab {
+  flex: 1; background: none; border: 1px solid rgba(200,168,75,0.15);
+  border-radius: 2px 2px 0 0; color: var(--text-dim); font-size: 9px;
+  padding: 3px 0; cursor: pointer; font-family: 'Noto Serif SC', serif;
+  transition: background 0.1s, color 0.1s;
+}
+.guild-tab:hover { background: rgba(200,168,75,0.06); color: var(--gold); }
+.guild-tab.active {
+  background: rgba(200,168,75,0.12); color: var(--gold);
+  border-color: var(--gold-dark); font-weight: bold;
+}
+.guild-mission-row {
+  display: flex; align-items: flex-start; gap: 6px; padding: 5px 4px;
+  border-bottom: 1px solid rgba(200,168,75,0.08);
+}
+.guild-mission-row:last-child { border-bottom: none; }
+.guild-mission-info { flex: 1; }
+.guild-mission-name { font-size: 10px; color: var(--text-white); font-weight: bold; margin-bottom: 2px; }
+.guild-mission-desc { font-size: 9px; color: var(--text-dim); }
+.guild-war-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 4px; border-bottom: 1px solid rgba(255,64,64,0.08);
+}
+.guild-war-rank { font-size: 11px; color: var(--gold); font-family: monospace; font-weight: bold; min-width: 22px; }
+.guild-war-name { font-size: 10px; color: var(--text-white); flex: 1; }
+.guild-war-score { font-size: 9px; color: #FF8040; font-family: monospace; }
+.guild-contrib-info {
+  padding: 6px 4px; background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,168,75,0.1); border-radius: 3px; margin-bottom: 6px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ── Skill panel enhanced ─────────────────────────────────── */
+.skill-effect {
+  font-size: 8px; color: #FF8040; font-family: monospace;
+  margin-top: 1px;
+}
+.skill-pts-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 0 4px; border-bottom: 1px solid rgba(200,168,75,0.1); margin-bottom: 4px;
+}
+.skill-pts-label { font-size: 10px; color: var(--text-dim); }
+.skill-pts-val { font-size: 14px; font-weight: bold; color: var(--gold-light);
+  font-family: monospace; text-shadow: 0 0 6px rgba(255,224,122,0.5); }
+
+/* ── Quest panel enhancements ─────────────────────────────── */
+.quest-track-btn {
+  font-size: 8px; padding: 1px 5px; border-radius: 2px; cursor: pointer;
+  border: 1px solid rgba(200,168,75,0.3); background: none; color: var(--text-dim);
+  font-family: 'Noto Serif SC', serif; transition: all 0.1s; margin-top: 2px;
+}
+.quest-track-btn:hover { border-color: var(--gold); color: var(--gold); }
+.quest-track-btn.tracking { border-color: #40FF80; color: #40FF80; background: rgba(64,255,128,0.08); }
+.quest-submit-btn-wrap { display: flex; justify-content: flex-end; }
+
+@keyframes enhanceFlash {
+  0%   { color:#FF8040; text-shadow: 0 0 6px rgba(255,128,64,0.5); }
+  25%  { color:#FFE07A; text-shadow: 0 0 16px rgba(255,224,122,0.9), 0 0 30px rgba(255,200,64,0.5); transform: scale(1.15); }
+  75%  { color:#FF8040; text-shadow: 0 0 10px rgba(255,128,64,0.6); transform: scale(1.05); }
+  100% { color:#FF8040; text-shadow: 0 0 6px rgba(255,128,64,0.5); transform: scale(1); }
+}
+.enhance-flash { animation: enhanceFlash 0.6s ease; }
+
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#06060F">
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ============================================================
+// PIXEL ART SVG ASSET LIBRARY — Xianxia MMORPG UI System
+// All assets are vector-pixel SVG for crisp rendering
+// ============================================================
+
+const COLORS = {
+  gold: '#C8A84B',
+  goldLight: '#FFE07A',
+  goldDark: '#7A5A10',
+  goldShine: '#FFF0A0',
+  jade: '#3ECFA0',
+  jadeDark: '#1A7A58',
+  red: '#C02020',
+  redBright: '#FF4040',
+  redDark: '#600010',
+  blue: '#1A3A7A',
+  blueBright: '#4080FF',
+  blueGlow: '#80C0FF',
+  purple: '#4A1A8A',
+  purpleBright: '#9040FF',
+  darkBg: '#08081A',
+  panelBg: '#0C1030',
+  panelMid: '#141840',
+  panelLight: '#1E2460',
+  borderDark: '#2A1A00',
+  textWhite: '#F0E8D0',
+  textGold: '#FFD060',
+  textGoldDim: '#B08020',
+  cyan: '#00FFFF',
+  cyanDim: '#006080',
+};
+
+// ── PANEL FRAME ──────────────────────────────────────────────
+function PanelFrame({
+  width = 320,
+  height = 400,
+  title = '',
+  color = 'gold',
+}) {
+  const accentColor =
+    color === 'gold' ? COLORS.gold :
+    color === 'jade' ? COLORS.jade :
+    color === 'red'  ? COLORS.redBright :
+    COLORS.blueBright;
+  const accentDark =
+    color === 'gold' ? COLORS.goldDark :
+    color === 'jade' ? COLORS.jadeDark :
+    color === 'red'  ? COLORS.redDark :
+    COLORS.blue;
+
+  const b = 4; // border px
+  const co = 16; // corner ornament size
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`panelBg_${color}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={COLORS.panelLight} />
+          <stop offset="100%" stopColor={COLORS.panelBg} />
+        </linearGradient>
+        <linearGradient id={`borderGrad_${color}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={COLORS.goldShine} />
+          <stop offset="40%" stopColor={accentColor} />
+          <stop offset="100%" stopColor={accentDark} />
+        </linearGradient>
+        <filter id={`glow_${color}`}>
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {/* Shadow */}
+      <rect x="4" y="4" width={width} height={height} rx="3" fill="black" opacity="0.6" />
+
+      {/* Main background */}
+      <rect x="0" y="0" width={width} height={height} rx="2" fill={`url(#panelBg_${color})`} />
+
+      {/* Outer border - 4px pixel style */}
+      <rect x="0" y="0" width={width} height={height} rx="2" fill="none"
+        stroke={`url(#borderGrad_${color})`} strokeWidth={b} />
+
+      {/* Inner border */}
+      <rect x={b+2} y={b+2} width={width-b*2-4} height={height-b*2-4} rx="1" fill="none"
+        stroke={accentDark} strokeWidth="1" opacity="0.6" />
+
+      {/* Corner ornament TL */}
+      <CornerOrnament x={0} y={0} size={co} color={accentColor} rotate={0} />
+      <CornerOrnament x={width} y={0} size={co} color={accentColor} rotate={90} />
+      <CornerOrnament x={width} y={height} size={co} color={accentColor} rotate={180} />
+      <CornerOrnament x={0} y={height} size={co} color={accentColor} rotate={270} />
+
+      {/* Top decorative line */}
+      <line x1={co} y1={b/2} x2={width-co} y2={b/2}
+        stroke={accentColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Bottom decorative line */}
+      <line x1={co} y1={height-b/2} x2={width-co} y2={height-b/2}
+        stroke={accentColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Title bar */}
+      {title && (
+        <>
+          <rect x={b+2} y={b+2} width={width-b*2-4} height={24} rx="1"
+            fill={accentDark} opacity="0.5" />
+          <line x1={b+2} y1={b+26} x2={width-b-2} y2={b+26}
+            stroke={accentColor} strokeWidth="1" />
+          <text x={width/2} y={b+18}
+            textAnchor="middle"
+            fill={COLORS.textGold}
+            fontFamily="'Noto Serif SC', serif"
+            fontSize="12"
+            fontWeight="bold"
+            filter={`url(#glow_${color})`}
+          >{title}</text>
+        </>
+      )}
+
+      {/* Center diamond ornament top */}
+      <DiamondOrnament x={width/2} y={0} color={accentColor} />
+      {/* Center diamond ornament bottom */}
+      <DiamondOrnament x={width/2} y={height} color={accentColor} />
+    </svg>
+  );
+}
+
+function CornerOrnament({
+  x, y, size, color, rotate,
+}) {
+  return (
+    <g transform={`rotate(${rotate},${x},${y})`}>
+      {/* L-bracket style corner */}
+      <rect x={x} y={y} width={size} height={4} fill={color} />
+      <rect x={x} y={y} width={4} height={size} fill={color} />
+      {/* Inner dot */}
+      <rect x={x+4} y={y+4} width={4} height={4} fill={color} opacity="0.6" />
+      {/* Tiny ornament dot */}
+      <rect x={x+8} y={y} width={2} height={2} fill={color} opacity="0.4" />
+      <rect x={x} y={y+8} width={2} height={2} fill={color} opacity="0.4" />
+    </g>
+  );
+}
+
+function DiamondOrnament({ x, y, color }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <rect x={-4} y={-4} width={8} height={8} fill={color}
+        transform="rotate(45)" opacity="0.9" />
+      <rect x={-2} y={-2} width={4} height={4} fill={COLORS.goldShine}
+        transform="rotate(45)" opacity="0.7" />
+    </g>
+  );
+}
+
+// ── HP / MP BAR ──────────────────────────────────────────────
+function StatBar({
+  width = 160,
+  value = 75,
+  max = 100,
+  type = 'hp',
+}) {
+  const h = type === 'exp' ? 8 : 14;
+  const pct = Math.max(0, Math.min(1, value / max));
+  const fillW = Math.round((width - 8) * pct);
+
+  const fillStart =
+    type === 'hp'   ? '#FF6060' :
+    type === 'mp'   ? '#4090FF' :
+    type === 'exp'  ? '#FFD040' :
+    '#FF2020';
+  const fillEnd =
+    type === 'hp'   ? '#C01010' :
+    type === 'mp'   ? '#1040C0' :
+    type === 'exp'  ? '#FF8000' :
+    '#A00000';
+  const glowColor =
+    type === 'hp'   ? '#FF8080' :
+    type === 'mp'   ? '#80B0FF' :
+    type === 'exp'  ? '#FFE080' :
+    '#FF4040';
+  const frameColor =
+    type === 'hp'   ? '#7A1010' :
+    type === 'mp'   ? '#10207A' :
+    type === 'exp'  ? '#7A5010' :
+    '#7A0000';
+
+  const uid = `bar_${type}_${Math.random().toString(36).slice(2,6)}`;
+
+  return (
+    <svg width={width} height={h + 4} viewBox={`0 0 ${width} ${h + 4}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`fill_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={fillStart} />
+          <stop offset="50%" stopColor={fillEnd} />
+          <stop offset="100%" stopColor={frameColor} />
+        </linearGradient>
+        <linearGradient id={`frame_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={COLORS.gold} />
+          <stop offset="100%" stopColor={COLORS.goldDark} />
+        </linearGradient>
+        <clipPath id={`clip_${uid}`}>
+          <rect x="4" y="2" width={width - 8} height={h} rx="1" />
+        </clipPath>
+      </defs>
+
+      {/* Frame */}
+      <rect x="0" y="0" width={width} height={h + 4} rx="2"
+        fill={frameColor} stroke={`url(#frame_${uid})`} strokeWidth="2" />
+
+      {/* Dark inner bg */}
+      <rect x="4" y="2" width={width - 8} height={h} rx="1" fill="#000000" opacity="0.7" />
+
+      {/* Fill */}
+      <rect x="4" y="2" width={fillW} height={h} rx="1"
+        fill={`url(#fill_${uid})`} clipPath={`url(#clip_${uid})`} />
+
+      {/* Shine highlight */}
+      {fillW > 4 && (
+        <rect x="4" y="2" width={fillW} height={Math.floor(h / 3)}
+          fill={glowColor} opacity="0.35" clipPath={`url(#clip_${uid})`} />
+      )}
+
+      {/* Segment lines */}
+      {Array.from({ length: 9 }).map((_, i) => (
+        <line
+          key={i}
+          x1={4 + Math.round((width - 8) * (i + 1) / 10)}
+          y1={2}
+          x2={4 + Math.round((width - 8) * (i + 1) / 10)}
+          y2={h + 2}
+          stroke="black"
+          strokeWidth="1"
+          opacity="0.3"
+        />
+      ))}
+    </svg>
+  );
+}
+
+// ── SKILL BUTTON ─────────────────────────────────────────────
+function SkillButton({
+  size = 52,
+  cooldown = 0,
+  baseCd = 10,
+  icon,
+  keyLabel,
+  active = false,
+}) {
+  const uid = `sk_${Math.random().toString(36).slice(2,6)}`;
+  const cdPct = Math.max(0, Math.min(1, cooldown));
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`skBg_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={active ? '#3A2A50' : '#1A1030'} />
+          <stop offset="100%" stopColor={active ? '#1A0A30' : '#0A0820'} />
+        </linearGradient>
+        <radialGradient id={`skGlow_${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={active ? '#8060FF' : '#4030A0'} stopOpacity="0.4" />
+          <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Outer glow when active */}
+      {active && (
+        <rect x="0" y="0" width={size} height={size} rx="4"
+          fill={`url(#skGlow_${uid})`} />
+      )}
+
+      {/* Main bg */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3"
+        fill={`url(#skBg_${uid})`} />
+
+      {/* Border - pixel style */}
+      <rect x="0" y="0" width={size} height={size} rx="4" fill="none"
+        stroke={active ? COLORS.purpleBright : COLORS.gold}
+        strokeWidth="2" />
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill="none"
+        stroke={active ? '#4020A0' : COLORS.goldDark}
+        strokeWidth="1" opacity="0.6" />
+
+      {/* Corner pixels */}
+      <rect x="0" y="0" width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x={size-4} y="0" width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x="0" y={size-4} width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+      <rect x={size-4} y={size-4} width="4" height="4" fill={active ? COLORS.purpleBright : COLORS.gold} />
+
+      {/* Icon area (foreign object for react children) */}
+      {icon && (
+        <foreignObject x="8" y="8" width={size-16} height={size-16}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {icon}
+          </div>
+        </foreignObject>
+      )}
+
+      {/* Cooldown overlay */}
+      {cdPct > 0 && (
+        <>
+          <rect x="2" y="2" width={size-4} height={Math.round((size-4)*cdPct)} rx="3"
+            fill="black" opacity="0.65" />
+          <text x={size/2} y={size/2+4}
+            textAnchor="middle" fill="white"
+            fontFamily="monospace" fontSize="11" fontWeight="bold"
+          >{Math.ceil(cdPct * baseCd)}s</text>
+        </>
+      )}
+
+      {/* Key label */}
+      {keyLabel && !cdPct && (
+        <text x={size-3} y={size-2}
+          textAnchor="end" fill={COLORS.textGold}
+          fontFamily="monospace" fontSize="8" fontWeight="bold"
+        >{keyLabel}</text>
+      )}
+    </svg>
+  );
+}
+
+// ── AVATAR FRAME ─────────────────────────────────────────────
+function AvatarFrame({ size = 56, hp = 85, showHp = true }) {
+  const uid = `av_${Math.random().toString(36).slice(2,6)}`;
+  return (
+    <svg width={size} height={size + (showHp ? 10 : 0)}
+      viewBox={`0 0 ${size} ${size + (showHp ? 10 : 0)}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`avBg_${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2A1060" />
+          <stop offset="100%" stopColor="#0A0830" />
+        </linearGradient>
+        <clipPath id={`avClip_${uid}`}>
+          <rect x="4" y="4" width={size-8} height={size-8} rx="2" />
+        </clipPath>
+      </defs>
+
+      {/* Outer glow */}
+      <rect x="0" y="0" width={size} height={size} rx="4"
+        fill={COLORS.gold} opacity="0.15" />
+
+      {/* Background */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3"
+        fill={`url(#avBg_${uid})`} />
+
+      {/* Avatar placeholder pattern */}
+      <rect x="4" y="4" width={size-8} height={size-8} rx="2"
+        fill="#1A0850" clipPath={`url(#avClip_${uid})`} />
+
+      {/* Silhouette placeholder */}
+      <ellipse cx={size/2} cy={size*0.4} rx={size*0.18} ry={size*0.18}
+        fill="#3A2080" clipPath={`url(#avClip_${uid})`} />
+      <ellipse cx={size/2} cy={size*0.75} rx={size*0.22} ry={size*0.25}
+        fill="#3A2080" clipPath={`url(#avClip_${uid})`} />
+
+      {/* Border */}
+      <rect x="0" y="0" width={size} height={size} rx="4" fill="none"
+        stroke={COLORS.gold} strokeWidth="2" />
+      <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill="none"
+        stroke={COLORS.goldDark} strokeWidth="1" opacity="0.7" />
+
+      {/* Corner ornaments */}
+      <rect x="0" y="0" width="6" height="2" fill={COLORS.goldLight} />
+      <rect x="0" y="0" width="2" height="6" fill={COLORS.goldLight} />
+      <rect x={size-6} y="0" width="6" height="2" fill={COLORS.goldLight} />
+      <rect x={size-2} y="0" width="2" height="6" fill={COLORS.goldLight} />
+      <rect x="0" y={size-2} width="6" height="2" fill={COLORS.goldLight} />
+      <rect x="0" y={size-6} width="2" height="6" fill={COLORS.goldLight} />
+      <rect x={size-6} y={size-2} width="6" height="2" fill={COLORS.goldLight} />
+      <rect x={size-2} y={size-6} width="2" height="6" fill={COLORS.goldLight} />
+
+      {/* Level badge */}
+      <rect x={size-14} y={size-14} width="14" height="14" rx="2"
+        fill="#8B0000" stroke={COLORS.gold} strokeWidth="1" />
+      <text x={size-7} y={size-4}
+        textAnchor="middle" fill={COLORS.textGold}
+        fontFamily="monospace" fontSize="8" fontWeight="bold"
+      >99</text>
+
+      {/* HP mini bar */}
+      {showHp && (
+        <>
+          <rect x="2" y={size+2} width={size-4} height={6} rx="1"
+            fill="#3A0010" stroke={COLORS.gold} strokeWidth="1" />
+          <rect x="3" y={size+3} width={Math.round((size-6) * hp / 100)} height={4} rx="1"
+            fill="#FF3030" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+// ── MINIMAP ──────────────────────────────────────────────────
+function MinimapFrame({ size = 110 }) {
+  const uid = `mm_${Math.random().toString(36).slice(2,6)}`;
+  const half = size / 2;
+  return (
+    <svg width={size} height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`mmBg_${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#0A1830" />
+          <stop offset="100%" stopColor="#050C18" />
+        </radialGradient>
+        <clipPath id={`mmClip_${uid}`}>
+          <polygon points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`} />
+        </clipPath>
+      </defs>
+
+      {/* Outer diamond frame */}
+      <polygon
+        points={`${half},0 ${size},${half} ${half},${size} 0,${half}`}
+        fill={COLORS.goldDark} stroke={COLORS.gold} strokeWidth="2"
+      />
+      {/* Map bg */}
+      <polygon
+        points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`}
+        fill={`url(#mmBg_${uid})`}
+      />
+
+      {/* Map terrain dots */}
+      {[
+        [half-20, half-10], [half-10, half-25], [half+15, half-15],
+        [half+20, half+5], [half+5, half+20], [half-15, half+15],
+      ].map(([cx, cy], i) => (
+        <ellipse key={i} cx={cx} cy={cy}
+          rx={6+i%3*3} ry={4+i%2*2}
+          fill={`hsl(${140+i*20},30%,25%)`}
+          clipPath={`url(#mmClip_${uid})`}
+        />
+      ))}
+
+      {/* River */}
+      <polyline
+        points={`${half-20},${half-20} ${half},${half} ${half+15},${half+15}`}
+        stroke="#203060" strokeWidth="3" fill="none"
+        clipPath={`url(#mmClip_${uid})`}
+      />
+
+      {/* Player dot */}
+      <rect x={half-2} y={half-2} width="4" height="4"
+        fill="white" opacity="0.9" />
+      <rect x={half-3} y={half-3} width="6" height="6"
+        fill="none" stroke={COLORS.gold} strokeWidth="1" opacity="0.8" />
+
+      {/* NPC dots */}
+      <rect x={half-15} y={half+8} width="4" height="4" fill="#FFD040" opacity="0.8" />
+      <rect x={half+10} y={half-12} width="4" height="4" fill="#FF4040" opacity="0.8" />
+      <rect x={half+5} y={half+12} width="4" height="4" fill="#40FF80" opacity="0.8" />
+
+      {/* Compass marks */}
+      <text x={half} y={10} textAnchor="middle" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">N</text>
+      <text x={half} y={size-2} textAnchor="middle" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">S</text>
+      <text x={3} y={half+3} textAnchor="start" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">W</text>
+      <text x={size-3} y={half+3} textAnchor="end" fill={COLORS.gold}
+        fontFamily="monospace" fontSize="7" fontWeight="bold">E</text>
+
+      {/* Corner diamonds */}
+      {[[half,0],[size,half],[half,size],[0,half]].map(([px,py],i) => (
+        <rect key={i} x={(px)-4} y={(py)-4} width="8" height="8"
+          fill={COLORS.gold} transform={`rotate(45,${px},${py})`} />
+      ))}
+    </svg>
+  );
+}
+
+// ── ITEM ICON ────────────────────────────────────────────────
+
+function ItemIcon({
+  type = 'sword',
+  size = 40,
+  rarity = 1,
+  count,
+}) {
+  const uid = `item_${Math.random().toString(36).slice(2,6)}`;
+
+  const rarityColor =
+    rarity === 1 ? '#808080' :
+    rarity === 2 ? '#40A040' :
+    rarity === 3 ? '#4080FF' :
+    rarity === 4 ? '#A040FF' :
+    '#FF8000';
+
+  const rarityBg =
+    rarity === 1 ? '#1A1A1A' :
+    rarity === 2 ? '#0A200A' :
+    rarity === 3 ? '#0A1030' :
+    rarity === 4 ? '#1A0A30' :
+    '#301008';
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`itemBg_${uid}`} cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor={rarityBg} />
+          <stop offset="100%" stopColor="#000000" />
+        </radialGradient>
+      </defs>
+
+      {/* Background */}
+      <rect x="0" y="0" width={size} height={size} rx="3"
+        fill={`url(#itemBg_${uid})`}
+        stroke={rarityColor} strokeWidth="2" />
+
+      {/* Inner border */}
+      <rect x="2" y="2" width={size-4} height={size-4} rx="2"
+        fill="none" stroke={rarityColor} strokeWidth="1" opacity="0.4" />
+
+      {/* Rarity glow */}
+      {rarity >= 4 && (
+        <rect x="0" y="0" width={size} height={size} rx="3"
+          fill={rarityColor} opacity="0.08" />
+      )}
+
+      {/* Icon drawings */}
+      <IconShape type={type} size={size} color={rarityColor} />
+
+      {/* Count badge */}
+      {count !== undefined && count > 1 && (
+        <>
+          <rect x={size-16} y={size-12} width="16" height="12" rx="1"
+            fill="black" opacity="0.8" />
+          <text x={size-8} y={size-3}
+            textAnchor="middle" fill="white"
+            fontFamily="monospace" fontSize="9" fontWeight="bold"
+          >{count > 99 ? '99+' : count}</text>
+        </>
+      )}
+
+      {/* Rarity stars */}
+      {rarity >= 3 && (
+        <text x={size/2} y={size-1}
+          textAnchor="middle" fill={rarityColor}
+          fontFamily="monospace" fontSize="6"
+        >{'★'.repeat(rarity)}</text>
+      )}
+    </svg>
+  );
+}
+
+function IconShape({ type, size, color }) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const s = size;
+
+  if (type === 'sword') {
+    return (
+      <g>
+        {/* Blade */}
+        <polygon
+          points={`${cx},${s*0.1} ${cx+3},${s*0.45} ${cx},${s*0.5} ${cx-3},${s*0.45}`}
+          fill="#C0D8FF" stroke={color} strokeWidth="1" />
+        {/* Guard */}
+        <rect x={cx-8} y={s*0.5} width={16} height={4} rx="1"
+          fill={color} />
+        {/* Handle */}
+        <rect x={cx-2} y={s*0.54} width={4} height={s*0.3}
+          fill="#8B4513" stroke={color} strokeWidth="1" />
+        {/* Pommel */}
+        <rect x={cx-4} y={s*0.84} width={8} height={4} rx="2"
+          fill={color} />
+        {/* Shine */}
+        <line x1={cx-1} y1={s*0.12} x2={cx-1} y2={s*0.44}
+          stroke="white" strokeWidth="1" opacity="0.5" />
+      </g>
+    );
+  }
+  if (type === 'armor') {
+    return (
+      <g>
+        {/* Body plate */}
+        <path d={`M${cx-10},${s*0.25} L${cx-12},${s*0.3} L${cx-12},${s*0.72}
+          Q${cx},${s*0.82} ${cx+12},${s*0.72} L${cx+12},${s*0.3} L${cx+10},${s*0.25} Z`}
+          fill="#3A4A6A" stroke={color} strokeWidth="1.5" />
+        {/* Shoulder pieces */}
+        <path d={`M${cx-10},${s*0.25} Q${cx-16},${s*0.2} ${cx-15},${s*0.38} L${cx-12},${s*0.38}`}
+          fill="#2A3A5A" stroke={color} strokeWidth="1" />
+        <path d={`M${cx+10},${s*0.25} Q${cx+16},${s*0.2} ${cx+15},${s*0.38} L${cx+12},${s*0.38}`}
+          fill="#2A3A5A" stroke={color} strokeWidth="1" />
+        {/* Center emblem */}
+        <rect x={cx-3} y={s*0.38} width={6} height={s*0.2} rx="2"
+          fill={color} opacity="0.7" />
+        {/* Collar */}
+        <path d={`M${cx-8},${s*0.25} L${cx},${s*0.18} L${cx+8},${s*0.25}`}
+          fill="none" stroke={color} strokeWidth="2" />
+      </g>
+    );
+  }
+  if (type === 'ring') {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={s*0.3} fill="none"
+          stroke={color} strokeWidth="4" />
+        <circle cx={cx} cy={cy} r={s*0.3} fill="none"
+          stroke="#8080A0" strokeWidth="2" />
+        {/* Gem on top */}
+        <polygon
+          points={`${cx},${s*0.14} ${cx+5},${s*0.24} ${cx},${s*0.28} ${cx-5},${s*0.24}`}
+          fill={color} />
+        <polygon
+          points={`${cx},${s*0.16} ${cx+3},${s*0.23} ${cx-3},${s*0.23}`}
+          fill="white" opacity="0.5" />
+      </g>
+    );
+  }
+  if (type === 'pill') {
+    return (
+      <g>
+        {/* Pill bottle */}
+        <rect x={cx-7} y={s*0.2} width={14} height={s*0.56} rx="7"
+          fill="#C04020" stroke={color} strokeWidth="1.5" />
+        {/* Shine */}
+        <rect x={cx-4} y={s*0.24} width={4} height={s*0.1} rx="2"
+          fill="white" opacity="0.4" />
+        {/* Bottom glow */}
+        <ellipse cx={cx} cy={s*0.68} rx={5} ry={3}
+          fill={color} opacity="0.3" />
+        {/* Aura rings */}
+        <circle cx={cx} cy={cy} r={s*0.38}
+          fill="none" stroke={color} strokeWidth="1" opacity="0.2" />
+        <circle cx={cx} cy={cy} r={s*0.44}
+          fill="none" stroke={color} strokeWidth="1" opacity="0.1" />
+      </g>
+    );
+  }
+  if (type === 'book') {
+    return (
+      <g>
+        {/* Book base */}
+        <rect x={cx-12} y={s*0.2} width={24} height={s*0.6} rx="1"
+          fill="#4A2A0A" stroke={color} strokeWidth="1.5" />
+        {/* Pages */}
+        <rect x={cx-10} y={s*0.22} width={20} height={s*0.56} rx="1"
+          fill="#F0E8C0" />
+        {/* Spine */}
+        <rect x={cx-12} y={s*0.2} width={4} height={s*0.6} rx="1"
+          fill="#6A3A10" stroke={color} strokeWidth="1" />
+        {/* Text lines */}
+        {[0.32, 0.42, 0.52, 0.62].map((y, i) => (
+          <line key={i}
+            x1={cx-4} y1={s*y} x2={cx+8} y2={s*y}
+            stroke="#8A6040" strokeWidth="1" />
+        ))}
+        {/* Glowing rune */}
+        <text x={cx+2} y={s*0.5}
+          textAnchor="middle" fill={color}
+          fontFamily="monospace" fontSize="10" fontWeight="bold"
+          opacity="0.8"
+        >文</text>
+      </g>
+    );
+  }
+  if (type === 'gem') {
+    return (
+      <g>
+        {/* Hexagonal gem */}
+        <polygon
+          points={`
+            ${cx},${s*0.15}
+            ${cx+10},${s*0.3}
+            ${cx+10},${s*0.6}
+            ${cx},${s*0.75}
+            ${cx-10},${s*0.6}
+            ${cx-10},${s*0.3}
+          `}
+          fill="#A000C0" stroke={color} strokeWidth="1.5"
+        />
+        {/* Inner facets */}
+        <polygon
+          points={`${cx},${s*0.2} ${cx+7},${s*0.35} ${cx},${s*0.45} ${cx-7},${s*0.35}`}
+          fill={color} opacity="0.4"
+        />
+        <polygon
+          points={`${cx},${s*0.45} ${cx+7},${s*0.55} ${cx},${s*0.68} ${cx-7},${s*0.55}`}
+          fill="black" opacity="0.3"
+        />
+        {/* Shine */}
+        <polygon
+          points={`${cx-2},${s*0.2} ${cx+4},${s*0.28} ${cx+1},${s*0.35} ${cx-4},${s*0.28}`}
+          fill="white" opacity="0.5"
+        />
+      </g>
+    );
+  }
+  if (type === 'material') {
+    return (
+      <g>
+        {/* Crystal cluster */}
+        <polygon points={`${cx},${s*0.18} ${cx+6},${s*0.38} ${cx},${s*0.48} ${cx-6},${s*0.38}`}
+          fill="#40C0A0" stroke={color} strokeWidth="1" />
+        <polygon points={`${cx+6},${s*0.28} ${cx+11},${s*0.42} ${cx+6},${s*0.56} ${cx+1},${s*0.42}`}
+          fill="#30A080" stroke={color} strokeWidth="1" />
+        <polygon points={`${cx-6},${s*0.32} ${cx-1},${s*0.48} ${cx-6},${s*0.62} ${cx-11},${s*0.48}`}
+          fill="#50D0B0" stroke={color} strokeWidth="1" />
+        {/* Bottom roots */}
+        <rect x={cx-3} y={s*0.48} width={6} height={s*0.24} rx="2"
+          fill="#20604A" stroke={color} strokeWidth="1" />
+        {/* Shine */}
+        <line x1={cx-1} y1={s*0.2} x2={cx-2} y2={s*0.36}
+          stroke="white" strokeWidth="1" opacity="0.6" />
+      </g>
+    );
+  }
+  // empty
+  return (
+    <g>
+      <rect x={cx-10} y={cy-10} width={20} height={20} rx="3"
+        fill="none" stroke={color} strokeWidth="1" opacity="0.3" />
+    </g>
+  );
+}
+
+// ── BUTTON SVG ───────────────────────────────────────────────
+function GameButton({
+  width = 100,
+  height = 30,
+  label = 'OK',
+  variant = 'gold',
+  state = 'normal',
+  onClick,
+}) {
+  const uid = `btn_${Math.random().toString(36).slice(2,6)}`;
+
+  const topColor =
+    variant === 'gold' ? (state === 'pressed' ? '#8B6010' : '#E8C050') :
+    variant === 'red'  ? (state === 'pressed' ? '#600010' : '#E04030') :
+    variant === 'jade' ? (state === 'pressed' ? '#0A5030' : '#30B070') :
+    (state === 'pressed' ? '#101020' : '#2A2A4A');
+
+  const botColor =
+    variant === 'gold' ? (state === 'pressed' ? '#5A3A00' : '#A06810') :
+    variant === 'red'  ? (state === 'pressed' ? '#400008' : '#900010') :
+    variant === 'jade' ? (state === 'pressed' ? '#053020' : '#107040') :
+    (state === 'pressed' ? '#080810' : '#181828');
+
+  const strokeColor =
+    variant === 'gold' ? COLORS.goldShine :
+    variant === 'red'  ? '#FF8080' :
+    variant === 'jade' ? '#80FFD0' :
+    COLORS.gold;
+
+  const textColor =
+    state === 'disabled' ? '#606060' :
+    variant === 'gold' ? '#1A0800' :
+    variant === 'jade' ? '#003020' :
+    '#F0E8D0';
+
+  const opacity = state === 'disabled' ? 0.5 : 1;
+
+  return (
+    <svg width={width} height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block', cursor: state === 'disabled' ? 'not-allowed' : 'pointer', opacity }}
+      onClick={state !== 'disabled' ? onClick : undefined}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={`btnBg_${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={topColor} />
+          <stop offset="100%" stopColor={botColor} />
+        </linearGradient>
+      </defs>
+
+      {/* Shadow */}
+      {state !== 'pressed' && (
+        <rect x="2" y="2" width={width} height={height} rx="3"
+          fill="black" opacity="0.4" />
+      )}
+
+      {/* Body */}
+      <rect x="0" y={state === 'pressed' ? 2 : 0} width={width} height={height} rx="3"
+        fill={`url(#btnBg_${uid})`}
+        stroke={strokeColor} strokeWidth="2" />
+
+      {/* Inner top highlight */}
+      {state !== 'pressed' && (
+        <rect x="3" y="2" width={width-6} height={4} rx="2"
+          fill="white" opacity="0.2" />
+      )}
+
+      {/* Side ornament lines */}
+      <line x1={8} y1={height/2} x2={14} y2={height/2}
+        stroke={strokeColor} strokeWidth="1" opacity="0.5" />
+      <line x1={width-8} y1={height/2} x2={width-14} y2={height/2}
+        stroke={strokeColor} strokeWidth="1" opacity="0.5" />
+
+      {/* Label */}
+      <text x={width/2} y={height/2 + (state === 'pressed' ? 6 : 5)}
+        textAnchor="middle" fill={textColor}
+        fontFamily="'Noto Serif SC', 'Source Han Serif CN', serif"
+        fontSize={height * 0.42} fontWeight="bold"
+      >{label}</text>
+    </svg>
+  );
+}
+
+// ── DAMAGE NUMBER ────────────────────────────────────────────
+function DamageNumber({ value, type = 'normal', x = 0, y = 0 }) {
+  const color =
+    type === 'crit'  ? '#FF8000' :
+    type === 'miss'  ? '#A0A0A0' :
+    type === 'heal'  ? '#40FF80' :
+    '#FF4040';
+  const size = type === 'crit' ? 22 : 16;
+  const text = type === 'miss' ? 'MISS' : type === 'heal' ? `+${value}` : `-${value}`;
+
+  return (
+    <svg width={80} height={40} viewBox="0 0 80 40"
+      style={{
+        imageRendering: 'pixelated',
+        position: 'absolute',
+        left: x,
+        top: y,
+        pointerEvents: 'none',
+        animation: 'floatUp 1.8s ease-out forwards',
+        zIndex: 50,
+      }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <text x="40" y={size+4}
+        textAnchor="middle"
+        fill={color}
+        fontFamily="monospace"
+        fontSize={size}
+        fontWeight="bold"
+        stroke="black"
+        strokeWidth="3"
+        paintOrder="stroke"
+      >{text}</text>
+      {type === 'crit' && (
+        <text x="40" y={size+18}
+          textAnchor="middle"
+          fill="#FFE040"
+          fontFamily="monospace"
+          fontSize="10"
+          fontWeight="bold"
+          stroke="black"
+          strokeWidth="2"
+          paintOrder="stroke"
+        >暴击!</text>
+      )}
+    </svg>
+  );
+}
+
+// ── SKILL ICON ───────────────────────────────────────────────
+
+function SkillIcon({ type = 'fire', size = 36 }) {
+  const uid = `ski_${Math.random().toString(36).slice(2,6)}`;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const configs = {
+    fire:    { bg1: '#3A0800', bg2: '#180400', color: '#FF6020' },
+    ice:     { bg1: '#003080', bg2: '#001840', color: '#80D0FF' },
+    thunder: { bg1: '#303000', bg2: '#181800', color: '#FFE020' },
+    wind:    { bg1: '#003808', bg2: '#001804', color: '#40FF90' },
+    earth:   { bg1: '#302010', bg2: '#181008', color: '#C09040' },
+    light:   { bg1: '#303010', bg2: '#181808', color: '#FFFF80' },
+    dark:    { bg1: '#180030', bg2: '#0C0018', color: '#C060FF' },
+    sword:   { bg1: '#102030', bg2: '#081018', color: '#80C0FF' },
+  };
+
+  const { bg1, bg2, color } = configs[type];
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id={`skiBg_${uid}`} cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor={bg1} />
+          <stop offset="100%" stopColor={bg2} />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width={size} height={size} rx="4"
+        fill={`url(#skiBg_${uid})`} />
+
+      {type === 'fire' && (
+        <g>
+          <polygon points={`${cx},${size*0.1} ${cx+8},${size*0.4} ${cx+4},${size*0.35} ${cx+6},${size*0.65} ${cx},${size*0.85} ${cx-6},${size*0.65} ${cx-4},${size*0.35} ${cx-8},${size*0.4}`}
+            fill="#FF6020" stroke="#FF8040" strokeWidth="1" />
+          <polygon points={`${cx},${size*0.25} ${cx+4},${size*0.45} ${cx},${size*0.65} ${cx-4},${size*0.45}`}
+            fill="#FFD040" opacity="0.7" />
+        </g>
+      )}
+      {type === 'ice' && (
+        <g>
+          {/* Snowflake */}
+          {[0,60,120,180,240,300].map(angle => {
+            const rad = angle * Math.PI / 180;
+            const ex = cx + Math.cos(rad) * size*0.38;
+            const ey = cy + Math.sin(rad) * size*0.38;
+            return <line key={angle} x1={cx} y1={cy} x2={ex} y2={ey}
+              stroke={color} strokeWidth="2" />;
+          })}
+          <circle cx={cx} cy={cy} r={4} fill={color} />
+        </g>
+      )}
+      {type === 'thunder' && (
+        <polygon
+          points={`${cx+4},${size*0.1} ${cx-4},${size*0.45} ${cx+2},${size*0.45} ${cx-4},${size*0.9} ${cx+6},${size*0.5} ${cx-2},${size*0.5}`}
+          fill={color} stroke="#FFF080" strokeWidth="1"
+        />
+      )}
+      {type === 'wind' && (
+        <g>
+          {[0.3,0.5,0.7].map((y, i) => (
+            <path key={i}
+              d={`M${cx - size*0.35},${size*y} Q${cx},${size*(y-0.12)} ${cx+size*0.35},${size*y}`}
+              fill="none" stroke={color} strokeWidth={2-i*0.5}
+              opacity={1-i*0.2} />
+          ))}
+        </g>
+      )}
+      {type === 'earth' && (
+        <g>
+          <polygon points={`${cx-12},${size*0.6} ${cx},${size*0.25} ${cx+12},${size*0.6}`}
+            fill={color} stroke="#A06020" strokeWidth="1.5" />
+          <polygon points={`${cx-8},${size*0.7} ${cx+8},${size*0.7} ${cx+10},${size*0.85} ${cx-10},${size*0.85}`}
+            fill="#A06020" stroke={color} strokeWidth="1" />
+        </g>
+      )}
+      {type === 'light' && (
+        <g>
+          <circle cx={cx} cy={cy} r={size*0.2} fill={color} opacity="0.9" />
+          {[0,45,90,135].map(angle => {
+            const rad = angle * Math.PI / 180;
+            return (
+              <line key={angle}
+                x1={cx + Math.cos(rad)*size*0.22}
+                y1={cy + Math.sin(rad)*size*0.22}
+                x2={cx + Math.cos(rad)*size*0.42}
+                y2={cy + Math.sin(rad)*size*0.42}
+                stroke={color} strokeWidth="2"
+              />
+            );
+          })}
+        </g>
+      )}
+      {type === 'dark' && (
+        <g>
+          <circle cx={cx} cy={cy} r={size*0.35} fill={color} opacity="0.15" />
+          <circle cx={cx} cy={cy} r={size*0.22} fill={color} opacity="0.35" />
+          <circle cx={cx} cy={cy} r={size*0.12} fill={color} opacity="0.8" />
+          {[0,72,144,216,288].map(angle => {
+            const rad = angle * Math.PI / 180;
+            return <circle key={angle}
+              cx={cx + Math.cos(rad)*size*0.32}
+              cy={cy + Math.sin(rad)*size*0.32}
+              r={2} fill={color}
+            />;
+          })}
+        </g>
+      )}
+      {type === 'sword' && (
+        <g>
+          <line x1={cx-size*0.3} y1={size*0.8} x2={cx+size*0.3} y2={size*0.2}
+            stroke={color} strokeWidth="3" />
+          <line x1={cx-size*0.2} y1={size*0.45} x2={cx+size*0.15} y2={size*0.55}
+            stroke={color} strokeWidth="2" opacity="0.7" />
+          <circle cx={cx-size*0.3} cy={size*0.8} r={3} fill={COLORS.gold} />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+// ── DECORATIVE ORNAMENT ──────────────────────────────────────
+function Ornament({ width = 200, height = 20, color = COLORS.gold }) {
+  const cx = width / 2;
+  const cy = height / 2;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Left line */}
+      <line x1={4} y1={cy} x2={cx-16} y2={cy} stroke={color} strokeWidth="1" opacity="0.7" />
+      {/* Left small diamonds */}
+      <rect x={14} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,16,${cy})`} />
+      <rect x={22} y={cy-2} width={4} height={4} fill={color} opacity="0.4" transform={`rotate(45,24,${cy})`} />
+
+      {/* Center diamond */}
+      <rect x={cx-6} y={cy-6} width={12} height={12} fill={color} transform={`rotate(45,${cx},${cy})`} />
+      <rect x={cx-3} y={cy-3} width={6} height={6} fill="white" opacity="0.4" transform={`rotate(45,${cx},${cy})`} />
+
+      {/* Right line */}
+      <line x1={cx+16} y1={cy} x2={width-4} y2={cy} stroke={color} strokeWidth="1" opacity="0.7" />
+      {/* Right small diamonds */}
+      <rect x={width-18} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,${width-16},${cy})`} />
+      <rect x={width-26} y={cy-2} width={4} height={4} fill={color} opacity="0.4" transform={`rotate(45,${width-24},${cy})`} />
+    </svg>
+  );
+}
+
+// ── CLOUD DECORATION ─────────────────────────────────────────
+function CloudDecoration({ width = 120, color = '#C0E0FF' }) {
+  const h = 24;
+  return (
+    <svg width={width} height={h} viewBox={`0 0 ${width} ${h}`}
+      style={{ imageRendering: 'pixelated', display: 'block' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Pixel cloud shape */}
+      {[
+        [8,12,16,8],[16,8,24,12],[24,8,16,12],[40,12,20,8],
+        [56,14,24,8],[72,12,16,8],[80,10,16,10],[88,12,20,8],
+      ].map(([x,y,w,hh],i) => (
+        <rect key={i} x={x} y={y} width={w} height={hh} rx="4"
+          fill={color} opacity={0.12 + (i%3)*0.04} />
+      ))}
+    </svg>
+  );
+}
+
+{};
+
+
+
+// ── EQUIP SILHOUETTE ─────────────────────────────────────────
+function EquipSilhouette({ equip }) {
+  const hasWeapon = !!equip.weapon;
+  const hasChest  = !!equip.chest;
+  const hasHelm   = !!equip.helm;
+  const hasRing   = !!equip.ring;
+  return (
+    <svg width={108} height={218} viewBox="0 0 108 218"
+      style={{ imageRendering:'pixelated', display:'block' }}
+      xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="silBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0A1030" />
+          <stop offset="100%" stopColor="#050810" />
+        </linearGradient>
+        <radialGradient id="silAura" cx="50%" cy="55%" r="45%">
+          <stop offset="0%" stopColor="#C8A84B" stopOpacity={hasChest?'0.10':'0.04'} />
+          <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* BG */}
+      <rect x="0" y="0" width="108" height="218" rx="4" fill="url(#silBg)" />
+      <rect x="0" y="0" width="108" height="218" rx="4" fill="url(#silAura)" />
+      <rect x="0" y="0" width="108" height="218" rx="4" fill="none"
+        stroke="#C8A84B" strokeWidth="1" opacity="0.15" />
+      {/* Ground shadow */}
+      <ellipse cx="54" cy="210" rx="30" ry="4" fill="#C8A84B" opacity="0.06" />
+
+      {/* ── Robe / lower body ── */}
+      <path d="M38,112 L26,186 L40,190 L54,155 L68,190 L82,186 L70,112 Z"
+        fill={hasChest?'#243450':'#161622'} stroke="#C8A84B" strokeWidth="0.8" opacity="0.9"/>
+      {/* Robe side folds */}
+      <line x1="40" y1="130" x2="34" y2="186" stroke="#C8A84B" strokeWidth="0.5" opacity="0.2"/>
+      <line x1="68" y1="130" x2="74" y2="186" stroke="#C8A84B" strokeWidth="0.5" opacity="0.2"/>
+
+      {/* ── Upper body / chest ── */}
+      <path d="M36,72 L28,112 L80,112 L72,72 Q54,62 36,72 Z"
+        fill={hasChest?'#344468':'#1C1C2C'} stroke="#C8A84B" strokeWidth="0.8"/>
+      {hasChest && (
+        <>
+          {/* Chest plate emblem */}
+          <path d="M47,84 L54,80 L61,84 L59,94 L54,98 L49,94 Z" fill="#C8A84B" opacity="0.55"/>
+          <path d="M50,84 L54,82 L58,84 L57,90 L54,92 L51,90 Z" fill="#FFE07A" opacity="0.3"/>
+          {/* Shoulder pads */}
+          <path d="M36,72 Q22,66 20,82 L28,90 L36,84 Z"
+            fill="#2A3A5A" stroke="#C8A84B" strokeWidth="0.8"/>
+          <path d="M72,72 Q86,66 88,82 L80,90 L72,84 Z"
+            fill="#2A3A5A" stroke="#C8A84B" strokeWidth="0.8"/>
+        </>
+      )}
+      {!hasChest && (
+        <>
+          <path d="M36,72 Q24,68 24,82 L30,90 L36,84 Z"
+            fill="#141420" stroke="#C8A84B" strokeWidth="0.6" opacity="0.7"/>
+          <path d="M72,72 Q84,68 84,82 L78,90 L72,84 Z"
+            fill="#141420" stroke="#C8A84B" strokeWidth="0.6" opacity="0.7"/>
+        </>
+      )}
+
+      {/* ── Arms ── */}
+      <path d="M36,72 L22,102 L28,108 L40,82 Z"
+        fill={hasChest?'#243450':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+      <path d="M72,72 L86,102 L80,108 L68,82 Z"
+        fill={hasChest?'#243450':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+      {/* Hands */}
+      <ellipse cx="23" cy="107" rx="5" ry="4" fill="#C8A84B" opacity="0.25"/>
+      <ellipse cx="85" cy="107" rx="5" ry="4" fill="#C8A84B" opacity="0.25"/>
+
+      {/* ── Neck ── */}
+      <rect x="48" y="54" width="12" height="19" rx="3"
+        fill="#191928" stroke="#C8A84B" strokeWidth="0.6"/>
+
+      {/* ── Head ── */}
+      <ellipse cx="54" cy="42" rx="18" ry="20"
+        fill={hasHelm?'#2A3060':'#1C1C2C'} stroke="#C8A84B" strokeWidth="0.8"/>
+
+      {/* Helm */}
+      {hasHelm ? (
+        <>
+          <path d="M36,40 Q36,22 54,17 Q72,22 72,40"
+            fill="#3A4A8A" stroke="#C8A84B" strokeWidth="1"/>
+          <rect x="50" y="14" width="8" height="14" rx="2"
+            fill="#4A5A9A" stroke="#C8A84B" strokeWidth="0.8"/>
+          <rect x="52" y="11" width="4" height="5" rx="1" fill="#C8A84B" opacity="0.9"/>
+          {/* Helm visor */}
+          <path d="M38,44 L70,44" stroke="#C8A84B" strokeWidth="1" opacity="0.4"/>
+        </>
+      ) : (
+        <>
+          {/* Hair bun */}
+          <ellipse cx="54" cy="22" rx="8" ry="7" fill="#180818" stroke="#C8A84B" strokeWidth="0.6"/>
+          <rect x="51" y="14" width="6" height="10" rx="2" fill="#C8A84B" opacity="0.25"/>
+          {/* Hair pin */}
+          <line x1="54" y1="13" x2="54" y2="5" stroke="#C8A84B" strokeWidth="1.5"/>
+          <ellipse cx="54" cy="5" rx="3" ry="2" fill="#C8A84B" opacity="0.8"/>
+          {/* Forehead band */}
+          <path d="M37,38 Q54,34 71,38" fill="none" stroke="#C8A84B" strokeWidth="0.8" opacity="0.3"/>
+        </>
+      )}
+
+      {/* Face features */}
+      <ellipse cx="47" cy="45" rx="3" ry="2" fill="#C8A84B" opacity="0.45"/>
+      <ellipse cx="61" cy="45" rx="3" ry="2" fill="#C8A84B" opacity="0.45"/>
+      <path d="M50,52 Q54,55 58,52" fill="none" stroke="#C8A84B" strokeWidth="0.8" opacity="0.3"/>
+
+      {/* ── Robe collar ── */}
+      <path d="M44,70 L54,60 L64,70" fill="none" stroke="#C8A84B" strokeWidth="1" opacity="0.4"/>
+
+      {/* ── Belt line ── */}
+      <rect x="30" y="109" width="48" height="5" rx="1"
+        fill="#C8A84B" opacity={equip.belt?0.5:0.15}/>
+
+      {/* ── Boots ── */}
+      <rect x="30" y="188" width="16" height="12" rx="2"
+        fill={equip.boots?'#3A4A6A':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+      <rect x="62" y="188" width="16" height="12" rx="2"
+        fill={equip.boots?'#3A4A6A':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+
+      {/* ── Robe trim ── */}
+      <path d="M26,186 Q40,194 54,192 Q68,194 82,186"
+        fill="none" stroke="#C8A84B" strokeWidth="0.8" opacity="0.35"/>
+
+      {/* ── Weapon (right side) ── */}
+      {hasWeapon && (
+        <g>
+          {/* Sword glow */}
+          <line x1="94" y1="185" x2="94" y2="48" stroke="#80C0FF" strokeWidth="4" opacity="0.08"/>
+          {/* Blade */}
+          <line x1="94" y1="185" x2="94" y2="55" stroke="#C0D8FF" strokeWidth="2.5"/>
+          {/* Guard */}
+          <rect x="88" y="110" width="12" height="4" rx="1" fill="#C8A84B"/>
+          {/* Pommel */}
+          <ellipse cx="94" cy="186" rx="5" ry="3" fill="#8B4513" stroke="#C8A84B" strokeWidth="0.8"/>
+          {/* Tip */}
+          <polygon points="94,46 90,58 98,58" fill="#C0D8FF" stroke="#C8A84B" strokeWidth="0.8"/>
+          {/* Shine */}
+          <line x1="93" y1="185" x2="93" y2="55" stroke="white" strokeWidth="0.5" opacity="0.25"/>
+        </g>
+      )}
+
+      {/* ── Ring glow on hand ── */}
+      {hasRing && (
+        <ellipse cx="85" cy="105" rx="7" ry="5"
+          fill="none" stroke="#A040FF" strokeWidth="1.5" opacity="0.6"/>
+      )}
+
+      {/* ── Ambient particles ── */}
+      {hasChest && (
+        <>
+          <circle cx="16" cy="118" r="1.5" fill="#C8A84B" opacity="0.35"/>
+          <circle cx="92" cy="88"  r="1.2" fill="#C8A84B" opacity="0.3"/>
+          <circle cx="12" cy="78"  r="1"   fill="#9040FF" opacity="0.3"/>
+          <circle cx="96" cy="140" r="1"   fill="#9040FF" opacity="0.25"/>
+        </>
+      )}
+    </svg>
+  );
+}
+function ParticleCanvas() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Particle types: dust, spark, spirit
+    
+
+    const COLORS = ['#C8A84B', '#FFE07A', '#3ECFA0', '#9040FF', '#FF6060', '#80C0FF'];
+    const particles: Particle[] = [];
+
+    const spawn = () => {
+      if (particles.length > 60) return;
+      const type = Math.random() < 0.5 ? 'dust' : Math.random() < 0.6 ? 'spark' : 'spirit';
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: canvas.height * (0.2 + Math.random() * 0.6),
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -Math.random() * 0.5 - 0.1,
+        life: 0,
+        maxLife: 120 + Math.random() * 180,
+        size: type === 'spirit' ? 2 : 1,
+        type,
+        color,
+      });
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Spawn new particles
+      if (Math.random() < 0.2) spawn();
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+
+        if (p.life >= p.maxLife) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const progress = p.life / p.maxLife;
+        const alpha = progress < 0.2
+          ? progress / 0.2
+          : progress > 0.8
+          ? 1 - (progress - 0.8) / 0.2
+          : 1;
+
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+
+        if (p.type === 'dust') {
+          ctx.fillStyle = p.color;
+          // Pixel-style square particle
+          ctx.fillRect(
+            Math.round(p.x),
+            Math.round(p.y),
+            p.size, p.size
+          );
+        } else if (p.type === 'spark') {
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 3;
+          ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+        } else {
+          // Spirit orb - small glow
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 3);
+          gradient.addColorStop(0, p.color);
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 5,
+      }}
+    />
+  );
+}
+
+
+
+// ─── Hằng số ─────────────────────────────────────────────────
+const QUESTS = [
+  { id:1, name:'Tiêu diệt tàn binh Ma Tộc', progress:7, total:10, done:false },
+  { id:2, name:'Thu thập Linh Thảo (3 cây)',  progress:3, total:3,  done:true  },
+  { id:3, name:'Bái kiến Trưởng Lão Thanh Vân', progress:0, total:1, done:false },
+];
+
+const INVENTORY_ITEMS = [
+  { type:'sword',    rarity:5, name:'Thanh Hồng Kiếm',  count:1  },
+  { type:'armor',    rarity:4, name:'Huyền Quy Giáp',   count:1  },
+  { type:'ring',     rarity:4, name:'Bích Ngọc Hoàn',   count:1  },
+  { type:'pill',     rarity:3, name:'Đại Hoàn Đan',     count:12 },
+  { type:'book',     rarity:5, name:'Ngự Kiếm Quyết',   count:1  },
+  { type:'gem',      rarity:4, name:'Tử Tinh Thạch',    count:5  },
+  { type:'material', rarity:2, name:'Hàn Thiết Khoáng', count:30 },
+  { type:'pill',     rarity:2, name:'Hồi Linh Đan',     count:8  },
+  { type:'sword',    rarity:3, name:'Lưu Quang Kiếm',   count:1  },
+  { type:'gem',      rarity:3, name:'Huyết Ngọc',       count:3  },
+  { type:'material', rarity:1, name:'Đá Thường',        count:99 },
+  { type:'empty',    rarity:1, name:'',                 count:0  },
+];
+
+// ✅ earth + dark — hai kiểu SkillIcon trước đây chưa được dùng
+const SKILLS = [
+  { type:'sword',   name:'Ngự Kiếm Trảm',  key:'Q', baseCd:3  },
+  { type:'fire',    name:'Liệt Diễm Quyết',key:'W', baseCd:8  },
+  { type:'thunder', name:'Lôi Đình Kích',  key:'E', baseCd:7  },
+  { type:'ice',     name:'Hàn Băng Phong', key:'R', baseCd:12 },
+  { type:'wind',    name:'Tật Phong Bộ',   key:'A', baseCd:5  },
+  { type:'light',   name:'Hộ Thể Quang',   key:'S', baseCd:10 },
+  { type:'earth',   name:'Địa Liệt Kích',  key:'Z', baseCd:6  },
+  { type:'dark',    name:'Ám Ảnh Thuật',   key:'X', baseCd:9  },
+];
+
+const CHAR_STATS = [
+  { label:'Cảnh Giới', value:'Kim Đan Kỳ · Tam Trọng Thiên' },
+  { label:'Công Kích', value:'18.450' },
+  { label:'Phòng Ngự', value:'9.820'  },
+  { label:'Pháp Lực',  value:'24.100' },
+  { label:'Tốc Độ',   value:'3.200'  },
+  { label:'Bạo Kích',  value:'35%'    },
+  { label:'Mệnh Trúng',value:'98%'   },
+  { label:'Ngộ Tính',  value:'Tuyệt Phẩm' },
+];
+
+const EQUIP_SLOT_DEFS = [
+  { key:'weapon',   label:'Vũ Khí'   },
+  { key:'offhand',  label:'Phù Khí'  },
+  { key:'belt',     label:'Đai Lưng' },
+  { key:'boots',    label:'Giày'     },
+  { key:'helm',     label:'Mũ Giáp'  },
+  { key:'chest',    label:'Áo Giáp'  },
+  { key:'legs',     label:'Quần Giáp'},
+  { key:'ring',     label:'Nhẫn'     },
+];
+
+const DEFAULT_EQUIP = {
+  weapon:  { type:'sword', rarity:5, name:'Thanh Hồng Kiếm', atk:1840, def:0,   hp:0,   mp:0,   desc:'Bảo kiếm đúc từ ngọc hồng tinh, chém vạn ma thiên hạ, uy năng cực cường.' },
+  offhand: null,
+  belt:    null,
+  boots:   null,
+  helm:    null,
+  chest:   { type:'armor', rarity:4, name:'Huyền Quy Giáp',  atk:0,    def:980, hp:500, mp:0,   desc:'Giáp bằng huyền kim tinh luyện, cứng như thần quy, giảm mạnh sát thương vật lý.' },
+  legs:    null,
+  ring:    { type:'ring',  rarity:4, name:'Bích Ngọc Hoàn',  atk:200,  def:150, hp:200, mp:300, desc:'Ngọc bích tinh chế, hộ thể toàn diện, tăng mạnh linh lực và khí huyết.' },
+};
+
+const INITIAL_CHAT = [
+  { id:1, name:'Hệ Thống',       text:'Nguyên Soái Ma Tộc đã xuất hiện tại Thanh Vân Sơn!', color:'#FF8060' },
+  { id:2, name:'Thanh Vân Tử',   text:'Ma Tộc lại đến! Mọi người tập hợp!',                color:'#FFD060' },
+  { id:3, name:'Thiên Kiếm Khách',text:'Đã vào vị trí, sẵn sàng chiến đấu!',              color:'#80D0FF' },
+  { id:4, name:'Lăng Tiêu Tiên', text:'Tôi sẽ trị liệu, cứ xông thôi!',                  color:'#80FF80' },
+  { id:5, name:'Kiếm Ma',        text:'Haha, hôm nay nhất định chém đầu ma!',             color:'#C880FF' },
+];
+
+// ─── Components phụ ──────────────────────────────────────────
+function BossHPBar({ hp, maxHp, name }) {
+  const pct = hp / maxHp;
+  return (
+    <div className="boss-bar-wrap">
+      <div className="boss-bar-title">{name}</div>
+      <div className="boss-bar-outer">
+        <div className="boss-bar-fill" style={{ width:`${pct*100}%` }} />
+        <div className="boss-bar-text">{hp.toLocaleString()} / {maxHp.toLocaleString()}</div>
+      </div>
+      <div className="boss-bar-phase">
+        {pct > 0.66 ? 'Giai đoạn 1' : pct > 0.33 ? 'Giai đoạn 2 · Điên Cuồng' : 'Giai đoạn 3 · Tuyệt Cảnh'}
+      </div>
+    </div>
+  );
+}
+
+function CharacterPanel({ onClose, onEquip }) {
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={460} title="Thuộc Tính" color="gold" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 16px' }}>
+          <div className="char-avatar-section">
+            <AvatarFrame size={64} hp={85} showHp={false} />
+            <div className="char-name-block">
+              <div className="char-name">Thanh Vân Tử</div>
+              <div className="char-title">Thái Thượng Trưởng Lão</div>
+              <div className="char-server">Môn Phái Thanh Vân · Khu Bích Lạc</div>
+            </div>
+          </div>
+          <Ornament width={268} height={16} color={COLORS.gold} />
+          <div className="stat-grid">
+            {CHAR_STATS.map(s => (
+              <div key={s.label} className="stat-row">
+                <span className="stat-label">{s.label}</span>
+                <span className="stat-value">{s.value}</span>
+              </div>
+            ))}
+          </div>
+          <Ornament width={268} height={16} color={COLORS.gold} />
+          <div className="char-cultivation">
+            <div className="cult-label">Tiến độ Tu Vi</div>
+            <StatBar width={260} value={68} max={100} type="exp" />
+            <div className="cult-num">68 / 100 vạn Tu Vi</div>
+          </div>
+          <div className="panel-btns">
+            <GameButton width={80} height={28} label="Trang Bị" variant="gold" onClick={() => { onEquip && onEquip(); onClose(); }} />
+            <GameButton width={80} height={28} label="Kỹ Năng"  variant="jade" />
+            <GameButton width={80} height={28} label="Đóng"     variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Giá bán theo độ hiếm
+const SELL_PRICE = { 5:80000, 4:25000, 3:8000, 2:2000, 1:500 };
+// Map loại vật phẩm → slot trang bị
+const EQUIP_TYPE_SLOT = { sword:'weapon', armor:'chest', ring:'ring' };
+// Loại vật phẩm tiêu hao
+const CONSUMABLE_TYPES = ['pill'];
+
+function InventoryPanel({ onClose, invItems, setInvItems, gold, setGold, equip, setEquip, showNotif, setHp, setMp }) {
+  const [selected, setSelected] = useState(null);
+  const [confirmDrop, setConfirmDrop] = useState(false);
+
+  const selectedItem = (selected !== null && invItems[selected] && invItems[selected].type !== 'empty')
+    ? invItems[selected] : null;
+
+  const totalItems = invItems.filter(i => i.type !== 'empty').length;
+
+  // Xóa hoặc giảm số lượng item
+  const removeItem = (idx, qty=1) => {
+    setInvItems(prev => {
+      const next = [...prev];
+      const it = { ...next[idx] };
+      if (it.count > qty) {
+        it.count -= qty;
+        next[idx] = it;
+      } else {
+        next[idx] = { type:'empty', rarity:1, name:'', count:0 };
+      }
+      return next;
+    });
+    setSelected(null);
+    setConfirmDrop(false);
+  };
+
+  const handleUse = () => {
+    if (!selectedItem) return;
+    const { type, name, rarity } = selectedItem;
+
+    if (CONSUMABLE_TYPES.includes(type)) {
+      // Đan dược: phục hồi HP hoặc MP
+      const isHp = name.includes('Hoàn Đan') || name.includes('Huyết');
+      const isMp = name.includes('Linh Đan') || name.includes('Linh Lực');
+      if (isHp || (!isMp)) {
+        setHp(h => Math.min(100, h + 20 + rarity * 4));
+        showNotif(`✦ Dùng ${name}, hồi phục khí huyết!`);
+      } else {
+        setMp(m => Math.min(100, m + 20 + rarity * 4));
+        showNotif(`✦ Dùng ${name}, hồi phục linh lực!`);
+      }
+      removeItem(selected, 1);
+      return;
+    }
+
+    const slot = EQUIP_TYPE_SLOT[type];
+    if (slot) {
+      // Trang bị vũ khí/giáp/nhẫn
+      const prev = equip[slot];
+      setEquip(e => ({ ...e, [slot]: { ...selectedItem } }));
+      // Nếu tháo đồ cũ thì trả về túi (nếu còn chỗ)
+      if (prev) {
+        setInvItems(items => {
+          const next = [...items];
+          const emptyIdx = next.findIndex(i => i.type === 'empty');
+          if (emptyIdx !== -1) next[emptyIdx] = { ...prev, count: 1 };
+          return next;
+        });
+      }
+      removeItem(selected, 1);
+      showNotif(`⚔ Đã trang bị ${name}!`);
+      return;
+    }
+
+    showNotif(`✗ Không thể sử dụng ${name} theo cách này`);
+  };
+
+  const handleSell = () => {
+    if (!selectedItem) return;
+    const price = SELL_PRICE[selectedItem.rarity] || 500;
+    setGold(g => g + price);
+    removeItem(selected, 1);
+    showNotif(`💰 Bán ${selectedItem.name} được ${price.toLocaleString()} Linh Thạch!`);
+  };
+
+  const handleDrop = () => {
+    if (!confirmDrop) { setConfirmDrop(true); return; }
+    showNotif(`🗑 Đã vứt ${selectedItem.name}`);
+    removeItem(selected, 1);
+  };
+
+  const handleSort = () => {
+    setInvItems(prev => {
+      const typeOrder = ['sword','armor','ring','book','gem','material','pill','empty'];
+      const real = prev.filter(i => i.type !== 'empty');
+      const empties = prev.filter(i => i.type === 'empty');
+      real.sort((a, b) => {
+        if (b.rarity !== a.rarity) return b.rarity - a.rarity;
+        return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+      });
+      return [...real, ...empties];
+    });
+    setSelected(null);
+    showNotif('🔃 Đã sắp xếp hành nang!');
+  };
+
+  return (
+    <div className="panel-overlay" onClick={() => { onClose(); setConfirmDrop(false); }}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={430} title="Hành Nang" color="gold" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 12px' }}>
+          <div className="inv-header">
+            <span className="inv-gold">Linh Thạch: <b>{gold.toLocaleString()}</b></span>
+            <span className="inv-space">Túi: {totalItems}/40</span>
+          </div>
+          <div className="inv-grid">
+            {invItems.map((item, i) => (
+              <div key={i}
+                className={`inv-slot ${selected===i?'inv-slot-sel':''} ${item.type==='empty'?'inv-slot-empty':''}`}
+                onClick={() => { setSelected(selected===i ? null : i); setConfirmDrop(false); }}>
+                <ItemIcon type={item.type} size={38} rarity={item.rarity} count={item.count>1?item.count:undefined} />
+              </div>
+            ))}
+          </div>
+
+          {selectedItem ? (
+            <div className="inv-detail" style={{ flexDirection:'column', gap:5, alignItems:'stretch' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span className="inv-item-name" style={{ color: selectedItem.rarity===5?'#FF8000':selectedItem.rarity===4?'#A040FF':selectedItem.rarity===3?'#4080FF':selectedItem.rarity===2?'#40A040':'#aaa' }}>
+                  {selectedItem.name}
+                </span>
+                <span style={{ fontSize:9, color:'#888', fontFamily:'monospace' }}>x{selectedItem.count}</span>
+              </div>
+              <div style={{ fontSize:9, color:'#888', marginBottom:1 }}>
+                {CONSUMABLE_TYPES.includes(selectedItem.type) ? '丹 Đan dược · Tiêu hao' :
+                 EQUIP_TYPE_SLOT[selectedItem.type] ? '⚔ Trang bị · Có thể mặc vào' :
+                 '◇ Vật liệu · Không dùng trực tiếp'}
+                {' · '}<span style={{ color:SELL_PRICE[selectedItem.rarity]?'#FFD060':'#888' }}>
+                  Giá bán: {(SELL_PRICE[selectedItem.rarity]||500).toLocaleString()}
+                </span>
+              </div>
+              <div className="inv-actions" style={{ justifyContent:'flex-start' }}>
+                <GameButton width={54} height={24} label="Dùng"  variant="jade" onClick={handleUse} />
+                <GameButton width={54} height={24} label="Bán"   variant="red"  onClick={handleSell} />
+                <GameButton width={confirmDrop?66:54} height={24}
+                  label={confirmDrop?'Xác Nhận':'Vứt'}
+                  variant={confirmDrop?'red':'dark'}
+                  onClick={handleDrop} />
+              </div>
+            </div>
+          ) : (
+            <div className="inv-detail" style={{ justifyContent:'center' }}>
+              <span style={{ fontSize:9, color:'#666', fontStyle:'italic' }}>Chọn vật phẩm để xem chi tiết</span>
+            </div>
+          )}
+
+          <div className="panel-btns" style={{ marginTop:4 }}>
+            <GameButton width={100} height={28} label="Sắp Xếp" variant="gold" onClick={handleSort} />
+            <GameButton width={80}  height={28} label="Đóng"    variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillPanel({ onClose, skillLevels, setSkillLevels, skillPoints, setSkillPoints, showNotif }) {
+  const SKILL_DEFS = [
+    { type:'sword',   name:'Ngự Kiếm Trảm',   maxLv:10, baseAtk:800,  desc:'Kiếm ý trảm địch, sát thương cực cao'     },
+    { type:'fire',    name:'Liệt Diễm Quyết',  maxLv:10, baseAtk:600,  desc:'Phóng ngọn lửa thiêu đốt diện rộng'       },
+    { type:'thunder', name:'Lôi Đình Kích',    maxLv:10, baseAtk:700,  desc:'Triệu lôi điện, tấn công diện rộng'        },
+    { type:'ice',     name:'Hàn Băng Phong',   maxLv:10, baseAtk:500,  desc:'Đóng băng kẻ thù, giảm tốc độ 50%'        },
+    { type:'wind',    name:'Tật Phong Bộ',     maxLv:10, baseAtk:400,  desc:'Cưỡi gió, tăng tốc độ và né tránh'        },
+    { type:'light',   name:'Hộ Thể Quang',     maxLv:10, baseAtk:300,  desc:'Kim quang hộ thể, giảm sát thương nhận'    },
+    { type:'earth',   name:'Địa Liệt Kích',    maxLv:10, baseAtk:650,  desc:'Địa khí cuộn trào, kẻ thù bị choáng'      },
+    { type:'dark',    name:'Ám Ảnh Thuật',     maxLv:10, baseAtk:550,  desc:'Ám ảnh mê hoặc, giảm công kích địch 30%'  },
+  ];
+  const [selected, setSelected] = useState(null);
+
+  const handleLevelUp = (i) => {
+    if (skillPoints <= 0) { showNotif('✗ Không đủ Điểm Ngộ Đạo!'); return; }
+    if (skillLevels[i] >= SKILL_DEFS[i].maxLv) { showNotif('✗ Kỹ năng đã đạt cấp tối đa!'); return; }
+    setSkillLevels(prev => { const n=[...prev]; n[i]++; return n; });
+    setSkillPoints(p => p - 1);
+    showNotif(`✦ Nâng cấp ${SKILL_DEFS[i].name} lên Lv.${skillLevels[i]+1}!`);
+  };
+
+  const handleReset = () => {
+    const totalUsed = skillLevels.reduce((sum, lv, i) => sum + Math.max(0, lv - 1), 0);
+    setSkillLevels(SKILL_DEFS.map(() => 1));
+    setSkillPoints(p => p + totalUsed);
+    showNotif('🔄 Đã đặt lại tất cả kỹ năng, hoàn trả Điểm Ngộ Đạo!');
+    setSelected(null);
+  };
+
+  const sel = selected !== null ? SKILL_DEFS[selected] : null;
+  const selLv = selected !== null ? skillLevels[selected] : 0;
+
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={470} title="Tu Luyện Kỹ Năng" color="blue" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 14px' }}>
+          <div className="skill-pts-bar">
+            <span className="skill-pts-label">Điểm Ngộ Đạo còn lại</span>
+            <span className="skill-pts-val">{skillPoints}</span>
+          </div>
+          <div className="skill-list-panel">
+            {SKILL_DEFS.map((sk, i) => {
+              const lv = skillLevels[i];
+              const isMax = lv >= sk.maxLv;
+              const dmg = Math.round(sk.baseAtk * (1 + lv * 0.15));
+              return (
+                <div key={i} className={`skill-row${selected===i?' inv-slot-sel':''}`}
+                  style={{ cursor:'pointer', border: selected===i ? '1px solid var(--gold-dark)':'1px solid rgba(200,168,75,0.1)' }}
+                  onClick={() => setSelected(selected===i?null:i)}>
+                  <SkillIcon type={sk.type} size={36} />
+                  <div className="skill-info">
+                    <div className="skill-name">{sk.name} <span className="skill-lv">Lv.{lv}/{sk.maxLv}</span></div>
+                    <div className="skill-desc">{sk.desc}</div>
+                    <div className="skill-effect">⚔ Sát thương: {dmg.toLocaleString()}</div>
+                    <StatBar width={120} value={lv} max={sk.maxLv} type="exp" />
+                  </div>
+                  <GameButton width={52} height={22}
+                    label={isMax?'MAX':'Nâng'}
+                    variant={isMax?'dark':skillPoints>0?'gold':'dark'}
+                    state={isMax||skillPoints<=0?'disabled':'normal'}
+                    onClick={e => { e.stopPropagation(); handleLevelUp(i); }} />
+                </div>
+              );
+            })}
+          </div>
+          {sel && (
+            <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(100,100,200,0.2)', borderRadius:3, padding:'5px 8px', margin:'4px 0', fontSize:9 }}>
+              <div style={{ color:COLORS.blueBright, fontWeight:'bold', marginBottom:2 }}>{sel.name} · Lv.{selLv}</div>
+              <div style={{ color:COLORS.textDim||'#8A7A50' }}>{sel.desc}</div>
+              <div style={{ color:'#FF8040', marginTop:2 }}>
+                Lv.{selLv} → Sát thương: {Math.round(sel.baseAtk*(1+selLv*0.15)).toLocaleString()}
+                {selLv < sel.maxLv && ` | Lv.${selLv+1} → ${Math.round(sel.baseAtk*(1+(selLv+1)*0.15)).toLocaleString()}`}
+              </div>
+            </div>
+          )}
+          <div className="panel-btns">
+            <GameButton width={100} height={28} label="Đặt Lại" variant="red" onClick={handleReset} />
+            <GameButton width={80}  height={28} label="Đóng"    variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuestPanel({ onClose, quests, setQuests, gold, setGold, showNotif, trackedQuest, setTrackedQuest }) {
+  const QUEST_REWARDS = {
+    1: { gold:15000, exp:30000, items:'Đại Hoàn Đan x3' },
+    2: { gold:8000,  exp:15000, items:'Hồi Linh Đan x5' },
+    3: { gold:25000, exp:50000, items:'Tử Tinh Thạch x2' },
+  };
+  const [selected, setSelected] = useState(null);
+
+  const handleSubmit = (q) => {
+    if (!q.done) { showNotif('✗ Nhiệm vụ chưa hoàn thành!'); return; }
+    const r = QUEST_REWARDS[q.id];
+    if (!r) return;
+    setGold(g => g + r.gold);
+    setQuests(prev => prev.filter(x => x.id !== q.id));
+    setSelected(null);
+    if (trackedQuest === q.id) setTrackedQuest(null);
+    showNotif(`🏆 Nộp nhiệm vụ! +${r.gold.toLocaleString()} Linh Thạch, +${r.exp.toLocaleString()} Tu Vi!`);
+  };
+
+  const handleAbandon = (q) => {
+    setQuests(prev => prev.filter(x => x.id !== q.id));
+    setSelected(null);
+    if (trackedQuest === q.id) setTrackedQuest(null);
+    showNotif(`⚠ Đã từ bỏ nhiệm vụ: ${q.name}`);
+  };
+
+  const selQ = selected !== null ? quests.find(q => q.id === selected) : null;
+
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={430} title="Nhật Ký Nhiệm Vụ" color="jade" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 14px' }}>
+          <div style={{ fontSize:9, color:COLORS.textDim||'#8A7A50', padding:'4px 0 3px', borderBottom:'1px solid rgba(200,168,75,0.1)', marginBottom:4 }}>
+            Nhiệm vụ: <b style={{ color:COLORS.jade }}>{quests.length}</b> đang thực hiện
+            <span style={{ float:'right', color:COLORS.textDim||'#8A7A50' }}>Nhấn để chọn nhiệm vụ</span>
+          </div>
+          <div className="quest-list">
+            {quests.length === 0 && (
+              <div style={{ textAlign:'center', color:'#666', fontSize:10, padding:'20px 0', fontStyle:'italic' }}>
+                Không có nhiệm vụ nào đang thực hiện
+              </div>
+            )}
+            {quests.map(q => {
+              const r = QUEST_REWARDS[q.id];
+              const isTracked = trackedQuest === q.id;
+              const isSel = selected === q.id;
+              return (
+                <div key={q.id}
+                  className={`quest-item${q.done?' quest-done':''}`}
+                  style={{ cursor:'pointer', border: isSel?'1px solid rgba(62,207,160,0.4)':'1px solid rgba(200,168,75,0.1)', marginBottom:6 }}
+                  onClick={() => setSelected(isSel ? null : q.id)}>
+                  <div className="quest-name">
+                    <span className="quest-indicator">{q.done?'✓':'►'}</span>
+                    {isTracked && <span style={{ fontSize:8, color:'#40FF80' }}>★</span>}
+                    {q.name}
+                  </div>
+                  <StatBar width={220} value={q.progress} max={q.total} type={q.done?'exp':'hp'} />
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:3 }}>
+                    <div className="quest-prog">{q.progress}/{q.total}</div>
+                    <div style={{ display:'flex', gap:4 }}>
+                      <button className={`quest-track-btn${isTracked?' tracking':''}`}
+                        onClick={e => { e.stopPropagation(); setTrackedQuest(isTracked?null:q.id); }}>
+                        {isTracked?'★ Đang theo':'Theo dõi'}
+                      </button>
+                      {q.done && (
+                        <button className="quest-track-btn"
+                          style={{ borderColor:'#3ECFA0', color:'#3ECFA0' }}
+                          onClick={e => { e.stopPropagation(); handleSubmit(q); }}>
+                          Nộp ▶
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {q.done && <div className="quest-complete-badge">Hoàn Thành</div>}
+
+                  {/* Reward preview when selected */}
+                  {isSel && r && (
+                    <div style={{ marginTop:5, padding:'4px 6px', background:'rgba(0,0,0,0.3)', borderRadius:2, borderTop:'1px solid rgba(200,168,75,0.1)' }}>
+                      <div className="reward-title" style={{ marginBottom:4 }}>Phần thưởng:</div>
+                      <div className="reward-list">
+                        <span style={{ fontSize:9, color:COLORS.gold, fontFamily:'monospace' }}>+{r.gold.toLocaleString()} Linh Thạch</span>
+                        <span style={{ fontSize:9, color:'#FFD040', fontFamily:'monospace' }}>+{r.exp.toLocaleString()} Tu Vi</span>
+                        <span style={{ fontSize:9, color:COLORS.jade }}>{r.items}</span>
+                      </div>
+                      {!q.done && (
+                        <button className="quest-track-btn" style={{ marginTop:4, color:'#FF6060', borderColor:'rgba(255,96,96,0.3)' }}
+                          onClick={e => { e.stopPropagation(); handleAbandon(q); }}>
+                          ✕ Từ Bỏ Nhiệm Vụ
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <Ornament width={272} height={14} color={COLORS.jade} />
+          <div className="panel-btns" style={{ marginTop:4 }}>
+            {quests.some(q=>q.done) && (
+              <GameButton width={110} height={28} label="Nộp Tất Cả" variant="jade"
+                onClick={() => {
+                  const doneQ = quests.filter(q=>q.done);
+                  let totalGold=0; doneQ.forEach(q=>{ const r=QUEST_REWARDS[q.id]; if(r) totalGold+=r.gold; });
+                  setGold(g=>g+totalGold);
+                  setQuests(prev=>prev.filter(q=>!q.done));
+                  showNotif(`🏆 Nộp ${doneQ.length} nhiệm vụ! +${totalGold.toLocaleString()} Linh Thạch!`);
+                }} />
+            )}
+            <GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ PanelFrame color="red" — lần đầu tiên được dùng
+function ShopPanel({ onClose, showNotif, gold, setGold }) {
+  const items = [
+    { icon:'pill',     rarity:4, name:'Đại Hoàn Đan',      rawPrice:12000, desc:'Hồi phục nhiều khí huyết' },
+    { icon:'pill',     rarity:3, name:'Hồi Linh Đan',      rawPrice:8000,  desc:'Hồi phục linh lực nhanh' },
+    { icon:'gem',      rarity:5, name:'Long Hồn Tinh',     rawPrice:88000, desc:'Vật liệu cường hóa tuyệt phẩm' },
+    { icon:'book',     rarity:4, name:'Phá Ma Quyết',      rawPrice:50000, desc:'Khắc chế kỹ năng Ma Tộc' },
+    { icon:'ring',     rarity:3, name:'Tụ Linh Hoàn',      rawPrice:30000, desc:'Tăng giới hạn linh lực' },
+    { icon:'material', rarity:2, name:'Thép Tinh Luyện',   rawPrice:3500,  desc:'Vật liệu rèn trang bị' },
+  ];
+  const handleBuy = (item) => {
+    if (gold < item.rawPrice) { showNotif('✗ Không đủ Linh Thạch!'); return; }
+    setGold(g => g - item.rawPrice);
+    showNotif(`✦ Mua ${item.name} thành công!`);
+  };
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={450} title="Linh Bảo Các" color="red" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 14px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 0 4px', fontSize:10 }}>
+            <span style={{ color:COLORS.gold }}>Linh Thạch: <b>{gold.toLocaleString()}</b></span>
+            <span style={{ color:COLORS.cyan, fontSize:9 }}>Ưu Đãi Có Hạn</span>
+          </div>
+          <Ornament width={272} height={12} color={COLORS.red} />
+          <div style={{ padding:'4px 0' }}>
+            {items.map((item, i) => (
+              <div key={i} className="shop-item-row">
+                <ItemIcon type={item.icon} size={32} rarity={item.rarity} />
+                <div style={{ flex:1 }}>
+                  <div className="shop-item-name">{item.name}</div>
+                  <div style={{ fontSize:9, color:COLORS.textGoldDim }}>{item.desc}</div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:3 }}>
+                  <span className="shop-item-price" style={{ color: gold >= item.rawPrice ? '#00FFFF' : '#FF4040' }}>{item.rawPrice.toLocaleString()}</span>
+                  <GameButton width={44} height={20} label="Mua" variant="red"
+                    state={gold < item.rawPrice ? 'disabled' : 'normal'}
+                    onClick={() => handleBuy(item)} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="panel-btns">
+            <GameButton width={100} height={28} label="Bán Vật Phẩm" variant="gold" onClick={() => showNotif('Mở Hành Nang để bán vật phẩm')} />
+            <GameButton width={80}  height={28} label="Đóng"          variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ PanelFrame color="red" — lần đầu tiên được dùng
+function GuildPanel({ onClose, gold, setGold, showNotif }) {
+  const [tab, setTab] = useState('members');
+  const [contrib, setContrib] = useState(980000);
+  const [guildExp, setGuildExp] = useState(72);
+  const [members, setMembers] = useState([
+    { name:'Thanh Vân Tử',     rank:'Bang Chủ',   contrib:980000, online:true,  isMe:true  },
+    { name:'Thiên Kiếm Khách', rank:'Trưởng Lão', contrib:620000, online:true,  isMe:false },
+    { name:'Lăng Tiêu Tiên',   rank:'Trưởng Lão', contrib:540000, online:false, isMe:false },
+    { name:'Kiếm Ma',          rank:'Tinh Nhuệ',  contrib:310000, online:true,  isMe:false },
+    { name:'Tử Hà Tiên Nữ',    rank:'Tinh Nhuệ',  contrib:280000, online:false, isMe:false },
+    { name:'Lạc Hoa Kiếm Tiên',rank:'Thành Viên', contrib:95000,  online:false, isMe:false },
+  ]);
+
+  const GUILD_MISSIONS = [
+    { id:1, name:'Tiêu diệt Ma Tộc tại Thanh Vân Sơn', prog:47, total:100, reward:5000,  diff:'Trung' },
+    { id:2, name:'Thu thập 50 Huyết Tinh Thạch',        prog:23, total:50,  reward:8000,  diff:'Khó'   },
+    { id:3, name:'Bảo vệ Bang Môn qua đêm',             prog:1,  total:1,   reward:12000, diff:'Dễ'    },
+    { id:4, name:'Rèn 10 vũ khí tinh phẩm',             prog:3,  total:10,  reward:6000,  diff:'Trung' },
+  ];
+
+  const WAR_RANKS = [
+    { rank:1, name:'Thiên Long Bang',  score:128400, lv:12 },
+    { rank:2, name:'Vạn Kiếm Tông',   score:115200, lv:11 },
+    { rank:3, name:'Huyết Sát Bang',   score:98700,  lv:10 },
+    { rank:4, name:'Linh Phong Các',   score:87300,  lv:10 },
+    { rank:5, name:'★ Thanh Vân Bang', score:76500,  lv:8  },
+    { rank:6, name:'Băng Tâm Các',     score:61200,  lv:7  },
+    { rank:7, name:'Phong Vũ Đường',   score:52100,  lv:7  },
+  ];
+
+  const CONTRIB_COSTS = [
+    { label:'Cống Hiến Nhỏ',   cost:10000,  gain:100,  expGain:1 },
+    { label:'Cống Hiến Vừa',   cost:50000,  gain:600,  expGain:5 },
+    { label:'Cống Hiến Lớn',   cost:150000, gain:2000, expGain:15 },
+  ];
+
+  const handleContrib = (opt) => {
+    if (gold < opt.cost) { showNotif('✗ Không đủ Linh Thạch để cống hiến!'); return; }
+    setGold(g => g - opt.cost);
+    setContrib(c => c + opt.gain);
+    setGuildExp(e => Math.min(100, e + opt.expGain));
+    setMembers(prev => prev.map(m => m.isMe ? { ...m, contrib: m.contrib + opt.gain } : m));
+    showNotif(`⚜ Cống hiến thành công! +${opt.gain.toLocaleString()} Cống Hiến, +${opt.expGain}% Bang Kinh!`);
+  };
+
+  const diffColor = d => d==='Dễ'?'#40FF80':d==='Trung'?'#FFD040':'#FF6040';
+
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={300} height={490} title="Thanh Vân Bang" color="red" /></div>
+        <div className="panel-content" style={{ top:38, padding:'0 14px' }}>
+          {/* Header info */}
+          <div style={{ padding:'5px 0 3px', display:'flex', gap:10, fontSize:9 }}>
+            <span style={{ color:COLORS.jade }}>Thành viên: {members.length}/50</span>
+            <span style={{ color:COLORS.gold }}>Cấp: Lv.8</span>
+            <span style={{ color:COLORS.cyan }}>Xếp hạng: #5</span>
+            <span style={{ color:'#FF8040' }}>Cống hiến: {contrib.toLocaleString()}</span>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
+            <StatBar width={200} value={guildExp} max={100} type="exp" />
+            <span style={{ fontSize:9, color:COLORS.textDim||'#8A7A50', fontFamily:'monospace' }}>{guildExp}%</span>
+          </div>
+          <Ornament width={272} height={10} color={COLORS.redBright} />
+
+          {/* Tabs */}
+          <div className="guild-tabs">
+            {[['members','成员 Thành Viên'],['missions','任务 Nhiệm Vụ'],['war','战 Chiến Bang']].map(([k,l]) => (
+              <button key={k} className={`guild-tab${tab===k?' active':''}`} onClick={() => setTab(k)}>{l}</button>
+            ))}
+          </div>
+
+          {/* Tab: Thành Viên */}
+          {tab === 'members' && (
+            <div>
+              <div style={{ maxHeight:220, overflowY:'auto' }}>
+                {[...members].sort((a,b) => b.contrib - a.contrib).map((m, i) => (
+                  <div key={i} className="guild-member-row"
+                    style={{ background: m.isMe ? 'rgba(200,168,75,0.06)' : 'none' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                      <div style={{ width:6, height:6, borderRadius:'50%', background:m.online?'#40FF80':'#404040', flexShrink:0 }} />
+                      <span className="guild-member-name" style={{ color:m.isMe?COLORS.gold:COLORS.textWhite }}>
+                        {m.isMe?'[我] ':''}{m.name}
+                      </span>
+                    </div>
+                    <span className="guild-member-rank">[{m.rank}]</span>
+                    <span className="guild-contrib">{m.contrib.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="panel-btns" style={{ marginTop:6 }}>
+                <GameButton width={90} height={26} label="Mời Vào Bang" variant="jade"
+                  onClick={() => showNotif('📨 Đã gửi thư mời gia nhập Thanh Vân Bang!')} />
+                <GameButton width={90} height={26} label="Thư Bang" variant="gold"
+                  onClick={() => showNotif('📋 Thanh Vân Bang: Đoàn kết, kiên cường, bảo vệ bang môn!')} />
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Nhiệm Vụ Bang */}
+          {tab === 'missions' && (
+            <div>
+              <div className="guild-contrib-info">
+                <div>
+                  <div style={{ fontSize:9, color:COLORS.textDim||'#8A7A50' }}>Cống Hiến của ta</div>
+                  <div style={{ fontSize:13, color:'#FF8040', fontWeight:'bold', fontFamily:'monospace' }}>{contrib.toLocaleString()}</div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+                  {CONTRIB_COSTS.map((opt,i) => (
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:5 }}>
+                      <span style={{ fontSize:8, color: gold>=opt.cost?COLORS.gold:'#FF4040', fontFamily:'monospace', minWidth:55 }}>
+                        -{opt.cost.toLocaleString()}
+                      </span>
+                      <GameButton width={70} height={18} label={opt.label} variant={gold>=opt.cost?'jade':'dark'}
+                        state={gold<opt.cost?'disabled':'normal'}
+                        onClick={() => handleContrib(opt)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ maxHeight:170, overflowY:'auto' }}>
+                {GUILD_MISSIONS.map(m => (
+                  <div key={m.id} className="guild-mission-row">
+                    <div className="guild-mission-info">
+                      <div className="guild-mission-name">{m.name}</div>
+                      <div style={{ display:'flex', gap:6, alignItems:'center', marginTop:2 }}>
+                        <span style={{ fontSize:8, color:diffColor(m.diff) }}>[{m.diff}]</span>
+                        <StatBar width={100} value={m.prog} max={m.total} type="exp" />
+                        <span style={{ fontSize:8, color:COLORS.textDim||'#8A7A50', fontFamily:'monospace' }}>{m.prog}/{m.total}</span>
+                      </div>
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:3, flexShrink:0 }}>
+                      <span style={{ fontSize:9, color:COLORS.gold, fontFamily:'monospace' }}>+{m.reward.toLocaleString()}</span>
+                      <GameButton width={48} height={18} label={m.prog>=m.total?'Nộp':'Nhận'}
+                        variant={m.prog>=m.total?'jade':'gold'}
+                        onClick={() => showNotif(m.prog>=m.total?`🏅 Nộp nhiệm vụ bang, nhận ${m.reward.toLocaleString()} Linh Thạch!`:`⚔ Đã nhận nhiệm vụ bang: ${m.name}`)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Chiến Bang */}
+          {tab === 'war' && (
+            <div>
+              <div style={{ padding:'4px 0 6px', fontSize:9, color:COLORS.textDim||'#8A7A50', borderBottom:'1px solid rgba(255,64,64,0.1)', marginBottom:4 }}>
+                Mùa Chiến Bang · Tuần 3 · Kết thúc sau <span style={{ color:'#FF6040' }}>2 ngày 14 giờ</span>
+              </div>
+              <div style={{ maxHeight:200, overflowY:'auto' }}>
+                {WAR_RANKS.map(r => (
+                  <div key={r.rank} className="guild-war-row"
+                    style={{ background: r.name.includes('★')?'rgba(200,168,75,0.06)':'none' }}>
+                    <span className="guild-war-rank" style={{ color: r.rank===1?'#FFD040':r.rank<=3?COLORS.gold:COLORS.textDim||'#8A7A50' }}>
+                      {r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : `#${r.rank}`}
+                    </span>
+                    <span className="guild-war-name" style={{ color:r.name.includes('★')?COLORS.gold:COLORS.textWhite }}>
+                      {r.name} <span style={{ fontSize:8, color:COLORS.textDim||'#8A7A50' }}>Lv.{r.lv}</span>
+                    </span>
+                    <span className="guild-war-score">{r.score.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="panel-btns" style={{ marginTop:8 }}>
+                <GameButton width={110} height={28} label="Khai Chiến ⚔" variant="red"
+                  onClick={() => showNotif('⚔ Đã khai chiến! Chuẩn bị tấn công Thiên Long Bang!')} />
+                <GameButton width={80} height={28} label="Chiến Công" variant="gold"
+                  onClick={() => showNotif('🏆 Chiến công cá nhân: 12 trận thắng · 3 trận thua')} />
+              </div>
+            </div>
+          )}
+
+          {tab !== 'war' && tab !== 'missions' && (
+            <div className="panel-btns" style={{ marginTop:4 }}>
+              <GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose} />
+            </div>
+          )}
+          {(tab === 'war' || tab === 'missions') && (
+            <div style={{ display:'flex', justifyContent:'center', paddingTop:4 }}>
+              <GameButton width={80} height={24} label="Đóng" variant="dark" onClick={onClose} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EQUIPMENT PANEL ──────────────────────────────────────────
+function EquipmentPanel({ onClose, equip, setEquip, showNotif }) {
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [enhanceAnim, setEnhanceAnim] = useState(false);
+
+  const leftSlots  = EQUIP_SLOT_DEFS.slice(0, 4);
+  const rightSlots = EQUIP_SLOT_DEFS.slice(4);
+
+  const totalPower = Math.round(Object.values(equip).reduce((sum, item) => {
+    if (!item) return sum;
+    return sum + (item.atk||0) + (item.def||0)*1.5 + (item.hp||0)*0.5 + (item.mp||0)*0.3;
+  }, 15000));
+
+  const rarityColor = r =>
+    r===5?'#FF8000':r===4?'#A040FF':r===3?'#4080FF':r===2?'#40A040':'#808080';
+  const rarityName = r =>
+    r===5?'Thần Phẩm':r===4?'Tiên Phẩm':r===3?'Địa Phẩm':r===2?'Nhân Phẩm':'Phàm Phẩm';
+
+  const selectedItem = selectedKey ? equip[selectedKey] : null;
+
+  const handleSlotClick = key => {
+    setSelectedKey(prev => prev === key ? null : key);
+  };
+
+  const handleUnequip = () => {
+    setEquip(e => ({ ...e, [selectedKey]: null }));
+    setSelectedKey(null);
+    showNotif('\u0110\u00e3 th\u00e1o trang b\u1ecb!');
+  };
+
+  const handleEnhance = () => {
+    setEnhanceAnim(true);
+    setTimeout(() => setEnhanceAnim(false), 600);
+    showNotif('\u26A1 C\u01b0\u1eddng h\u00f3a ' + selectedItem.name + ' th\u00e0nh c\u00f4ng! +1');
+  };
+
+  const renderSlot = slotDef => {
+    const item = equip[slotDef.key];
+    const isSel = selectedKey === slotDef.key;
+    return (
+      <div key={slotDef.key}
+        className={'equip-slot'+(isSel?' equip-slot-active':'')+(!item?' equip-slot-empty':'')}
+        onClick={() => handleSlotClick(slotDef.key)}>
+        {item
+          ? <ItemIcon type={item.type} size={34} rarity={item.rarity} />
+          : <span className="equip-slot-empty-icon">+</span>
+        }
+        <div className="equip-slot-label">{slotDef.label}</div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="panel-overlay" onClick={onClose}>
+      <div className="panel-popup" onClick={e => e.stopPropagation()}>
+        <div className="panel-svg-wrap">
+          <PanelFrame width={300} height={490} title="Trang B\u1ecb" color="gold" />
+        </div>
+        <div className="panel-content" style={{ top:38, padding:'0 14px' }}>
+          <div className="equip-power">
+            <span className="equip-power-label">T\u1ed5ng S\u1ee9c Chi\u1ebfn</span>
+            <span className={'equip-power-val'+(enhanceAnim?' enhance-flash':'')}>
+              {totalPower.toLocaleString()}
+            </span>
+          </div>
+          <div className="equip-layout">
+            <div className="equip-col">{leftSlots.map(renderSlot)}</div>
+            <div className="equip-silhouette"><EquipSilhouette equip={equip} /></div>
+            <div className="equip-col">{rightSlots.map(renderSlot)}</div>
+          </div>
+          {selectedKey && selectedItem ? (
+            <div className="equip-detail">
+              <div className="equip-detail-header">
+                <span className="equip-detail-name" style={{ color:rarityColor(selectedItem.rarity) }}>
+                  {selectedItem.name}
+                </span>
+                <span className="equip-detail-rarity" style={{ color:rarityColor(selectedItem.rarity) }}>
+                  {rarityName(selectedItem.rarity)}
+                </span>
+              </div>
+              <div className="equip-detail-stars" style={{ color:rarityColor(selectedItem.rarity) }}>
+                {'\u2605'.repeat(selectedItem.rarity)}
+              </div>
+              <div className="equip-detail-stats">
+                {selectedItem.atk>0 && <span className="equip-stat equip-stat-atk">ATK +{selectedItem.atk.toLocaleString()}</span>}
+                {selectedItem.def>0 && <span className="equip-stat equip-stat-def">DEF +{selectedItem.def.toLocaleString()}</span>}
+                {selectedItem.hp >0 && <span className="equip-stat equip-stat-hp"> HP  +{selectedItem.hp.toLocaleString()}</span>}
+                {selectedItem.mp >0 && <span className="equip-stat equip-stat-mp"> MP  +{selectedItem.mp.toLocaleString()}</span>}
+              </div>
+              <div className="equip-detail-desc">{selectedItem.desc}</div>
+              <div className="equip-detail-btns">
+                <GameButton width={100} height={24} label="C\u01b0\u1eddng H\u00f3a" variant="gold" onClick={handleEnhance} />
+                <GameButton width={80}  height={24} label="Th\u00e1o Ra"        variant="dark" onClick={handleUnequip} />
+              </div>
+            </div>
+          ) : (
+            <div className="equip-detail">
+              <div className="equip-empty-hint">
+                {selectedKey
+                  ? '\xd4 tr\u1ed1ng \u00b7 C\u00f3 th\u1ec3 trang b\u1ecb t\u1eeb H\u00e0nh Nang'
+                  : 'Ch\u1ecdn m\u1ed9t \xf4 trang b\u1ecb \u0111\u1ec3 xem chi ti\u1ebft'}
+              </div>
+            </div>
+          )}
+          <div className="panel-btns">
+            <GameButton width={120} height={28} label="C\u01b0\u1eddng H\u00f3a T\u1ea5t C\u1ea3" variant="gold"
+              onClick={() => showNotif('\u26A1 \u0110\u00e3 c\u01b0\u1eddng h\u00f3a t\u1ea5t c\u1ea3! S\u1ee9c chi\u1ebfn +2.000')} />
+            <GameButton width={80} height={28} label="\u0110\u00f3ng" variant="dark" onClick={onClose} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DialogueBox({ onClose }) {
+  const [line, setLine] = useState(0);
+  const lines = [
+    '\u0110\u1ea1o H\u1eefu, ta \u0111\u1ee3i ng\u01b0\u01a1i m\u00e3i. G\u1ea7n \u0111\u00e2y Ma T\u1ed9c li\u00ean ti\u1ebfp x\u00e2m ph\u1ea1m bi\u00ean gi\u1edbi, Thanh V\u00e2n M\u00f4n nguy c\u1ea5p l\u1eafm...',
+    'Ta \u0111\u00e3 gi\u00e0 y\u1ebfu, kh\u00f4ng th\u1ec3 th\u00e2n chinh xu\u1ea5t tr\u1eadn. Mong \u0110\u1ea1o H\u1eefu thay ta tr\u1eeb di\u1ec7t m\u1ed1i h\u1ecdMa T\u1ed9c n\u00e0y.',
+    'Ho\u00e0n th\u00e0nh \u0111\u1ea1i ngh\u0129a, ta s\u1ebd t\u1eb7ng \u0110\u1ea1o H\u1eefu Thanh V\u00e2n Quy\u1ebft. Mong ng\u01b0\u01a1i s\u1edbm phi th\u0103ng th\u00e0nh ti\u00ean!',
+  ];
+  const choices = ['Nhận nhiệm vụ', 'Hỏi thêm thông tin', 'Chưa nhận lúc này'];
+  return (
+    <div className="dialogue-wrap">
+      <div className="dialogue-box">
+        <div className="dialogue-inner">
+          <div className="dialogue-portrait">
+            <AvatarFrame size={52} hp={100} showHp={false} />
+            <div className="dialogue-name">Trưởng Lão Thanh Vân</div>
+          </div>
+          <div className="dialogue-text-area">
+            <div className="dialogue-text">{lines[line]}</div>
+            {line < lines.length-1 ? (
+              <button className="dialogue-next" onClick={() => setLine(l => l+1)}>▶ Tiếp theo</button>
+            ) : (
+              <div className="dialogue-responses">
+                {choices.map((r,i) => (
+                  <button key={i} className="dialogue-response" onClick={onClose}>{r}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <button className="dialogue-close" onClick={onClose}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+// ✅ Chat box với input thực sự
+function ChatBox({ messages, onClose, onSend }) {
+  const [inputVal, setInputVal] = useState('');
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
+  const handleSend = () => {
+    const t = inputVal.trim();
+    if (!t) return;
+    onSend(t);
+    setInputVal('');
+  };
+  return (
+    <div className="chat-panel">
+      <div className="chat-header">
+        <span className="chat-title">Kênh: Thế Giới</span>
+        <button className="chat-close-btn" onClick={onClose}>✕</button>
+      </div>
+      <div className="chat-messages">
+        {messages.map(m => (
+          <div key={m.id} className="chat-msg">
+            <span className="chat-name" style={{ color:m.color }}>[{m.name}]</span>
+            <span className="chat-text">{m.text}</span>
+          </div>
+        ))}
+        <div ref={endRef} />
+      </div>
+      <div className="chat-input-row">
+        <input type="text" className="chat-input-real"
+          value={inputVal}
+          onChange={e => setInputVal(e.target.value)}
+          onKeyDown={e => { if (e.key==='Enter') handleSend(); }}
+          placeholder="Nhập tin nhắn..."
+          maxLength={50}
+        />
+        <button className="chat-send" onClick={handleSend}>Gửi</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── App chính ───────────────────────────────────────────────
+function App() {
+  const [showChar,     setShowChar]    = useState(false);
+  const [showInv,      setShowInv]     = useState(false);
+  const [showSkill,    setShowSkill]   = useState(false);
+  const [showQuest,    setShowQuest]   = useState(false);
+  const [showDialogue, setShowDialogue]= useState(false);
+  const [showChat,     setShowChat]    = useState(false);
+  const [showShop,     setShowShop]    = useState(false);
+  const [showGuild,    setShowGuild]   = useState(false);
+  const [showEquip,    setShowEquip]   = useState(false);
+  const [equip,        setEquip]       = useState(DEFAULT_EQUIP);
+  const [invItems,     setInvItems]    = useState(INVENTORY_ITEMS);
+  const [gold,         setGold]        = useState(2480000);
+  const [trackerCollapsed, setTrackerCollapsed] = useState(false);
+  const [quests,       setQuests]      = useState(QUESTS);
+  const [skillLevels,  setSkillLevels] = useState([10,8,7,6,9,5,4,3]);
+  const [skillPoints,  setSkillPoints] = useState(5);
+  const [trackedQuest, setTrackedQuest]= useState(1);
+  const [hp,  setHp]  = useState(82);
+  const [mp,  setMp]  = useState(65);
+  const [exp, setExp] = useState(68);
+  const [bossHp, setBossHp]     = useState(234500);
+  const [floats, setFloats]     = useState([]);
+  const [skillCDs, setSkillCDs] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
+  const [activeSkill, setActiveSkill] = useState(null);
+  const [chatMessages, setChatMessages] = useState(INITIAL_CHAT);
+  const [notifText, setNotifText] = useState(null);
+  const [autoFight, setAutoFight]   = useState(false);
+  const floatIdRef  = useRef(0);
+  const chatIdRef   = useRef(100);
+  const gameAreaRef = useRef(null);
+  // ✅ FIX: ref để đọc skillCDs mới nhất bên trong interval mà không cần stale closure
+  const skillCDsRef = useRef(skillCDs);
+  useEffect(() => { skillCDsRef.current = skillCDs; }, [skillCDs]);
+
+  const showNotif = useCallback((text) => {
+    setNotifText(text);
+    setTimeout(() => setNotifText(null), 3000);
+  }, []);
+
+  // ✅ DamageNumber dùng x/y props trực tiếp — không cần wrapper div
+  const spawnFloat = useCallback((x, y, type='normal') => {
+    const value = type==='heal'
+      ? Math.floor(Math.random()*3000+500)
+      : Math.floor(Math.random()*8000+1000);
+    const id = floatIdRef.current++;
+    setFloats(f => [...f, { id, x, y, value, type }]);
+    setTimeout(() => setFloats(f => f.filter(ft => ft.id!==id)), 1800);
+  }, []);
+
+  const handleGameClick = useCallback((e) => {
+    const rect = gameAreaRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left - 40;
+    const y = e.clientY - rect.top  - 20;
+    const roll = Math.random();
+    const type  = roll < 0.15 ? 'crit' : roll < 0.25 ? 'miss' : 'normal';
+    spawnFloat(x, y, type);
+    if (type!=='miss') setBossHp(h => Math.max(0, h-(type==='crit'?15000:5000)));
+  }, [spawnFloat]);
+
+  // ✅ FIX: đặt CD = 1 ngay lập tức trước khi khởi động interval
+  //         → tránh race condition khi auto-fight thấy CD vẫn là 0
+  const triggerSkill = useCallback((i) => {
+    const rect = gameAreaRef.current?.getBoundingClientRect();
+    const x = rect ? Math.random()*(rect.width-120)+20 : 100;
+    const y = rect ? Math.random()*(rect.height*0.6)+20 : 80;
+    const isCrit = Math.random() < 0.35;
+    spawnFloat(x, y, isCrit?'crit':'normal');
+    setBossHp(h => Math.max(0, h-(isCrit?18000:9000)));
+    setActiveSkill(i);
+    setTimeout(() => setActiveSkill(null), 300);
+
+    const cdTime = SKILLS[i].baseCd;
+    if (cdTime > 0) {
+      // Đặt CD = 1 (full) ngay lập tức
+      setSkillCDs(cds => { const n=[...cds]; n[i]=1; return n; });
+      const steps = 60;
+      let elapsed = 0;
+      const iv = setInterval(() => {
+        elapsed++;
+        setSkillCDs(cds => { const n=[...cds]; n[i]=Math.max(0, 1-elapsed/steps); return n; });
+        if (elapsed >= steps) clearInterval(iv);
+      }, (cdTime*1000)/steps);
+    }
+  }, [spawnFloat]);
+
+  const handleSkillClick = useCallback((i) => {
+    if (skillCDs[i] > 0) return;
+    triggerSkill(i);
+    showNotif(`Dùng kỹ năng: ${SKILLS[i].name}`);
+  }, [skillCDs, triggerSkill, showNotif]);
+
+  // HP/MP hồi phục
+  useEffect(() => {
+    const t = setInterval(() => {
+      setHp(h => Math.min(100, h+0.4));
+      setMp(m => Math.min(100, m+0.8));
+      setExp(e => Math.min(100, e+0.08));
+    }, 2000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Đồng hồ
+  useEffect(() => {
+    const update = () => {
+      const el = document.getElementById('game-time');
+      if (el) el.textContent = new Date().toLocaleTimeString('vi-VN', { hour12:false });
+    };
+    update();
+    const t = setInterval(update, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Boss tấn công người chơi
+  useEffect(() => {
+    const t = setInterval(() => {
+      const rect = gameAreaRef.current?.getBoundingClientRect();
+      const x = rect ? Math.random()*(rect.width*0.45) : 50;
+      const y = 30+Math.random()*60;
+      spawnFloat(x, y, Math.random()<0.2?'crit':'normal');
+      setHp(h => Math.max(5, h-(Math.random()*8+2)));
+      setMp(m => Math.max(0, m-(Math.random()*3+1)));
+    }, 3200);
+    return () => clearInterval(t);
+  }, [spawnFloat]);
+
+  // Chat tự động
+  useEffect(() => {
+    const msgs = [
+      { name:'Kiếm Ma',          text:'Một kiếm phá ma!',               color:'#C880FF' },
+      { name:'Thiên Kiếm Khách', text:'Cố lên!',                        color:'#80D0FF' },
+      { name:'Lăng Tiêu Tiên',   text:'Trị liệu ra, cứ xông đi!',       color:'#80FF80' },
+      { name:'Hệ Thống',         text:'Nguyên Soái vào trạng thái điên cuồng!', color:'#FF4040' },
+      { name:'Thanh Vân Tử',     text:'Đừng sợ, tiếp tục!',             color:'#FFD060' },
+    ];
+    let idx = 0;
+    const t = setInterval(() => {
+      const m = msgs[idx++%msgs.length];
+      const id = chatIdRef.current++;
+      setChatMessages(prev => [...prev.slice(-8), { ...m, id }]);
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  // ✅ FIX: auto-fight đọc CD từ ref (không stale) và không gọi triggerSkill
+  //         bên trong state updater → tránh side effect trong pure function
+  useEffect(() => {
+    if (!autoFight) return;
+    const t = setInterval(() => {
+      const currentCDs = skillCDsRef.current;
+      const available = SKILLS.map((_,i) => i).filter(i => currentCDs[i]===0);
+      if (available.length===0) return;
+      const idx = available[Math.floor(Math.random()*available.length)];
+      triggerSkill(idx);
+    }, 1500);
+    return () => clearInterval(t);
+  }, [autoFight, triggerSkill]);
+
+  const handleSendChat = useCallback((text) => {
+    const id = chatIdRef.current++;
+    setChatMessages(prev => [...prev.slice(-8), { id, name:'Thanh Vân Tử', text, color:'#FFD060' }]);
+  }, []);
+
+  const sysBtns = [
+    { label:'Nhân Vật', icon:'👤', action:() => setShowChar(true)  },
+    { label:'Trang Bị', icon:'⚔️', action:() => setShowEquip(true) },
+    { label:'Hành Nang', icon:'🎒', action:() => setShowInv(true)   },
+    { label:'Kỹ Năng',  icon:'✨', action:() => setShowSkill(true) },
+    { label:'Nhiệm Vụ', icon:'📋', action:() => setShowQuest(true) },
+    { label:'Cửa Hàng', icon:'🏪', action:() => setShowShop(true)  },
+    { label:'Bang Phái', icon:'⚜', action:() => setShowGuild(true) },
+  ];
+
+  const buffs = [
+    { name:'Phá Ma Quyết', color:'#FF8040', time:'2:34' },
+    { name:'Hộ Thể Quang', color:'#FFD040', time:'5:12' },
+    { name:'Tật Phong Bộ', color:'#40FF90', time:'0:45' },
+    { name:'Trúng Độc',    color:'#80FF20', time:'0:08' },
+  ];
+
+  const stars = [
+    [22,12],[55,8],[92,28],[128,6],[165,15],[198,4],[228,20],[268,10],
+    [302,26],[338,7],[368,18],[14,42],[78,46],[148,38],[248,32],[352,44],
+    [42,58],[108,62],[178,52],[288,56],[354,68],[50,22],[180,30],[310,18],
+    [74,74],[200,68],[326,80],[18,80],[240,75],
+  ];
+
+  return (
+    <div className="game-root">
+      <div className="game-bg">
+        <div className="bg-layer-sky" />
+        <div className="bg-layer-mist" />
+        <div className="bg-layer-mountains" />
+        <div className="bg-layer-ground" />
+      </div>
+      <div className="cloud-deco cloud-1"><CloudDecoration width={200} color="#8090C0" /></div>
+      <div className="cloud-deco cloud-2"><CloudDecoration width={160} color="#9090B0" /></div>
+      <div className="cloud-deco cloud-3"><CloudDecoration width={120} color="#7080A0" /></div>
+
+      {notifText && (
+        <div className="sys-notif"><span className="notif-icon">⚡</span>{notifText}</div>
+      )}
+
+      {/* HUD trên */}
+      <div className="hud-top">
+        <div className="hud-player-block">
+          <div className="hud-avatar" onClick={() => setShowChar(true)}>
+            <AvatarFrame size={54} hp={hp} showHp={true} />
+          </div>
+          <div className="hud-bars">
+            {[
+              { label:'Khí', cls:'hp-icon',  val:hp,  type:'hp'  },
+              { label:'Linh',cls:'mp-icon',  val:mp,  type:'mp'  },
+              { label:'Ngộ', cls:'exp-icon', val:exp, type:'exp' },
+            ].map(b => (
+              <div key={b.label} className="hud-bar-row">
+                <span className={`hud-bar-icon ${b.cls}`}>{b.label}</span>
+                <StatBar width={120} value={b.val} max={100} type={b.type} />
+                <span className="hud-bar-num">{Math.round(b.val)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="hud-target">
+          <div className="target-label">Mục tiêu: Nguyên Soái Ma Tộc</div>
+          <StatBar width={100} value={bossHp} max={234500} type="boss" />
+          <div className="target-hp-num">{bossHp.toLocaleString()}</div>
+        </div>
+        <div className="hud-minimap">
+          <MinimapFrame size={104} />
+          <div className="minimap-zone">Thanh Vân Sơn</div>
+        </div>
+      </div>
+
+      {/* Boss bar */}
+      <div className="boss-bar-area">
+        <BossHPBar hp={bossHp} maxHp={234500} name="Nguyên Soái Ma Tộc · Huyết Sát" />
+      </div>
+
+      {/* Khu chiến đấu */}
+      <div className="game-world" ref={gameAreaRef} onClick={handleGameClick}>
+        <svg width="100%" height="100%" viewBox="0 0 390 300"
+          preserveAspectRatio="xMidYMid slice"
+          style={{ position:'absolute', top:0, left:0, imageRendering:'pixelated' }}>
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#030610" /><stop offset="40%"  stopColor="#060820" /><stop offset="100%" stopColor="#080C28" />
+            </linearGradient>
+            <linearGradient id="mtFarGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#0E1A28" /><stop offset="100%" stopColor="#060C18" />
+            </linearGradient>
+            <linearGradient id="mtNearGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#080E1A" /><stop offset="100%" stopColor="#040810" />
+            </linearGradient>
+            <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#081220" /><stop offset="100%" stopColor="#040810" />
+            </linearGradient>
+            <radialGradient id="moonGlow" cx="76%" cy="16%" r="28%">
+              <stop offset="0%"   stopColor="#A0C0F0" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="enemyAura" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stopColor="#FF0000" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+            <filter id="enemyGlow">
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <rect width="390" height="300" fill="url(#skyGrad)" />
+          <rect width="390" height="300" fill="url(#moonGlow)" />
+          {stars.map(([x,y],i) => (
+            <rect key={i} x={x} y={y} width={i%4===0?2:1} height={i%4===0?2:1}
+              fill="white" opacity={0.25+(i%5)*0.12} />
+          ))}
+          <circle cx="297" cy="36" r="20" fill="#DDE8FF" opacity="0.88" />
+          <circle cx="303" cy="30" r="18" fill="#06082A" opacity="0.55" />
+          <polygon points="0,165 35,88 70,128 110,72 152,112 196,62 238,102 278,56 318,96 358,64 390,88 390,185 0,185" fill="url(#mtFarGrad)" />
+          <polygon points="35,88 45,108 25,108"   fill="#C0CDE8" opacity="0.15" />
+          <polygon points="196,62 206,82 186,82"  fill="#C0CDE8" opacity="0.15" />
+          <polygon points="278,56 288,76 268,76"  fill="#C0CDE8" opacity="0.15" />
+          <polygon points="0,205 45,138 84,168 136,118 186,155 238,108 285,148 336,112 390,142 390,225 0,225" fill="url(#mtNearGrad)" />
+          <rect x="0" y="220" width="390" height="80" fill="url(#groundGrad)" />
+          {[18,50,90,130,170,210,250,290,330,365].map((x,i) => (
+            <rect key={i} x={x} y={222} width={2} height={4+(i%3)*3} fill="#1A2A38" opacity="0.5" />
+          ))}
+          <ellipse cx="195" cy="225" rx="80" ry="8" fill="#200040" opacity="0.2" />
+          <g transform="translate(200,192)" filter="url(#enemyGlow)">
+            <circle cx="0" cy="-22" r="26" fill="url(#enemyAura)" />
+            <polygon points="-14,-38 -44,-14 -36,-2 -14,-22" fill="#280010" stroke="#500020" strokeWidth="0.5" />
+            <polygon points="14,-38 44,-14 36,-2 14,-22"  fill="#280010" stroke="#500020" strokeWidth="0.5" />
+            <rect x="-13" y="-42" width="26" height="36" rx="3" fill="#3A0010" stroke="#700020" strokeWidth="0.8" />
+            <rect x="-10" y="-40" width="20" height="8"  rx="1" fill="#500020" />
+            <rect x="-8"  y="-30" width="16" height="22" rx="2" fill="#450018" />
+            <rect x="-9"  y="-58" width="18" height="17" rx="2" fill="#3A0010" stroke="#600020" strokeWidth="0.8" />
+            <polygon points="-7,-57 -13,-74 -3,-59" fill="#700020" />
+            <polygon points="7,-57 13,-74 3,-59"   fill="#700020" />
+            <rect x="-6" y="-52" width="4" height="4" fill="#FF2020" />
+            <rect x="2"  y="-52" width="4" height="4" fill="#FF2020" />
+            <rect x="-5" y="-51" width="2" height="2" fill="#FFA0A0" opacity="0.7" />
+            <rect x="3"  y="-51" width="2" height="2" fill="#FFA0A0" opacity="0.7" />
+            <line x1="14" y1="-20" x2="28" y2="-48" stroke="#8040A0" strokeWidth="3" />
+            <rect x="11" y="-22"  width="8" height="2" fill="#6030C0" />
+          </g>
+          <g transform="translate(100,204)">
+            <polygon points="-8,-36 -20,-8 -10,-10" fill="#3040C0" opacity="0.8" />
+            <rect x="-8" y="-40" width="16" height="30" rx="2" fill="#2030A0" stroke="#4050D0" strokeWidth="0.8" />
+            <rect x="-6" y="-38" width="12" height="6"  rx="1" fill="#3040C0" />
+            <rect x="-4" y="-30" width="8"  height="18" rx="1" fill="#2838A8" />
+            <rect x="-5" y="-52" width="10" height="13" rx="2" fill="#2030A0" stroke="#4050D0" strokeWidth="0.8" />
+            <rect x="-5" y="-55" width="10" height="4"  rx="1" fill="#101888" />
+            <line x1="9" y1="-30" x2="24" y2="-52" stroke="#A0D0FF" strokeWidth="2.5" />
+            <rect x="6" y="-32"  width="8" height="2" fill="#C0A020" />
+            <circle cx="9" cy="-30" r="2" fill="#FFD040" />
+          </g>
+        </svg>
+        <ParticleCanvas />
+        <div className="world-hint">Nhấn vào chiến trường để tấn công</div>
+        {/* ✅ DamageNumber dùng x/y props trực tiếp — có animation tích hợp sẵn */}
+        {floats.map(f => (
+          <DamageNumber key={f.id} value={f.value} type={f.type} x={f.x} y={f.y} />
+        ))}
+      </div>
+
+      {/* Theo dõi nhiệm vụ */}
+      <div className="quest-tracker">
+        <div className="tracker-title" style={{ position:'relative' }}>
+          <button className="tracker-toggle" onClick={() => setTrackerCollapsed(c => !c)}
+            title={trackerCollapsed?'Hiện':'Ẩn'}>
+            {trackerCollapsed ? '▶' : '▼'}
+          </button>
+          <Ornament width={120} height={12} color={COLORS.gold} />
+          <div className="tracker-head">Theo Dõi Nhiệm Vụ</div>
+          <Ornament width={120} height={12} color={COLORS.gold} />
+        </div>
+        <div className={`tracker-body${trackerCollapsed?' collapsed':''}`} style={{ maxHeight:200 }}>
+          {quests.map(q => (
+            <div key={q.id} className="tracker-quest"
+              style={{ opacity: trackedQuest===q.id ? 1 : 0.6 }}>
+              <div className="tracker-qname">
+                <span className={q.done?'tq-done':'tq-active'}>{q.done?'✓':'►'}</span>
+                {trackedQuest===q.id && <span style={{ color:'#40FF80', fontSize:7 }}>★</span>}
+                {q.name}
+              </div>
+              <div className="tracker-prog">{q.progress}/{q.total}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Menu hệ thống */}
+      <div className="sys-menu">
+        {sysBtns.map((btn, i) => (
+          <button key={i} className="sys-btn" onClick={btn.action}>
+            <span className="sys-icon">{btn.icon}</span>
+            <span className="sys-label">{btn.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Chat */}
+      {showChat ? (
+        <ChatBox messages={chatMessages} onClose={() => setShowChat(false)} onSend={handleSendChat} />
+      ) : (
+        <div className="chat-bubble" onClick={() => setShowChat(true)}>
+          <div className="chat-last-msg">
+            <span className="chat-name" style={{ color:chatMessages[chatMessages.length-1]?.color }}>
+              [{chatMessages[chatMessages.length-1]?.name}]
+            </span>
+            <span className="chat-text-snip">{chatMessages[chatMessages.length-1]?.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Thanh kỹ năng */}
+      <div className="skill-bar-wrap">
+        <div className="skill-bar-bg" />
+        <div className="skill-bar">
+          <div className="skill-aux-btns">
+            <button className="aux-btn" onClick={() => {
+              const rect = gameAreaRef.current?.getBoundingClientRect();
+			  
+			  
+              spawnFloat(Math.random()*80+20, rect?rect.height*0.4:80, 'heal');
+              setHp(h => Math.min(100, h+20));
+              setMp(m => Math.max(0, m-30));
+              showNotif('Dùng Đại Hoàn Đan, hồi phục khí huyết');
+            }}>
+              <span>Khí</span><span className="aux-label">Hồi Máu</span>
+            </button>
+            <button className="aux-btn aux-blue" onClick={() => {
+              setMp(m => Math.min(100, m+40));
+              showNotif('Dùng Hồi Linh Đan, hồi phục linh lực');
+            }}>
+              <span>Linh</span><span className="aux-label">Hồi Linh</span>
+            </button>
+          </div>
+
+          {/* ✅ 8 ô kỹ năng kích thước nhỏ hơn — vừa màn hình */}
+          <div className="skill-slots">
+            {SKILLS.map((sk, i) => (
+              <div key={i}
+                className={`skill-slot ${activeSkill===i?'skill-slot-active':''}`}
+                onClick={() => handleSkillClick(i)}>
+                <SkillButton size={38} cooldown={skillCDs[i]} baseCd={sk.baseCd||1} keyLabel={sk.key}
+                  active={activeSkill===i} icon={<SkillIcon type={sk.type} size={22} />} />
+                <div className="skill-name-label">{sk.name}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="auto-attack-wrap">
+            <button className="auto-btn" onClick={() => setShowDialogue(true)}>
+              <span className="auto-icon">💬</span>
+              <span className="auto-label">Đối Thoại</span>
+            </button>
+            {/* ✅ Tự động chiến đấu thực sự — toggle + useEffect với interval */}
+            <button className={`auto-btn auto-red ${autoFight?'auto-active':''}`}
+              onClick={() => {
+                setAutoFight(f => !f);
+                showNotif(autoFight?'Tự động chiến đấu đã TẮT':'Tự động chiến đấu đã BẬT');
+              }}>
+              <span className="auto-icon">⚔</span>
+              <span className="auto-label">{autoFight?'Dừng':'Tự Động'}</span>
+            </button>
+          </div>
+        </div>
+        <div className="bar-ornament">
+          <Ornament width={340} height={10} color={COLORS.gold} />
+        </div>
+      </div>
+
+      {/* Info bar */}
+      <div className="hud-info-bar">
+        <span className="info-server">Khu Bích Lạc-1</span>
+        <span className="info-sep">·</span>
+        <span className="info-zone">Thanh Vân Sơn</span>
+        <span className="info-sep">·</span>
+        <span className="info-time" id="game-time">21:43:27</span>
+        <span className="info-sep">·</span>
+        <span className="info-fps">60 FPS</span>
+      </div>
+
+      {showChar     && <CharacterPanel onClose={() => setShowChar(false)} onEquip={() => setShowEquip(true)} />}
+      {showInv      && <InventoryPanel onClose={() => setShowInv(false)} invItems={invItems} setInvItems={setInvItems} gold={gold} setGold={setGold} equip={equip} setEquip={setEquip} showNotif={showNotif} setHp={setHp} setMp={setMp} />}
+      {showSkill    && <SkillPanel     onClose={() => setShowSkill(false)} skillLevels={skillLevels} setSkillLevels={setSkillLevels} skillPoints={skillPoints} setSkillPoints={setSkillPoints} showNotif={showNotif} />}
+      {showQuest    && <QuestPanel     onClose={() => setShowQuest(false)} quests={quests} setQuests={setQuests} gold={gold} setGold={setGold} showNotif={showNotif} trackedQuest={trackedQuest} setTrackedQuest={setTrackedQuest} />}
+      {showShop     && <ShopPanel      onClose={() => setShowShop(false)} showNotif={showNotif} gold={gold} setGold={setGold} />}
+      {showGuild    && <GuildPanel     onClose={() => setShowGuild(false)} gold={gold} setGold={setGold} showNotif={showNotif} />}
+      {showEquip    && <EquipmentPanel onClose={() => setShowEquip(false)} equip={equip} setEquip={setEquip} showNotif={showNotif} />}
+      {showDialogue && <DialogueBox    onClose={() => setShowDialogue(false)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
