@@ -1,0 +1,2629 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tiên Hiệp Truyền Kỳ — Phiên Bản Đầy Đủ</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
+:root {
+  --gold: #C8A84B; --gold-light: #FFE07A; --gold-dark: #7A5A10; --gold-shine: #FFF0A0;
+  --jade: #3ECFA0; --red: #C02020; --red-bright: #FF4040;
+  --blue: #1A3A7A; --blue-bright: #4080FF; --purple: #4A1A8A; --purple-bright: #9040FF;
+  --dark-bg: #06060F; --panel-bg: #0C1030; --panel-mid: #141840; --panel-light: #1E2460;
+  --text-white: #F0E8D0; --text-gold: #FFD060; --text-dim: #8A7A50;
+  font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif; color: var(--text-white);
+}
+.game-root {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden;
+  background: var(--dark-bg); display: flex; flex-direction: column;
+  max-width: 430px; margin: 0 auto; box-shadow: 0 0 80px #000;
+}
+.game-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.bg-layer-sky { position: absolute; inset: 0; background: linear-gradient(180deg, #020510 0%, #060820 40%, #080C28 70%, #0A1035 100%); }
+@keyframes mistDrift { from { transform: translateX(-20px); opacity: 0.6; } to { transform: translateX(20px); opacity: 1; } }
+.cloud-deco { position: absolute; z-index: 1; pointer-events: none; animation: cloudFloat 20s ease-in-out infinite; }
+.cloud-1 { top: 15%; left: -10%; animation-duration: 24s; }
+.cloud-2 { top: 25%; right: -5%; animation-duration: 18s; animation-delay: -6s; }
+.cloud-3 { top: 35%; left: 20%; animation-duration: 30s; animation-delay: -12s; }
+@keyframes cloudFloat { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(30px); } }
+.hud-top {
+  position: relative; z-index: 20; display: flex; align-items: flex-start;
+  justify-content: space-between; padding: 6px 6px 0; gap: 4px; flex-shrink: 0;
+}
+.hud-player-block {
+  display: flex; align-items: flex-start; gap: 6px;
+  background: linear-gradient(135deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border: 1px solid var(--gold-dark); border-radius: 3px; padding: 5px 8px 5px 5px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.8); position: relative;
+}
+.hud-player-block::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 6px; background: var(--gold); clip-path: polygon(0 0, 100% 0, 0 100%); }
+.hud-player-block::after  { content: ''; position: absolute; top: 0; right: 0; width: 6px; height: 6px; background: var(--gold); clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.hud-avatar { cursor: pointer; transition: filter 0.15s; flex-shrink: 0; }
+.hud-avatar:hover { filter: brightness(1.2); }
+.hud-bars { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
+.hud-bar-row { display: flex; align-items: center; gap: 4px; }
+.hud-bar-icon { font-size: 10px; font-weight: bold; width: 14px; text-align: center; flex-shrink: 0; }
+.hp-icon { color: #FF6060; } .mp-icon { color: #6090FF; } .exp-icon { color: #FFD040; }
+.hud-bar-num { font-size: 9px; color: var(--text-dim); min-width: 28px; text-align: right; font-family: monospace; }
+.hud-target { background: linear-gradient(135deg, rgba(48,8,8,0.9) 0%, rgba(20,4,4,0.85) 100%); border: 1px solid #7A1010; border-radius: 3px; padding: 5px 8px; min-width: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.7); }
+.target-label { font-size: 10px; color: #FF8080; margin-bottom: 3px; font-weight: bold; letter-spacing: 0.5px; }
+.target-hp-num { font-size: 9px; color: #FF6060; text-align: right; margin-top: 2px; font-family: monospace; }
+.hud-minimap { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+.minimap-zone { font-size: 9px; color: var(--gold); letter-spacing: 0.5px; text-shadow: 0 0 4px rgba(200,168,75,0.5); }
+.boss-bar-area { position: relative; z-index: 20; display: flex; justify-content: center; padding: 4px 12px 2px; flex-shrink: 0; }
+.boss-bar-wrap { width: 100%; max-width: 340px; }
+.boss-bar-title { text-align: center; font-size: 11px; font-weight: bold; color: #FF6060; text-shadow: 0 0 6px rgba(255,0,0,0.5); margin-bottom: 2px; letter-spacing: 1px; }
+.boss-bar-outer { position: relative; height: 16px; background: #1A0000; border: 1px solid #7A0000; border-radius: 2px; overflow: hidden; box-shadow: 0 0 8px rgba(255,0,0,0.2); }
+.boss-bar-fill { height: 100%; background: linear-gradient(90deg, #FF2020 0%, #FF6020 60%, #FF2020 100%); transition: width 0.3s ease; position: relative; }
+.boss-bar-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%; background: rgba(255,120,120,0.3); }
+.boss-bar-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: monospace; color: white; text-shadow: 0 0 3px black, 0 0 3px black; }
+.boss-bar-phase { text-align: center; font-size: 9px; color: #FF8060; margin-top: 1px; letter-spacing: 0.5px; }
+
+/* ── GAME WORLD — canvas top-down ── */
+.game-world {
+  position: relative; flex: 1; z-index: 10; overflow: hidden; min-height: 0;
+  cursor: crosshair;
+}
+.game-world-canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: block; image-rendering: pixelated;
+}
+/* Joystick */
+.joystick-wrap {
+  position: absolute; bottom: 10px; left: 10px; z-index: 30;
+  width: 80px; height: 80px; pointer-events: auto;
+}
+.joystick-base {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(8,10,28,0.70);
+  border: 2px solid rgba(200,168,75,0.45);
+  position: relative; touch-action: none; user-select: none;
+}
+.joystick-thumb {
+  position: absolute; width: 28px; height: 28px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #FFE07A, #C8A84B 60%, #7A5A10);
+  border: 1.5px solid rgba(255,224,122,0.7);
+  box-shadow: 0 0 8px rgba(200,168,75,0.5);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: box-shadow 0.1s;
+}
+/* Click-to-move marker */
+.move-marker {
+  position: absolute; width: 16px; height: 16px; z-index: 25;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: markerFade 0.7s ease forwards;
+}
+@keyframes markerFade { 0%{opacity:1;transform:translate(-50%,-50%) scale(1.3)} 100%{opacity:0;transform:translate(-50%,-50%) scale(0.6)} }
+
+/* Floating damage */
+.float-wrap { position: absolute; pointer-events: none; animation: floatUp 1.8s ease-out forwards; z-index: 50; }
+@keyframes floatUp { 0%{transform:translateY(0);opacity:1} 60%{transform:translateY(-50px);opacity:1} 100%{transform:translateY(-80px);opacity:0} }
+
+/* Quest tracker */
+.quest-tracker {
+  position: absolute; top: 110px; left: 6px; z-index: 20;
+  background: linear-gradient(135deg, rgba(8,12,32,0.88) 0%, rgba(4,6,20,0.85) 100%);
+  border: 1px solid var(--gold-dark); border-radius: 3px; padding: 6px 8px;
+  min-width: 145px; max-width: 170px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.7);
+}
+.tracker-title { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 4px; }
+.tracker-head { font-size: 11px; font-weight: bold; color: var(--gold); letter-spacing: 2px; text-shadow: 0 0 6px rgba(200,168,75,0.5); }
+.tracker-quest { padding: 3px 0; border-bottom: 1px solid rgba(200,168,75,0.1); }
+.tracker-quest:last-child { border-bottom: none; }
+.tracker-qname { font-size: 9px; color: var(--text-white); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+.tq-active { color: var(--gold); font-size: 8px; } .tq-done { color: #40FF80; font-size: 8px; }
+.tracker-prog { font-size: 9px; color: var(--text-dim); text-align: right; font-family: monospace; }
+.tracker-toggle {
+  position: absolute; top: 5px; left: 5px; background: none;
+  border: 1px solid rgba(200,168,75,0.3); border-radius: 2px; color: var(--gold-dark);
+  font-size: 9px; width: 16px; height: 16px; cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center; transition: background 0.1s, color 0.1s;
+}
+.tracker-toggle:hover { background: rgba(200,168,75,0.12); color: var(--gold); }
+.tracker-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease; }
+.tracker-body.collapsed { max-height: 0 !important; opacity: 0; }
+.tracker-nav-link { font-size: 8px; color: #60C8FF; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 1px 0; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.15s; letter-spacing: 0.3px; }
+.tracker-nav-link:hover { color: #90E0FF; }
+.tracker-nav-npc { font-size: 8px; color: #40FF80; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 1px 0; display: block; transition: color 0.15s; letter-spacing: 0.3px; animation: goldPulse 1.5s ease-in-out infinite; }
+.tracker-nav-npc:hover { color: #80FFB0; }
+.tracker-qname-link { font-size: 9px; color: var(--text-white); margin-bottom: 1px; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: color 0.12s; }
+.tracker-qname-link:hover { color: #60C8FF; }
+.tracker-level-badge { font-size: 7px; color: #FF8040; font-family: monospace; border: 1px solid rgba(255,128,64,0.4); border-radius: 2px; padding: 0 3px; flex-shrink: 0; }
+
+/* System menu */
+.sys-menu {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 25;
+  display: flex; flex-direction: column; gap: 2px; padding: 4px 0;
+  background: linear-gradient(180deg, rgba(12,16,48,0.92) 0%, rgba(8,10,32,0.88) 100%);
+  border-left: 2px solid var(--gold-dark); border-top: 1px solid var(--gold-dark);
+  border-bottom: 1px solid var(--gold-dark); border-radius: 4px 0 0 4px;
+}
+.sys-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; padding: 6px 8px; gap: 1px; transition: background 0.1s; border-bottom: 1px solid rgba(200,168,75,0.15); width: 44px; }
+.sys-btn:last-child { border-bottom: none; }
+.sys-btn:hover { background: rgba(200,168,75,0.1); }
+.sys-btn:active { background: rgba(200,168,75,0.2); }
+.sys-icon { font-size: 13px; color: var(--gold); text-shadow: 0 0 4px rgba(200,168,75,0.4); font-family: 'Noto Serif SC', serif; }
+.sys-label { font-size: 8px; color: var(--text-dim); letter-spacing: 0.5px; }
+
+/* Skill bar */
+.skill-bar-wrap { position: relative; z-index: 20; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 0); }
+.skill-bar-bg { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,8,24,0.95) 0%, rgba(4,4,16,0.98) 100%); border-top: 2px solid var(--gold-dark); box-shadow: 0 -4px 20px rgba(0,0,0,0.8); }
+.skill-bar { position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; padding: 6px 8px 4px; }
+.skill-aux-btns { display: flex; flex-direction: column; gap: 4px; }
+.aux-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 34px; height: 34px; background: linear-gradient(180deg, #2A2010 0%, #160E04 100%); border: 1px solid var(--gold-dark); border-radius: 3px; cursor: pointer; color: var(--gold); font-size: 12px; font-family: 'Noto Serif SC', serif; font-weight: bold; transition: filter 0.1s; gap: 1px; }
+.aux-btn:hover { filter: brightness(1.3); } .aux-btn:active { filter: brightness(0.8); transform: translateY(1px); }
+.aux-btn.aux-blue { background: linear-gradient(180deg, #101A3A 0%, #080C20 100%); border-color: #203060; color: #80B0FF; }
+.aux-label { font-size: 7px; font-weight: normal; color: var(--text-dim); }
+.skill-slots { display: flex; gap: 2px; align-items: center; }
+.skill-slot { display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; transition: transform 0.1s; }
+.skill-slot:active { transform: scale(0.92); }
+.skill-slot-active { filter: brightness(1.4); }
+.skill-name-label { font-size: 8px; color: var(--text-dim); text-align: center; letter-spacing: 0.3px; max-width: 38px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auto-attack-wrap { display: flex; flex-direction: column; gap: 4px; }
+.auto-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 34px; height: 34px; background: linear-gradient(180deg, #2A1010 0%, #160808 100%); border: 1px solid #602020; border-radius: 3px; cursor: pointer; gap: 1px; transition: filter 0.1s; }
+.auto-btn:hover { filter: brightness(1.2); }
+.auto-icon { font-size: 13px; color: #FF8060; }
+.auto-btn.auto-red .auto-icon { color: #FF4040; }
+.auto-label { font-size: 7px; color: var(--text-dim); }
+.bar-ornament { display: flex; justify-content: center; padding: 0 0 2px; }
+.auto-btn.auto-active { background: linear-gradient(180deg,#400808 0%,#200404 100%) !important; border-color: #FF4040 !important; box-shadow: 0 0 8px rgba(255,64,64,0.4); }
+@keyframes goldPulse { 0%,100%{text-shadow:0 0 6px rgba(200,168,75,0.4)} 50%{text-shadow:0 0 12px rgba(200,168,75,0.8),0 0 20px rgba(200,168,75,0.3)} }
+.auto-btn.auto-active .auto-icon { color: #FF8080; animation: goldPulse 0.8s ease-in-out infinite; }
+
+/* Info bar */
+.hud-info-bar {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 21;
+  display: flex; gap: 10px; background: rgba(4,4,16,0.8);
+  border-bottom: 1px solid var(--gold-dark); padding: 2px 12px;
+  font-size: 9px; font-family: monospace; border-radius: 0 0 6px 6px;
+}
+.info-server{color:var(--jade)} .info-zone{color:var(--gold)} .info-time{color:var(--text-dim)} .info-fps{color:#60FF80} .info-sep{color:rgba(200,168,75,0.3)}
+
+/* Panels */
+.panel-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.15s ease; max-width: 430px; margin: 0 auto; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.panel-popup { position: relative; animation: popIn 0.2s ease; }
+@keyframes popIn { from{transform:scale(0.88) translateY(12px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.panel-svg-wrap { display: block; filter: drop-shadow(0 0 12px rgba(200,168,75,0.3)) drop-shadow(0 4px 20px rgba(0,0,0,0.8)); }
+.panel-content { position: absolute; left: 0; right: 0; bottom: 12px; overflow-y: auto; max-height: calc(100% - 50px); scrollbar-width: thin; scrollbar-color: var(--gold-dark) transparent; }
+.char-avatar-section { display: flex; align-items: center; gap: 10px; padding: 8px 0 6px; }
+.char-name-block { flex: 1; }
+.char-name { font-size: 15px; font-weight: bold; color: var(--gold); text-shadow: 0 0 6px rgba(200,168,75,0.5); animation: goldPulse 3s ease-in-out infinite; }
+.char-title { font-size: 10px; color: var(--jade); margin: 2px 0; }
+.char-server { font-size: 9px; color: var(--text-dim); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; padding: 4px 0; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 4px; background: rgba(255,255,255,0.03); border-radius: 2px; border: 1px solid rgba(200,168,75,0.08); }
+.stat-label { font-size: 9px; color: var(--text-dim); }
+.stat-value { font-size: 10px; color: var(--gold-light); font-family: monospace; font-weight: bold; }
+.char-cultivation { padding: 4px 0; display: flex; flex-direction: column; gap: 3px; }
+.cult-label { font-size: 9px; color: var(--text-dim); }
+.cult-num { font-size: 9px; color: var(--gold); text-align: right; font-family: monospace; }
+.inv-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 4px; font-size: 10px; }
+.inv-gold { color: var(--gold); font-weight: bold; }
+.inv-space { color: var(--text-dim); font-size: 9px; font-family: monospace; }
+.inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px 0; }
+.inv-slot { background: rgba(0,0,0,0.5); border: 1px solid rgba(200,168,75,0.25); border-radius: 3px; cursor: pointer; transition: border-color 0.1s, background 0.1s; display: flex; align-items: center; justify-content: center; padding: 2px; aspect-ratio: 1; }
+.inv-slot:hover { border-color: var(--gold); background: rgba(200,168,75,0.05); }
+.inv-slot-sel { border-color: var(--gold-light) !important; background: rgba(200,168,75,0.12) !important; box-shadow: inset 0 0 6px rgba(200,168,75,0.2); }
+.inv-slot-empty { border-style: dashed; opacity: 0.4; }
+@keyframes lootSlideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+@keyframes lootFadeOut { from { opacity:1; } to { opacity:0; } }
+.loot-log { position:absolute; bottom:90px; left:8px; display:flex; flex-direction:column; gap:3px; pointer-events:none; z-index:60; max-width:200px; }
+.loot-entry { background:rgba(0,0,0,0.72); border-left:2px solid; border-radius:0 2px 2px 0; padding:3px 8px; animation: lootSlideIn 0.2s ease; }
+.loot-entry.fading { animation: lootFadeOut 0.5s ease forwards; }
+.loot-entry-line { font-size:9px; font-family:monospace; white-space:nowrap; }
+.inv-detail { background: rgba(200,168,75,0.06); border: 1px solid rgba(200,168,75,0.25); border-radius: 3px; padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; margin: 4px 0; }
+.inv-item-name { font-size: 11px; color: var(--gold); font-weight: bold; }
+.inv-actions { display: flex; gap: 4px; }
+.skill-list-panel { display: flex; flex-direction: column; gap: 6px; padding: 6px 0; max-height: 280px; overflow-y: auto; }
+.skill-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(200,168,75,0.1); border-radius: 3px; }
+.skill-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.skill-name { font-size: 11px; color: var(--text-white); font-weight: bold; }
+.skill-lv { font-size: 9px; color: var(--jade); font-family: monospace; }
+.skill-desc { font-size: 9px; color: var(--text-dim); }
+.skill-effect { font-size: 8px; color: #FF8040; font-family: monospace; margin-top: 1px; }
+.skill-pts-bar { display: flex; align-items: center; justify-content: space-between; padding: 5px 0 4px; border-bottom: 1px solid rgba(200,168,75,0.1); margin-bottom: 4px; }
+.skill-pts-label { font-size: 10px; color: var(--text-dim); }
+.skill-pts-val { font-size: 14px; font-weight: bold; color: var(--gold-light); font-family: monospace; text-shadow: 0 0 6px rgba(255,224,122,0.5); }
+.quest-list { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.quest-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(200,168,75,0.1); border-radius: 3px; padding: 6px 8px; position: relative; }
+.quest-item.quest-done { border-color: rgba(64,255,128,0.2); opacity: 0.8; }
+.quest-name { font-size: 11px; color: var(--text-white); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; font-weight: bold; }
+.quest-indicator { font-size: 9px; color: var(--gold); }
+.quest-done .quest-indicator { color: #40FF80; }
+.quest-prog { font-size: 9px; color: var(--text-dim); text-align: right; margin-top: 2px; font-family: monospace; }
+.quest-complete-badge { position: absolute; top: 4px; right: 6px; font-size: 9px; color: #40FF80; background: rgba(64,255,128,0.1); border: 1px solid rgba(64,255,128,0.3); border-radius: 2px; padding: 1px 5px; font-weight: bold; }
+.quest-rewards { padding: 6px 0; }
+.reward-title { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+.reward-list { display: flex; align-items: center; gap: 6px; }
+.reward-exp { font-size: 10px; color: var(--gold); font-family: monospace; }
+.panel-btns { display: flex; gap: 6px; justify-content: center; padding: 8px 0 4px; }
+.dialogue-wrap { position: fixed; bottom: 80px; left: 0; right: 0; z-index: 90; padding: 0 8px; max-width: 430px; margin: 0 auto; animation: slideUp 0.2s ease; }
+@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.dialogue-box { background: linear-gradient(135deg, rgba(8,10,28,0.97) 0%, rgba(4,6,20,0.96) 100%); border: 2px solid var(--gold-dark); border-radius: 4px; padding: 10px; position: relative; box-shadow: 0 -4px 20px rgba(200,168,75,0.15), 0 4px 20px rgba(0,0,0,0.8); }
+.dialogue-box::before,.dialogue-box::after { content: ''; position: absolute; width: 10px; height: 10px; border: 1px solid var(--gold); }
+.dialogue-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.dialogue-box::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.dialogue-inner { display: flex; gap: 10px; align-items: flex-start; }
+.dialogue-portrait { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+.dialogue-name { font-size: 9px; color: var(--gold); text-align: center; font-weight: bold; }
+.dialogue-text-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.dialogue-text { font-size: 11px; color: var(--text-white); line-height: 1.6; min-height: 44px; }
+.dialogue-next { align-self: flex-end; background: none; border: 1px solid var(--gold-dark); color: var(--gold); font-size: 10px; padding: 3px 10px; cursor: pointer; border-radius: 2px; font-family: 'Noto Serif SC', serif; transition: background 0.1s; }
+.dialogue-next:hover { background: rgba(200,168,75,0.1); }
+.dialogue-responses { display: flex; flex-direction: column; gap: 4px; }
+.dialogue-response { background: linear-gradient(90deg, rgba(200,168,75,0.1) 0%, rgba(200,168,75,0.05) 100%); border: 1px solid rgba(200,168,75,0.3); color: var(--gold); font-size: 10px; padding: 4px 10px; cursor: pointer; border-radius: 2px; text-align: left; font-family: 'Noto Serif SC', serif; transition: background 0.1s; }
+.dialogue-response:hover { background: rgba(200,168,75,0.15); border-color: var(--gold); }
+.dialogue-response::before { content: '▸ '; opacity: 0.6; }
+.dialogue-close { position: absolute; top: 4px; right: 6px; background: none; border: none; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: color 0.1s; }
+.dialogue-close:hover { color: var(--gold); }
+.dlg-back { background:none; border:1px solid rgba(200,168,75,0.25); color:var(--gold-dim); font-size:9px; padding:2px 8px; cursor:pointer; border-radius:2px; font-family:'Noto Serif SC',serif; margin-bottom:5px; transition:all 0.1s; }
+.dlg-back:hover { border-color:var(--gold); color:var(--gold); }
+.dlg-quest-list { display:flex; flex-direction:column; gap:4px; max-height:180px; overflow-y:auto; }
+.dlg-quest-item { background:rgba(200,168,75,0.05); border:1px solid rgba(200,168,75,0.15); border-radius:2px; padding:5px 8px; cursor:pointer; transition:background 0.1s; }
+.dlg-quest-item:hover { background:rgba(200,168,75,0.12); border-color:rgba(200,168,75,0.4); }
+.dlg-quest-item.q-available { border-color:rgba(255,128,64,0.35); }
+.dlg-quest-item.q-active { border-color:rgba(255,208,64,0.25); }
+.dlg-quest-item.q-done { border-color:rgba(64,255,128,0.35); background:rgba(64,255,128,0.04); }
+.dlg-quest-item.q-locked { opacity:0.4; cursor:not-allowed; }
+.dlg-qrow { display:flex; align-items:center; gap:5px; }
+.dlg-qstate { font-size:9px; flex-shrink:0; }
+.dlg-qname { font-size:10px; color:var(--text-white); flex:1; }
+.dlg-qlevel { font-size:7px; color:#FF8040; border:1px solid rgba(255,128,64,0.3); border-radius:2px; padding:0 2px; flex-shrink:0; }
+.dlg-detail-desc { font-size:10px; color:var(--text-white); line-height:1.6; margin:6px 0; }
+.dlg-reward-box { background:rgba(0,0,0,0.3); border:1px solid rgba(200,168,75,0.15); border-radius:2px; padding:6px 8px; margin:6px 0; }
+.dlg-reward-title { font-size:8px; color:var(--gold-dim); margin-bottom:4px; }
+.dlg-reward-row { display:flex; gap:10px; flex-wrap:wrap; }
+.dlg-reward-val { font-size:9px; font-family:monospace; }
+.dlg-accept-btn { background:linear-gradient(135deg,rgba(62,207,160,0.2),rgba(62,207,160,0.1)); border:1px solid rgba(62,207,160,0.5); color:#3ECFA0; font-size:10px; padding:5px 14px; cursor:pointer; border-radius:2px; font-family:'Noto Serif SC',serif; width:100%; margin-top:4px; transition:all 0.15s; }
+.dlg-accept-btn:hover { background:rgba(62,207,160,0.25); }
+.dlg-turnin-box { text-align:center; padding:4px 0; }
+.dlg-turnin-reward { font-size:12px; color:#FFD040; font-family:monospace; margin:6px 0; }
+.dlg-turnin-btn { background:linear-gradient(135deg,rgba(200,168,75,0.25),rgba(200,168,75,0.12)); border:1px solid var(--gold); color:var(--gold); font-size:11px; padding:6px 20px; cursor:pointer; border-radius:2px; font-family:'Noto Serif SC',serif; transition:all 0.15s; }
+.dlg-turnin-btn:hover { background:rgba(200,168,75,0.3); }
+.chat-bubble { position: absolute; left: 8px; bottom: 100px; z-index: 18; background: rgba(6,8,20,0.82); border: 1px solid rgba(200,168,75,0.25); border-radius: 3px; padding: 4px 8px; max-width: 190px; cursor: pointer; transition: border-color 0.15s; }
+.chat-bubble:hover { border-color: var(--gold-dark); }
+.chat-last-msg { font-size: 9px; display: flex; gap: 4px; align-items: baseline; overflow: hidden; }
+.chat-text-snip { color: var(--text-white); opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+.chat-panel { position: absolute; left: 8px; bottom: 100px; z-index: 18; width: 210px; background: linear-gradient(135deg, rgba(6,8,22,0.96) 0%, rgba(4,5,16,0.94) 100%); border: 1px solid var(--gold-dark); border-radius: 4px; display: flex; flex-direction: column; box-shadow: 0 4px 16px rgba(0,0,0,0.7); }
+.chat-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-bottom: 1px solid rgba(200,168,75,0.15); }
+.chat-title { font-size: 10px; color: var(--gold); font-weight: bold; }
+.chat-close-btn { background: none; border: none; color: var(--text-dim); font-size: 11px; cursor: pointer; padding: 0; }
+.chat-close-btn:hover { color: var(--gold); }
+.chat-messages { padding: 4px 6px; max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.chat-msg { font-size: 9px; display: flex; gap: 4px; align-items: baseline; line-height: 1.4; }
+.chat-name { font-weight: bold; flex-shrink: 0; font-size: 9px; }
+.chat-text { color: var(--text-white); opacity: 0.85; }
+.chat-input-row { display: flex; gap: 4px; padding: 4px 6px; border-top: 1px solid rgba(200,168,75,0.1); align-items: center; }
+.chat-input-real { flex:1; font-size:9px; color:var(--text-white); background:rgba(0,0,0,0.4); border:1px solid rgba(200,168,75,0.3); border-radius:2px; padding:2px 5px; font-family:'Noto Serif SC',serif; outline:none; }
+.chat-input-real:focus { border-color: var(--gold-dark); }
+.chat-input-real::placeholder { color: var(--text-dim); font-style: italic; }
+.chat-send { background: linear-gradient(180deg, #3A2A08 0%, #1A1204 100%); border: 1px solid var(--gold-dark); color: var(--gold); font-size: 9px; padding: 2px 6px; cursor: pointer; border-radius: 2px; font-family: 'Noto Serif SC', serif; }
+.chat-send:hover { background: rgba(200,168,75,0.15); }
+.sys-notif { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 200; background: linear-gradient(90deg, rgba(8,10,28,0.95) 0%, rgba(20,16,8,0.95) 100%); border: 1px solid var(--gold); border-radius: 3px; padding: 5px 14px; font-size: 11px; color: var(--gold-light); font-weight: bold; letter-spacing: 1px; white-space: nowrap; animation: notifSlide 0.3s ease, notifFade 3s ease forwards; box-shadow: 0 0 12px rgba(200,168,75,0.3); }
+.notif-icon { margin-right: 5px; }
+@keyframes notifSlide { from{transform:translateX(-50%) translateY(-10px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+@keyframes notifFade { 0%,70%{opacity:1} 100%{opacity:0} }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+@media (min-width: 431px) { .game-root { border-left: 2px solid var(--gold-dark); border-right: 2px solid var(--gold-dark); } }
+@keyframes bossGlow { 0%,100%{box-shadow:0 0 8px rgba(255,0,0,0.2)} 50%{box-shadow:0 0 16px rgba(255,0,0,0.5)} }
+.boss-bar-outer { animation: bossGlow 2s ease-in-out infinite; }
+@keyframes skillFlash { 0%{filter:brightness(1)} 50%{filter:brightness(2) saturate(2)} 100%{filter:brightness(1)} }
+.skill-slot-active { animation: skillFlash 0.3s ease; }
+.shop-item-row { display:flex; align-items:center; gap:8px; padding:5px 6px; background:rgba(80,0,0,0.2); border:1px solid rgba(255,64,64,0.1); border-radius:3px; margin-bottom:4px; }
+.shop-item-name { font-size:11px; color:var(--text-white); flex:1; font-weight:bold; }
+.shop-item-price { font-size:10px; color:#00FFFF; font-family:monospace; font-weight:bold; }
+.guild-member-row { display:flex; align-items:center; justify-content:space-between; padding:4px 6px; border-bottom:1px solid rgba(255,64,64,0.08); }
+.guild-member-name { font-size:10px; color:var(--text-white); }
+.guild-member-rank { font-size:9px; color:#FF8060; font-family:monospace; }
+.guild-contrib { font-size:9px; color:#C09040; font-family:monospace; }
+.equip-power { display:flex; justify-content:space-between; align-items:center; padding:5px 0 4px; font-size:9px; border-bottom:1px solid rgba(200,168,75,0.15); margin-bottom:4px; }
+.equip-power-label { color:var(--text-dim); letter-spacing:0.5px; }
+.equip-power-val { color:#FF8040; font-weight:bold; font-family:monospace; font-size:13px; text-shadow:0 0 6px rgba(255,128,64,0.5); }
+.equip-layout { display:flex; gap:6px; padding:4px 0; align-items:center; justify-content:center; }
+.equip-col { display:flex; flex-direction:column; gap:5px; }
+.equip-silhouette { flex:1; display:flex; align-items:center; justify-content:center; }
+.equip-slot { width:48px; height:52px; background:rgba(0,0,0,0.5); border:1px solid rgba(200,168,75,0.2); border-radius:3px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:border-color 0.1s, background 0.1s; gap:1px; }
+.equip-slot:hover { border-color:var(--gold); background:rgba(200,168,75,0.05); }
+.equip-slot-active { border-color:var(--gold-light) !important; background:rgba(200,168,75,0.12) !important; box-shadow:inset 0 0 6px rgba(200,168,75,0.2); }
+.equip-slot-empty { border-style:dashed; }
+.equip-slot-empty-icon { font-size:11px; color:rgba(200,168,75,0.15); }
+.equip-slot-label { font-size:7px; color:var(--text-dim); text-align:center; line-height:1.1; max-width:44px; }
+.equip-detail { background:linear-gradient(135deg,rgba(20,16,8,0.9) 0%,rgba(8,8,16,0.85) 100%); border:1px solid rgba(200,168,75,0.25); border-radius:3px; padding:7px 9px; margin:4px 0; animation:fadeIn 0.15s ease; }
+.equip-detail-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+.equip-detail-name { font-size:12px; font-weight:bold; }
+.equip-detail-rarity { font-size:9px; }
+.equip-detail-stars { font-size:10px; letter-spacing:1px; margin-bottom:3px; }
+.equip-detail-stats { display:flex; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
+.equip-stat { font-size:9px; font-family:monospace; padding:1px 4px; background:rgba(0,0,0,0.3); border-radius:2px; }
+.equip-stat-atk{color:#FF8060} .equip-stat-def{color:#80C0FF} .equip-stat-hp{color:#FF6060} .equip-stat-mp{color:#6090FF}
+.equip-detail-desc { font-size:9px; color:var(--text-dim); line-height:1.5; margin-bottom:5px; }
+.equip-detail-btns { display:flex; gap:5px; }
+.equip-empty-hint { font-size:9px; color:var(--text-dim); text-align:center; padding:10px 0; font-style:italic; }
+.rarity-5{color:#FF8000!important} .rarity-4{color:#A040FF!important} .rarity-3{color:#4080FF!important} .rarity-2{color:#40A040!important} .rarity-1{color:#808080!important}
+.quest-track-btn { font-size:8px; padding:1px 5px; border-radius:2px; cursor:pointer; border:1px solid rgba(200,168,75,0.3); background:none; color:var(--text-dim); font-family:'Noto Serif SC',serif; transition:all 0.1s; margin-top:2px; }
+.quest-track-btn:hover { border-color:var(--gold); color:var(--gold); }
+.quest-track-btn.tracking { border-color:#40FF80; color:#40FF80; background:rgba(64,255,128,0.08); }
+.guild-tabs { display:flex; gap:2px; margin-bottom:5px; border-bottom:1px solid rgba(200,168,75,0.15); padding-bottom:4px; }
+.guild-tab { flex:1; background:none; border:1px solid rgba(200,168,75,0.15); border-radius:2px 2px 0 0; color:var(--text-dim); font-size:9px; padding:3px 0; cursor:pointer; font-family:'Noto Serif SC',serif; transition:background 0.1s,color 0.1s; }
+.guild-tab:hover { background:rgba(200,168,75,0.06); color:var(--gold); }
+.guild-tab.active { background:rgba(200,168,75,0.12); color:var(--gold); border-color:var(--gold-dark); font-weight:bold; }
+.guild-mission-row { display:flex; align-items:flex-start; gap:6px; padding:5px 4px; border-bottom:1px solid rgba(200,168,75,0.08); }
+.guild-mission-row:last-child { border-bottom:none; }
+.guild-mission-info { flex:1; }
+.guild-mission-name { font-size:10px; color:var(--text-white); font-weight:bold; margin-bottom:2px; }
+.guild-mission-desc { font-size:9px; color:var(--text-dim); }
+.guild-war-row { display:flex; align-items:center; justify-content:space-between; padding:4px 4px; border-bottom:1px solid rgba(255,64,64,0.08); }
+.guild-war-rank { font-size:11px; color:var(--gold); font-family:monospace; font-weight:bold; min-width:22px; }
+.guild-war-name { font-size:10px; color:var(--text-white); flex:1; }
+.guild-war-score { font-size:9px; color:#FF8040; font-family:monospace; }
+.guild-contrib-info { padding:6px 4px; background:rgba(0,0,0,0.3); border:1px solid rgba(200,168,75,0.1); border-radius:3px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+@keyframes enhanceFlash { 0%{color:#FF8040;text-shadow:0 0 6px rgba(255,128,64,0.5)} 25%{color:#FFE07A;text-shadow:0 0 16px rgba(255,224,122,0.9),0 0 30px rgba(255,200,64,0.5);transform:scale(1.15)} 75%{color:#FF8040;text-shadow:0 0 10px rgba(255,128,64,0.6);transform:scale(1.05)} 100%{color:#FF8040;text-shadow:0 0 6px rgba(255,128,64,0.5);transform:scale(1)} }
+.enhance-flash { animation: enhanceFlash 0.6s ease; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDSCAPE / RESPONSIVE — Tiên Hiệp Truyền Kỳ
+   JS gắn html.ls-active + html.ls-native (landscape thật)
+           html.ls-portrait (portrait mobile → hiện rotate overlay)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Grid container landscape ── */
+html.ls-active .game-root {
+  display: grid !important;
+  flex-direction: unset;
+  grid-template-columns: 130px 1fr 88px;
+  grid-template-rows: auto 1fr;
+  max-width: 100% !important;
+  width: 100%; height: 100%; margin: 0;
+  box-shadow: 0 0 40px #000;
+}
+
+/* ── 2. Cột trái: HUD ── */
+html.ls-active .hud-top {
+  grid-column: 1; grid-row: 1 / 3;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 130px; padding: 4px !important; gap: 4px !important;
+  overflow-y: auto; overflow-x: hidden;
+  border-right: 1px solid var(--gold-dark);
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+html.ls-active .hud-top::-webkit-scrollbar { display: none; }
+
+html.ls-active .hud-player-block {
+  flex-direction: column !important;
+  width: 100%; padding: 4px 5px !important; gap: 2px !important;
+}
+html.ls-active .hud-player-block::before,
+html.ls-active .hud-player-block::after { display: none; }
+html.ls-active .hud-bars { padding-top: 2px; }
+
+html.ls-active .hud-target { min-width: unset !important; width: 100%; }
+html.ls-active .hud-minimap { flex-direction: column; align-items: center; }
+
+/* ── 3. Trung tâm trên: Boss bar ── */
+html.ls-active .boss-bar-area {
+  grid-column: 2; grid-row: 1;
+  padding: 3px 10px 2px;
+}
+
+/* ── 4. Trung tâm chính: Game world ── */
+html.ls-active .game-world { grid-column: 2; grid-row: 2; }
+
+/* Quest tracker: lên cao hơn (HUD không còn phía trên nữa) */
+html.ls-active .quest-tracker { top: 8px; }
+
+/* Chat & loot: dính đáy game world */
+html.ls-active .chat-bubble { bottom: 6px !important; }
+html.ls-active .chat-panel  { bottom: 6px !important; }
+html.ls-active .loot-log    { bottom: 8px; }
+
+/* ── 5. Cột phải: Skill bar ── */
+html.ls-active .skill-bar-wrap {
+  grid-column: 3; grid-row: 1 / 3;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 88px; height: 100%;
+  padding: 0 !important; overflow: hidden;
+}
+html.ls-active .skill-bar-bg {
+  border-top: none !important;
+  border-left: 2px solid var(--gold-dark);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.8) !important;
+}
+html.ls-active .skill-bar {
+  flex-direction: column !important;
+  flex: 1; align-items: center; justify-content: center;
+  padding: 6px 4px !important; gap: 5px !important;
+  overflow-y: auto;
+}
+html.ls-active .skill-aux-btns   { flex-direction: row !important; gap: 2px; }
+html.ls-active .auto-attack-wrap { flex-direction: row !important; gap: 2px; }
+html.ls-active .skill-slots {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px; width: 80px;
+}
+html.ls-active .skill-name-label { font-size: 7px !important; max-width: 32px !important; }
+html.ls-active .bar-ornament { display: none; }
+
+/* ── 6. Căn giữa overlays vào cột game-world ── */
+html.ls-active .panel-overlay {
+  left: 130px !important; right: 88px !important;
+  max-width: none !important; margin: 0;
+  /* Panel cao hơn viewport landscape → căn trên + scroll */
+  align-items: flex-start !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 0 !important;
+}
+html.ls-active .dialogue-wrap {
+  left: 138px !important; right: 96px !important;
+  max-width: none !important; margin: 0;
+}
+/* Info bar căn giữa cột game-world */
+html.ls-active .hud-info-bar {
+  left: 130px; right: 88px;
+  transform: none; justify-content: center;
+}
+/* Notification shift 21px = (130-88)/2 để bù lệch cột */
+html.ls-active .sys-notif {
+  transform: translateX(calc(-50% + 21px));
+}
+
+/* ── 7. Rotate overlay: yêu cầu người dùng tự xoay máy ── */
+#rotate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: #06060F;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+  touch-action: none;
+}
+html.ls-portrait #rotate-overlay { display: flex; }
+html.ls-portrait #root { visibility: hidden; }
+.rotate-icon-wrap {
+  animation: rotatePulse 2s ease-in-out infinite;
+}
+@keyframes rotatePulse {
+  0%,100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg); }
+}
+.rotate-title {
+  font-size: 16px; font-weight: bold;
+  color: var(--gold); letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(200,168,75,0.6);
+  text-align: center;
+}
+.rotate-sub {
+  font-size: 12px; color: var(--text-dim);
+  text-align: center; line-height: 1.7;
+  letter-spacing: 0.5px;
+}
+
+/* ── 8. CSS @media fallback thuần (không cần JS) ── */
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  html:not(.ls-active) .game-root {
+    display: grid !important; flex-direction: unset;
+    grid-template-columns: 130px 1fr 88px; grid-template-rows: auto 1fr;
+    max-width: 100% !important; width: 100%; height: 100%; margin: 0;
+  }
+  html:not(.ls-active) .hud-top {
+    grid-column: 1; grid-row: 1/3; flex-direction: column !important;
+    align-items: stretch !important; justify-content: flex-start !important;
+    width: 130px; overflow-y: auto; border-right: 1px solid var(--gold-dark);
+    padding: 4px !important; gap: 4px !important;
+  }
+  html:not(.ls-active) .hud-player-block { flex-direction: column !important; padding: 4px 5px !important; }
+  html:not(.ls-active) .hud-target    { min-width: unset !important; }
+  html:not(.ls-active) .boss-bar-area  { grid-column: 2; grid-row: 1; }
+  html:not(.ls-active) .game-world     { grid-column: 2; grid-row: 2; }
+  html:not(.ls-active) .quest-tracker  { top: 8px; }
+  html:not(.ls-active) .skill-bar-wrap { grid-column: 3; grid-row: 1/3; flex-direction: column !important; width: 88px; padding: 0 !important; }
+  html:not(.ls-active) .skill-bar      { flex-direction: column !important; align-items: center; }
+  html:not(.ls-active) .skill-slots    { display: grid !important; grid-template-columns: 1fr 1fr; }
+  html:not(.ls-active) .skill-aux-btns { flex-direction: row !important; }
+  html:not(.ls-active) .auto-attack-wrap { flex-direction: row !important; }
+  html:not(.ls-active) .skill-bar-bg   { border-top: none !important; border-left: 2px solid var(--gold-dark); }
+  html:not(.ls-active) .bar-ornament   { display: none; }
+  html:not(.ls-active) .panel-overlay  { left: 130px !important; right: 88px !important; max-width: none !important; }
+  html:not(.ls-active) .hud-info-bar   { left: 130px; right: 88px; transform: none; justify-content: center; }
+}
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#06060F">
+  <!-- Overlay yêu cầu xoay máy (portrait mobile) -->
+  <div id="rotate-overlay">
+    <div class="rotate-icon-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="22" y="8" width="28" height="48" rx="4" stroke="#C8A84B" stroke-width="2.5" fill="rgba(200,168,75,0.08)"/>
+        <rect x="28" y="11" width="16" height="2" rx="1" fill="#C8A84B" opacity="0.5"/>
+        <circle cx="36" cy="51" r="2" fill="#C8A84B" opacity="0.5"/>
+        <path d="M10 44 A 26 26 0 0 1 36 18" stroke="#FFE07A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <polygon points="36,11 29,20 43,20" fill="#FFE07A"/>
+        <path d="M62 28 A 26 26 0 0 1 36 54" stroke="#FFE07A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <polygon points="36,61 29,52 43,52" fill="#FFE07A"/>
+      </svg>
+    </div>
+    <div class="rotate-title">Xoay Màn Hình</div>
+    <div class="rotate-sub">Vui lòng xoay thiết bị sang<br>chế độ <strong style="color:var(--gold)">nằm ngang</strong> để chơi game</div>
+  </div>
+  <div id="root"></div>
+  <script src="items.js"></script>
+  <script src="data.js"></script>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+const COLORS = {
+  gold:'#C8A84B',goldLight:'#FFE07A',goldDark:'#7A5A10',goldShine:'#FFF0A0',
+  jade:'#3ECFA0',jadeDark:'#1A7A58',red:'#C02020',redBright:'#FF4040',redDark:'#600010',
+  blue:'#1A3A7A',blueBright:'#4080FF',blueGlow:'#80C0FF',purple:'#4A1A8A',purpleBright:'#9040FF',
+  darkBg:'#08081A',panelBg:'#0C1030',panelMid:'#141840',panelLight:'#1E2460',
+  textWhite:'#F0E8D0',textGold:'#FFD060',textGoldDim:'#B08020',cyan:'#00FFFF',
+};
+
+// ─── SVG Components (giữ nguyên) ─────────────────────────────
+function PanelFrame({width=320,height=400,title='',color='gold'}) {
+  const ac=color==='gold'?COLORS.gold:color==='jade'?COLORS.jade:color==='red'?COLORS.redBright:COLORS.blueBright;
+  const ad=color==='gold'?COLORS.goldDark:color==='jade'?COLORS.jadeDark:color==='red'?COLORS.redDark:COLORS.blue;
+  const b=4,co=16;
+  return (<svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id={`panelBg_${color}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={COLORS.panelLight}/><stop offset="100%" stopColor={COLORS.panelBg}/></linearGradient>
+      <linearGradient id={`borderGrad_${color}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={COLORS.goldShine}/><stop offset="40%" stopColor={ac}/><stop offset="100%" stopColor={ad}/></linearGradient>
+      <filter id={`glow_${color}`}><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <rect x="4" y="4" width={width} height={height} rx="3" fill="black" opacity="0.6"/>
+    <rect x="0" y="0" width={width} height={height} rx="2" fill={`url(#panelBg_${color})`}/>
+    <rect x="0" y="0" width={width} height={height} rx="2" fill="none" stroke={`url(#borderGrad_${color})`} strokeWidth={b}/>
+    <rect x={b+2} y={b+2} width={width-b*2-4} height={height-b*2-4} rx="1" fill="none" stroke={ad} strokeWidth="1" opacity="0.6"/>
+    {[[0,0,0],[width,0,90],[width,height,180],[0,height,270]].map(([x,y,r],i)=>(
+      <g key={i} transform={`rotate(${r},${x},${y})`}>
+        <rect x={x} y={y} width={co} height={4} fill={ac}/>
+        <rect x={x} y={y} width={4} height={co} fill={ac}/>
+        <rect x={x+4} y={y+4} width={4} height={4} fill={ac} opacity="0.6"/>
+      </g>
+    ))}
+    <line x1={co} y1={b/2} x2={width-co} y2={b/2} stroke={ac} strokeWidth="1" opacity="0.5"/>
+    <line x1={co} y1={height-b/2} x2={width-co} y2={height-b/2} stroke={ac} strokeWidth="1" opacity="0.5"/>
+    {title&&(<>
+      <rect x={b+2} y={b+2} width={width-b*2-4} height={24} rx="1" fill={ad} opacity="0.5"/>
+      <line x1={b+2} y1={b+26} x2={width-b-2} y2={b+26} stroke={ac} strokeWidth="1"/>
+      <text x={width/2} y={b+18} textAnchor="middle" fill={COLORS.textGold} fontFamily="'Noto Serif SC',serif" fontSize="12" fontWeight="bold" filter={`url(#glow_${color})`}>{title}</text>
+    </>)}
+    {[[width/2,0],[width/2,height]].map(([x,y],i)=>(
+      <g key={i} transform={`translate(${x},${y})`}>
+        <rect x={-4} y={-4} width={8} height={8} fill={ac} transform="rotate(45)" opacity="0.9"/>
+        <rect x={-2} y={-2} width={4} height={4} fill={COLORS.goldShine} transform="rotate(45)" opacity="0.7"/>
+      </g>
+    ))}
+  </svg>);
+}
+
+function StatBar({width=160,value=75,max=100,type='hp'}) {
+  const h=type==='exp'?8:14;
+  const pct=Math.max(0,Math.min(1,value/max));
+  const fillW=Math.round((width-8)*pct);
+  const fs=type==='hp'?'#FF6060':type==='mp'?'#4090FF':type==='exp'?'#FFD040':'#FF2020';
+  const fe=type==='hp'?'#C01010':type==='mp'?'#1040C0':type==='exp'?'#FF8000':'#A00000';
+  const gc=type==='hp'?'#FF8080':type==='mp'?'#80B0FF':type==='exp'?'#FFE080':'#FF4040';
+  const fc=type==='hp'?'#7A1010':type==='mp'?'#10207A':type==='exp'?'#7A5010':'#7A0000';
+  const uid=`bar_${type}_${Math.random().toString(36).slice(2,6)}`;
+  return (<svg width={width} height={h+4} viewBox={`0 0 ${width} ${h+4}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id={`fill_${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={fs}/><stop offset="50%" stopColor={fe}/><stop offset="100%" stopColor={fc}/></linearGradient>
+      <linearGradient id={`frame_${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={COLORS.gold}/><stop offset="100%" stopColor={COLORS.goldDark}/></linearGradient>
+      <clipPath id={`clip_${uid}`}><rect x="4" y="2" width={width-8} height={h} rx="1"/></clipPath>
+    </defs>
+    <rect x="0" y="0" width={width} height={h+4} rx="2" fill={fc} stroke={`url(#frame_${uid})`} strokeWidth="2"/>
+    <rect x="4" y="2" width={width-8} height={h} rx="1" fill="#000000" opacity="0.7"/>
+    <rect x="4" y="2" width={fillW} height={h} rx="1" fill={`url(#fill_${uid})`} clipPath={`url(#clip_${uid})`}/>
+    {fillW>4&&<rect x="4" y="2" width={fillW} height={Math.floor(h/3)} fill={gc} opacity="0.35" clipPath={`url(#clip_${uid})`}/>}
+    {Array.from({length:9}).map((_,i)=>(
+      <line key={i} x1={4+Math.round((width-8)*(i+1)/10)} y1={2} x2={4+Math.round((width-8)*(i+1)/10)} y2={h+2} stroke="black" strokeWidth="1" opacity="0.3"/>
+    ))}
+  </svg>);
+}
+
+function SkillButton({size=52,cooldown=0,baseCd=10,icon,keyLabel,active=false}) {
+  const uid=`sk_${Math.random().toString(36).slice(2,6)}`;
+  const cdPct=Math.max(0,Math.min(1,cooldown));
+  return (<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id={`skBg_${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={active?'#3A2A50':'#1A1030'}/><stop offset="100%" stopColor={active?'#1A0A30':'#0A0820'}/></linearGradient>
+    </defs>
+    <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill={`url(#skBg_${uid})`}/>
+    <rect x="0" y="0" width={size} height={size} rx="4" fill="none" stroke={active?COLORS.purpleBright:COLORS.gold} strokeWidth="2"/>
+    <rect x="0" y="0" width="4" height="4" fill={active?COLORS.purpleBright:COLORS.gold}/>
+    <rect x={size-4} y="0" width="4" height="4" fill={active?COLORS.purpleBright:COLORS.gold}/>
+    <rect x="0" y={size-4} width="4" height="4" fill={active?COLORS.purpleBright:COLORS.gold}/>
+    <rect x={size-4} y={size-4} width="4" height="4" fill={active?COLORS.purpleBright:COLORS.gold}/>
+    {icon&&<foreignObject x="8" y="8" width={size-16} height={size-16}><div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>{icon}</div></foreignObject>}
+    {cdPct>0&&(<><rect x="2" y="2" width={size-4} height={Math.round((size-4)*cdPct)} rx="3" fill="black" opacity="0.65"/><text x={size/2} y={size/2+4} textAnchor="middle" fill="white" fontFamily="monospace" fontSize="11" fontWeight="bold">{Math.ceil(cdPct*baseCd)}s</text></>)}
+    {keyLabel&&!cdPct&&<text x={size-3} y={size-2} textAnchor="end" fill={COLORS.textGold} fontFamily="monospace" fontSize="8" fontWeight="bold">{keyLabel}</text>}
+  </svg>);
+}
+
+function AvatarFrame({size=56,hp=85,showHp=true}) {
+  const uid=`av_${Math.random().toString(36).slice(2,6)}`;
+  return (<svg width={size} height={size+(showHp?10:0)} viewBox={`0 0 ${size} ${size+(showHp?10:0)}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id={`avBg_${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#2A1060"/><stop offset="100%" stopColor="#0A0830"/></linearGradient>
+      <clipPath id={`avClip_${uid}`}><rect x="4" y="4" width={size-8} height={size-8} rx="2"/></clipPath>
+    </defs>
+    <rect x="0" y="0" width={size} height={size} rx="4" fill={COLORS.gold} opacity="0.15"/>
+    <rect x="2" y="2" width={size-4} height={size-4} rx="3" fill={`url(#avBg_${uid})`}/>
+    <rect x="4" y="4" width={size-8} height={size-8} rx="2" fill="#1A0850" clipPath={`url(#avClip_${uid})`}/>
+    <ellipse cx={size/2} cy={size*0.4} rx={size*0.18} ry={size*0.18} fill="#3A2080" clipPath={`url(#avClip_${uid})`}/>
+    <ellipse cx={size/2} cy={size*0.75} rx={size*0.22} ry={size*0.25} fill="#3A2080" clipPath={`url(#avClip_${uid})`}/>
+    <rect x="0" y="0" width={size} height={size} rx="4" fill="none" stroke={COLORS.gold} strokeWidth="2"/>
+    <rect x="0" y="0" width="6" height="2" fill={COLORS.goldLight}/><rect x="0" y="0" width="2" height="6" fill={COLORS.goldLight}/>
+    <rect x={size-6} y="0" width="6" height="2" fill={COLORS.goldLight}/><rect x={size-2} y="0" width="2" height="6" fill={COLORS.goldLight}/>
+    <rect x="0" y={size-2} width="6" height="2" fill={COLORS.goldLight}/><rect x="0" y={size-6} width="2" height="6" fill={COLORS.goldLight}/>
+    <rect x={size-6} y={size-2} width="6" height="2" fill={COLORS.goldLight}/><rect x={size-2} y={size-6} width="2" height="6" fill={COLORS.goldLight}/>
+    <rect x={size-14} y={size-14} width="14" height="14" rx="2" fill="#8B0000" stroke={COLORS.gold} strokeWidth="1"/>
+    <text x={size-7} y={size-4} textAnchor="middle" fill={COLORS.textGold} fontFamily="monospace" fontSize="8" fontWeight="bold">99</text>
+    {showHp&&(<><rect x="2" y={size+2} width={size-4} height={6} rx="1" fill="#3A0010" stroke={COLORS.gold} strokeWidth="1"/><rect x="3" y={size+3} width={Math.round((size-6)*hp/100)} height={4} rx="1" fill="#FF3030"/></>)}
+  </svg>);
+}
+
+function MinimapFrame({size=110,playerX=0,playerY=0,worldW=1024,worldH=1024}) {
+  const uid=`mm_${Math.random().toString(36).slice(2,6)}`;
+  const half=size/2;
+  const px=half+(playerX/worldW-0.5)*(size-16);
+  const py=half+(playerY/worldH-0.5)*(size-16);
+  return (<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id={`mmBg_${uid}`} cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#0A1830"/><stop offset="100%" stopColor="#050C18"/></radialGradient>
+      <clipPath id={`mmClip_${uid}`}><polygon points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`}/></clipPath>
+    </defs>
+    <polygon points={`${half},0 ${size},${half} ${half},${size} 0,${half}`} fill={COLORS.goldDark} stroke={COLORS.gold} strokeWidth="2"/>
+    <polygon points={`${half},4 ${size-4},${half} ${half},${size-4} 4,${half}`} fill={`url(#mmBg_${uid})`}/>
+    {[[half-20,half-10],[half-10,half-25],[half+15,half-15],[half+20,half+5],[half+5,half+20],[half-15,half+15]].map(([cx,cy],i)=>(
+      <ellipse key={i} cx={cx} cy={cy} rx={6+i%3*3} ry={4+i%2*2} fill={`hsl(${140+i*20},30%,25%)`} clipPath={`url(#mmClip_${uid})`}/>
+    ))}
+    <polyline points={`${half-20},${half-20} ${half},${half} ${half+15},${half+15}`} stroke="#203060" strokeWidth="3" fill="none" clipPath={`url(#mmClip_${uid})`}/>
+    <rect x={half+10} y={half-12} width="4" height="4" fill="#FF4040" opacity="0.8" clipPath={`url(#mmClip_${uid})`}/>
+    <rect x={half+5} y={half+12} width="4" height="4" fill="#40FF80" opacity="0.8" clipPath={`url(#mmClip_${uid})`}/>
+    <rect x={px-2} y={py-2} width="5" height="5" fill="white" opacity="0.9" clipPath={`url(#mmClip_${uid})`}/>
+    <rect x={px-3} y={py-3} width="7" height="7" fill="none" stroke={COLORS.gold} strokeWidth="1" opacity="0.9" clipPath={`url(#mmClip_${uid})`}/>
+    <text x={half} y={10} textAnchor="middle" fill={COLORS.gold} fontFamily="monospace" fontSize="7" fontWeight="bold">N</text>
+    <text x={half} y={size-2} textAnchor="middle" fill={COLORS.gold} fontFamily="monospace" fontSize="7" fontWeight="bold">S</text>
+    <text x={3} y={half+3} textAnchor="start" fill={COLORS.gold} fontFamily="monospace" fontSize="7" fontWeight="bold">W</text>
+    <text x={size-3} y={half+3} textAnchor="end" fill={COLORS.gold} fontFamily="monospace" fontSize="7" fontWeight="bold">E</text>
+    {[[half,0],[size,half],[half,size],[0,half]].map(([px2,py2],i)=>(
+      <rect key={i} x={px2-4} y={py2-4} width="8" height="8" fill={COLORS.gold} transform={`rotate(45,${px2},${py2})`}/>
+    ))}
+  </svg>);
+}
+
+function ItemIcon({type='sword',size=40,rarity=1,count}) {
+  const uid=`item_${Math.random().toString(36).slice(2,6)}`;
+  const rc=rarity===1?'#808080':rarity===2?'#40A040':rarity===3?'#4080FF':rarity===4?'#A040FF':'#FF8000';
+  const rb=rarity===1?'#1A1A1A':rarity===2?'#0A200A':rarity===3?'#0A1030':rarity===4?'#1A0A30':'#301008';
+  const cx=size/2,cy=size/2,s=size;
+  return (<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id={`itemBg_${uid}`} cx="50%" cy="50%" r="70%"><stop offset="0%" stopColor={rb}/><stop offset="100%" stopColor="#000000"/></radialGradient></defs>
+    <rect x="0" y="0" width={size} height={size} rx="3" fill={`url(#itemBg_${uid})`} stroke={rc} strokeWidth="2"/>
+    <rect x="2" y="2" width={size-4} height={size-4} rx="2" fill="none" stroke={rc} strokeWidth="1" opacity="0.4"/>
+    {type==='sword'&&<g><polygon points={`${cx},${s*0.1} ${cx+3},${s*0.45} ${cx},${s*0.5} ${cx-3},${s*0.45}`} fill="#C0D8FF" stroke={rc} strokeWidth="1"/><rect x={cx-8} y={s*0.5} width={16} height={4} rx="1" fill={rc}/><rect x={cx-2} y={s*0.54} width={4} height={s*0.3} fill="#8B4513" stroke={rc} strokeWidth="1"/><rect x={cx-4} y={s*0.84} width={8} height={4} rx="2" fill={rc}/></g>}
+    {type==='armor'&&<g><path d={`M${cx-10},${s*0.25} L${cx-12},${s*0.3} L${cx-12},${s*0.72} Q${cx},${s*0.82} ${cx+12},${s*0.72} L${cx+12},${s*0.3} L${cx+10},${s*0.25} Z`} fill="#3A4A6A" stroke={rc} strokeWidth="1.5"/><rect x={cx-3} y={s*0.38} width={6} height={s*0.2} rx="2" fill={rc} opacity="0.7"/></g>}
+    {type==='ring'&&<g><circle cx={cx} cy={cy} r={s*0.3} fill="none" stroke={rc} strokeWidth="4"/><polygon points={`${cx},${s*0.14} ${cx+5},${s*0.24} ${cx},${s*0.28} ${cx-5},${s*0.24}`} fill={rc}/></g>}
+    {type==='pill'&&<g><rect x={cx-7} y={s*0.2} width={14} height={s*0.56} rx="7" fill="#C04020" stroke={rc} strokeWidth="1.5"/><rect x={cx-4} y={s*0.24} width={4} height={s*0.1} rx="2" fill="white" opacity="0.4"/></g>}
+    {type==='book'&&<g><rect x={cx-12} y={s*0.2} width={24} height={s*0.6} rx="1" fill="#4A2A0A" stroke={rc} strokeWidth="1.5"/><rect x={cx-10} y={s*0.22} width={20} height={s*0.56} rx="1" fill="#F0E8C0"/><text x={cx+2} y={s*0.5} textAnchor="middle" fill={rc} fontFamily="monospace" fontSize="10" fontWeight="bold" opacity="0.8">文</text></g>}
+    {type==='gem'&&<g><polygon points={`${cx},${s*0.15} ${cx+10},${s*0.3} ${cx+10},${s*0.6} ${cx},${s*0.75} ${cx-10},${s*0.6} ${cx-10},${s*0.3}`} fill="#A000C0" stroke={rc} strokeWidth="1.5"/><polygon points={`${cx-2},${s*0.2} ${cx+4},${s*0.28} ${cx+1},${s*0.35} ${cx-4},${s*0.28}`} fill="white" opacity="0.5"/></g>}
+    {type==='material'&&<g><polygon points={`${cx},${s*0.18} ${cx+6},${s*0.38} ${cx},${s*0.48} ${cx-6},${s*0.38}`} fill="#40C0A0" stroke={rc} strokeWidth="1"/><rect x={cx-3} y={s*0.48} width={6} height={s*0.24} rx="2" fill="#20604A" stroke={rc} strokeWidth="1"/></g>}
+    {count!==undefined&&count>1&&(<><rect x={size-16} y={size-12} width="16" height="12" rx="1" fill="black" opacity="0.8"/><text x={size-8} y={size-3} textAnchor="middle" fill="white" fontFamily="monospace" fontSize="9" fontWeight="bold">{count>99?'99+':count}</text></>)}
+    {rarity>=3&&<text x={size/2} y={size-1} textAnchor="middle" fill={rc} fontFamily="monospace" fontSize="6">{'★'.repeat(rarity)}</text>}
+  </svg>);
+}
+
+function GameButton({width=100,height=30,label='OK',variant='gold',state='normal',onClick}) {
+  const uid=`btn_${Math.random().toString(36).slice(2,6)}`;
+  const tc=variant==='gold'?(state==='pressed'?'#8B6010':'#E8C050'):variant==='red'?(state==='pressed'?'#600010':'#E04030'):variant==='jade'?(state==='pressed'?'#0A5030':'#30B070'):(state==='pressed'?'#101020':'#2A2A4A');
+  const bc=variant==='gold'?(state==='pressed'?'#5A3A00':'#A06810'):variant==='red'?(state==='pressed'?'#400008':'#900010'):variant==='jade'?(state==='pressed'?'#053020':'#107040'):(state==='pressed'?'#080810':'#181828');
+  const sc=variant==='gold'?COLORS.goldShine:variant==='red'?'#FF8080':variant==='jade'?'#80FFD0':COLORS.gold;
+  const textC=state==='disabled'?'#606060':variant==='gold'?'#1A0800':variant==='jade'?'#003020':'#F0E8D0';
+  const op=state==='disabled'?0.5:1;
+  return (<svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{imageRendering:'pixelated',display:'block',cursor:state==='disabled'?'not-allowed':'pointer',opacity:op}} onClick={state!=='disabled'?onClick:undefined} xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id={`btnBg_${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={tc}/><stop offset="100%" stopColor={bc}/></linearGradient></defs>
+    {state!=='pressed'&&<rect x="2" y="2" width={width} height={height} rx="3" fill="black" opacity="0.4"/>}
+    <rect x="0" y={state==='pressed'?2:0} width={width} height={height} rx="3" fill={`url(#btnBg_${uid})`} stroke={sc} strokeWidth="2"/>
+    {state!=='pressed'&&<rect x="3" y="2" width={width-6} height={4} rx="2" fill="white" opacity="0.2"/>}
+    <text x={width/2} y={height/2+(state==='pressed'?6:5)} textAnchor="middle" fill={textC} fontFamily="'Noto Serif SC',serif" fontSize={height*0.42} fontWeight="bold">{label}</text>
+  </svg>);
+}
+
+function DamageNumber({value,type='normal',x=0,y=0}) {
+  const color=type==='crit'?'#FF8000':type==='miss'?'#A0A0A0':type==='heal'?'#40FF80':'#FF4040';
+  const sz=type==='crit'?22:16;
+  const text=type==='miss'?'MISS':type==='heal'?`+${value}`:`-${value}`;
+  return (<svg width={80} height={40} viewBox="0 0 80 40" style={{imageRendering:'pixelated',position:'absolute',left:x,top:y,pointerEvents:'none',animation:'floatUp 1.8s ease-out forwards',zIndex:50}} xmlns="http://www.w3.org/2000/svg">
+    <text x="40" y={sz+4} textAnchor="middle" fill={color} fontFamily="monospace" fontSize={sz} fontWeight="bold" stroke="black" strokeWidth="3" paintOrder="stroke">{text}</text>
+    {type==='crit'&&<text x="40" y={sz+18} textAnchor="middle" fill="#FFE040" fontFamily="monospace" fontSize="10" fontWeight="bold" stroke="black" strokeWidth="2" paintOrder="stroke">暴击!</text>}
+  </svg>);
+}
+
+function SkillIcon({type='fire',size=36}) {
+  const uid=`ski_${Math.random().toString(36).slice(2,6)}`;
+  const cx=size/2,cy=size/2;
+  const configs={fire:{bg1:'#3A0800',bg2:'#180400',color:'#FF6020'},ice:{bg1:'#003080',bg2:'#001840',color:'#80D0FF'},thunder:{bg1:'#303000',bg2:'#181800',color:'#FFE020'},wind:{bg1:'#003808',bg2:'#001804',color:'#40FF90'},earth:{bg1:'#302010',bg2:'#181008',color:'#C09040'},light:{bg1:'#303010',bg2:'#181808',color:'#FFFF80'},dark:{bg1:'#180030',bg2:'#0C0018',color:'#C060FF'},sword:{bg1:'#102030',bg2:'#081018',color:'#80C0FF'}};
+  const {bg1,bg2,color}=configs[type]||configs.sword;
+  return (<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id={`skiBg_${uid}`} cx="50%" cy="50%" r="70%"><stop offset="0%" stopColor={bg1}/><stop offset="100%" stopColor={bg2}/></radialGradient></defs>
+    <rect x="0" y="0" width={size} height={size} rx="4" fill={`url(#skiBg_${uid})`}/>
+    {type==='fire'&&<g><polygon points={`${cx},${size*0.1} ${cx+8},${size*0.4} ${cx+4},${size*0.35} ${cx+6},${size*0.65} ${cx},${size*0.85} ${cx-6},${size*0.65} ${cx-4},${size*0.35} ${cx-8},${size*0.4}`} fill="#FF6020" stroke="#FF8040" strokeWidth="1"/><polygon points={`${cx},${size*0.25} ${cx+4},${size*0.45} ${cx},${size*0.65} ${cx-4},${size*0.45}`} fill="#FFD040" opacity="0.7"/></g>}
+    {type==='ice'&&<g>{[0,60,120,180,240,300].map(a=>{const r=a*Math.PI/180;return <line key={a} x1={cx} y1={cy} x2={cx+Math.cos(r)*size*0.38} y2={cy+Math.sin(r)*size*0.38} stroke={color} strokeWidth="2"/>})}<circle cx={cx} cy={cy} r={4} fill={color}/></g>}
+    {type==='thunder'&&<polygon points={`${cx+4},${size*0.1} ${cx-4},${size*0.45} ${cx+2},${size*0.45} ${cx-4},${size*0.9} ${cx+6},${size*0.5} ${cx-2},${size*0.5}`} fill={color} stroke="#FFF080" strokeWidth="1"/>}
+    {type==='wind'&&<g>{[0.3,0.5,0.7].map((y,i)=><path key={i} d={`M${cx-size*0.35},${size*y} Q${cx},${size*(y-0.12)} ${cx+size*0.35},${size*y}`} fill="none" stroke={color} strokeWidth={2-i*0.5} opacity={1-i*0.2}/>)}</g>}
+    {type==='earth'&&<g><polygon points={`${cx-12},${size*0.6} ${cx},${size*0.25} ${cx+12},${size*0.6}`} fill={color} stroke="#A06020" strokeWidth="1.5"/><polygon points={`${cx-8},${size*0.7} ${cx+8},${size*0.7} ${cx+10},${size*0.85} ${cx-10},${size*0.85}`} fill="#A06020" stroke={color} strokeWidth="1"/></g>}
+    {type==='light'&&<g><circle cx={cx} cy={cy} r={size*0.2} fill={color} opacity="0.9"/>{[0,45,90,135].map(a=>{const r=a*Math.PI/180;return <line key={a} x1={cx+Math.cos(r)*size*0.22} y1={cy+Math.sin(r)*size*0.22} x2={cx+Math.cos(r)*size*0.42} y2={cy+Math.sin(r)*size*0.42} stroke={color} strokeWidth="2"/>})}</g>}
+    {type==='dark'&&<g><circle cx={cx} cy={cy} r={size*0.35} fill={color} opacity="0.15"/><circle cx={cx} cy={cy} r={size*0.22} fill={color} opacity="0.35"/><circle cx={cx} cy={cy} r={size*0.12} fill={color} opacity="0.8"/>{[0,72,144,216,288].map(a=>{const r=a*Math.PI/180;return <circle key={a} cx={cx+Math.cos(r)*size*0.32} cy={cy+Math.sin(r)*size*0.32} r={2} fill={color}/>})}</g>}
+    {type==='sword'&&<g><line x1={cx-size*0.3} y1={size*0.8} x2={cx+size*0.3} y2={size*0.2} stroke={color} strokeWidth="3"/><line x1={cx-size*0.2} y1={size*0.45} x2={cx+size*0.15} y2={size*0.55} stroke={color} strokeWidth="2" opacity="0.7"/><circle cx={cx-size*0.3} cy={size*0.8} r={3} fill={COLORS.gold}/></g>}
+  </svg>);
+}
+
+function Ornament({width=200,height=20,color=COLORS.gold}) {
+  const cx=width/2,cy=height/2;
+  return (<svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <line x1={4} y1={cy} x2={cx-16} y2={cy} stroke={color} strokeWidth="1" opacity="0.7"/>
+    <rect x={14} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,16,${cy})`}/>
+    <rect x={cx-6} y={cy-6} width={12} height={12} fill={color} transform={`rotate(45,${cx},${cy})`}/>
+    <rect x={cx-3} y={cy-3} width={6} height={6} fill="white" opacity="0.4" transform={`rotate(45,${cx},${cy})`}/>
+    <line x1={cx+16} y1={cy} x2={width-4} y2={cy} stroke={color} strokeWidth="1" opacity="0.7"/>
+    <rect x={width-18} y={cy-2} width={4} height={4} fill={color} opacity="0.5" transform={`rotate(45,${width-16},${cy})`}/>
+  </svg>);
+}
+
+function CloudDecoration({width=120,color='#C0E0FF'}) {
+  return (<svg width={width} height={24} viewBox={`0 0 ${width} 24`} style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    {[[8,12,16,8],[16,8,24,12],[24,8,16,12],[40,12,20,8],[56,14,24,8],[72,12,16,8],[80,10,16,10],[88,12,20,8]].map(([x,y,w,h],i)=>(
+      <rect key={i} x={x} y={y} width={w} height={h} rx="4" fill={color} opacity={0.12+(i%3)*0.04}/>
+    ))}
+  </svg>);
+}
+
+function EquipSilhouette({equip}) {
+  const hw=!!equip.weapon,hc=!!equip.chest,hh=!!equip.helm,hr=!!equip.ring;
+  return (<svg width={108} height={218} viewBox="0 0 108 218" style={{imageRendering:'pixelated',display:'block'}} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="silBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0A1030"/><stop offset="100%" stopColor="#050810"/></linearGradient>
+      <radialGradient id="silAura" cx="50%" cy="55%" r="45%"><stop offset="0%" stopColor="#C8A84B" stopOpacity={hc?'0.10':'0.04'}/><stop offset="100%" stopColor="transparent" stopOpacity="0"/></radialGradient>
+    </defs>
+    <rect x="0" y="0" width="108" height="218" rx="4" fill="url(#silBg)"/>
+    <rect x="0" y="0" width="108" height="218" rx="4" fill="url(#silAura)"/>
+    <rect x="0" y="0" width="108" height="218" rx="4" fill="none" stroke="#C8A84B" strokeWidth="1" opacity="0.15"/>
+    <path d="M38,112 L26,186 L40,190 L54,155 L68,190 L82,186 L70,112 Z" fill={hc?'#243450':'#161622'} stroke="#C8A84B" strokeWidth="0.8" opacity="0.9"/>
+    <path d="M36,72 L28,112 L80,112 L72,72 Q54,62 36,72 Z" fill={hc?'#344468':'#1C1C2C'} stroke="#C8A84B" strokeWidth="0.8"/>
+    {hc&&<><path d="M47,84 L54,80 L61,84 L59,94 L54,98 L49,94 Z" fill="#C8A84B" opacity="0.55"/><path d="M36,72 Q22,66 20,82 L28,90 L36,84 Z" fill="#2A3A5A" stroke="#C8A84B" strokeWidth="0.8"/><path d="M72,72 Q86,66 88,82 L80,90 L72,84 Z" fill="#2A3A5A" stroke="#C8A84B" strokeWidth="0.8"/></>}
+    <path d="M36,72 L22,102 L28,108 L40,82 Z" fill={hc?'#243450':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+    <path d="M72,72 L86,102 L80,108 L68,82 Z" fill={hc?'#243450':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+    <rect x="48" y="54" width="12" height="19" rx="3" fill="#191928" stroke="#C8A84B" strokeWidth="0.6"/>
+    <ellipse cx="54" cy="42" rx="18" ry="20" fill={hh?'#2A3060':'#1C1C2C'} stroke="#C8A84B" strokeWidth="0.8"/>
+    {hh?<><path d="M36,40 Q36,22 54,17 Q72,22 72,40" fill="#3A4A8A" stroke="#C8A84B" strokeWidth="1"/><rect x="52" y="11" width="4" height="5" rx="1" fill="#C8A84B" opacity="0.9"/></>
+      :<><ellipse cx="54" cy="22" rx="8" ry="7" fill="#180818" stroke="#C8A84B" strokeWidth="0.6"/><line x1="54" y1="13" x2="54" y2="5" stroke="#C8A84B" strokeWidth="1.5"/><ellipse cx="54" cy="5" rx="3" ry="2" fill="#C8A84B" opacity="0.8"/></>}
+    <ellipse cx="47" cy="45" rx="3" ry="2" fill="#C8A84B" opacity="0.45"/>
+    <ellipse cx="61" cy="45" rx="3" ry="2" fill="#C8A84B" opacity="0.45"/>
+    <rect x="30" y="109" width="48" height="5" rx="1" fill="#C8A84B" opacity={equip.belt?0.5:0.15}/>
+    <rect x="30" y="188" width="16" height="12" rx="2" fill={equip.boots?'#3A4A6A':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+    <rect x="62" y="188" width="16" height="12" rx="2" fill={equip.boots?'#3A4A6A':'#141420'} stroke="#C8A84B" strokeWidth="0.7"/>
+    {hw&&<g><line x1="94" y1="185" x2="94" y2="55" stroke="#C0D8FF" strokeWidth="2.5"/><rect x="88" y="110" width="12" height="4" rx="1" fill="#C8A84B"/><polygon points="94,46 90,58 98,58" fill="#C0D8FF" stroke="#C8A84B" strokeWidth="0.8"/></g>}
+    {hr&&<ellipse cx="85" cy="105" rx="7" ry="5" fill="none" stroke="#A040FF" strokeWidth="1.5" opacity="0.6"/>}
+  </svg>);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOP-DOWN 2D MAP CANVAS
+// ═══════════════════════════════════════════════════════════
+
+// Tile types
+const T = { GRASS:0, DIRT:1, STONE:2, WATER:3, DEEP_WATER:4, TREE:5, ROCK:6, FLOWER:7, PATH:8, RUINS:9, LAVA:10, SHRINE:11 };
+
+// Màu tile
+const TILE_COLORS = {
+  [T.GRASS]:     ['#1A3A12','#1E4214','#224816'],
+  [T.DIRT]:      ['#4A3018','#52361C','#3E2810'],
+  [T.STONE]:     ['#2A2A34','#303040','#242430'],
+  [T.WATER]:     ['#102848','#0E2440','#142C50'],
+  [T.DEEP_WATER]:['#080E20','#0A1228','#060C1A'],
+  [T.PATH]:      ['#6A5030','#705A38','#60482A'],
+  [T.RUINS]:     ['#2A2020','#302428','#241C1C'],
+  [T.LAVA]:      ['#4A0800','#500A00','#3E0600'],
+  [T.SHRINE]:    ['#2A1A40','#301E48','#241638'],
+  [T.FLOWER]:    ['#1E4216','#228018','#1C3C14'],
+  [T.TREE]:      ['#0E2808','#102C0A','#0C2406'],
+  [T.ROCK]:      ['#282830','#2C2C38','#24242C'],
+};
+
+// WORLD_W, WORLD_H, TILE_SIZE loaded from data.js
+const COLS = Math.ceil(WORLD_W / TILE_SIZE);
+const ROWS = Math.ceil(WORLD_H / TILE_SIZE);
+
+// Sinh map procedurally
+function generateMap() {
+  const map = [];
+  for (let r = 0; r < ROWS; r++) {
+    map.push([]);
+    for (let c = 0; c < COLS; c++) {
+      // Biên là nước
+      if (r < 2 || c < 2 || r >= ROWS-2 || c >= COLS-2) { map[r].push(T.DEEP_WATER); continue; }
+      if (r < 4 || c < 4 || r >= ROWS-4 || c >= COLS-4) { map[r].push(T.WATER); continue; }
+
+      // Noise đơn giản để tạo địa hình
+      const nx = c / COLS, ny = r / ROWS;
+      const n1 = Math.sin(nx*13.7 + ny*8.3)*0.5 + Math.sin(nx*6.2 - ny*11.1)*0.3 + Math.sin(nx*23.1 + ny*4.7)*0.2;
+      const n2 = Math.sin(nx*5.1 + ny*17.9)*0.5 + Math.sin(nx*9.3 + ny*3.7)*0.5;
+      const n  = (n1 + n2) / 2;
+
+      // Khu vực trung tâm: sân bằng
+      const dx = (c - COLS/2) / (COLS/2), dy = (r - ROWS/2) / (ROWS/2);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      let tile;
+      if (dist < 0.12) {
+        // Trung tâm: shrine / sân chiến
+        tile = (Math.abs(c - Math.round(COLS/2)) < 2 && Math.abs(r - Math.round(ROWS/2)) < 2) ? T.SHRINE : T.PATH;
+      } else if (dist < 0.18) {
+        tile = T.PATH;
+      } else if (n > 0.4) {
+        tile = T.TREE;
+      } else if (n > 0.25) {
+        tile = n > 0.35 ? T.ROCK : T.STONE;
+      } else if (n < -0.3) {
+        tile = T.WATER;
+      } else if (n < -0.15) {
+        tile = T.DIRT;
+      } else if (Math.random() < 0.04) {
+        tile = T.FLOWER;
+      } else if (Math.random() < 0.02) {
+        tile = T.RUINS;
+      } else {
+        tile = T.GRASS;
+      }
+
+      // Thêm path từ cạnh về trung tâm (4 hướng)
+      const midC = Math.round(COLS/2), midR = Math.round(ROWS/2);
+      if ((Math.abs(c - midC) < 2 && r > midR - ROWS*0.18 && r < midR) ||
+          (Math.abs(c - midC) < 2 && r < midR + ROWS*0.18 && r > midR) ||
+          (Math.abs(r - midR) < 2 && c > midC - COLS*0.18 && c < midC) ||
+          (Math.abs(r - midR) < 2 && c < midC + COLS*0.18 && c > midC)) {
+        tile = T.PATH;
+      }
+
+      map[r].push(tile);
+    }
+  }
+  return map;
+}
+
+// Các objects trên map (cây, đá — blocking)
+function isBlocking(tile) {
+  return tile === T.TREE || tile === T.ROCK || tile === T.WATER || tile === T.DEEP_WATER;
+}
+
+// NPC/Enemies — loaded from data.js (window.INITIAL_ENTITIES built by data.js)
+
+
+// ── TOP-DOWN MAP COMPONENT ────────────────────────────────────
+function TopDownMap({ bossHp, setBossHp, floats, setFloats, spawnFloat, onNpcClick, showNotif, autoFight, navTarget, onNavConsumed, questIndicators, onMobDeath }) {
+  const canvasRef   = useRef(null);
+  const mapRef      = useRef(null);
+  const stateRef    = useRef({
+    player: { x: WORLD_W/2, y: WORLD_H/2 + 160, angle: 0 },
+    camera: { x: 0, y: 0 },
+    entities: (window.INITIAL_ENTITIES || []).map(e => ({...e})),
+    // Joystick
+    jsActive: false, jsOrigin: {x:0,y:0}, jsDir: {x:0,y:0},
+    // Click-to-move
+    moveTarget: null,
+    // anim
+    tick: 0,
+    particles: [],
+    processedDeadIds: new Set(),
+    floatIdCounter: 200,
+    // attack cooldown per entity
+    attackTimers: {},
+    // walk anim
+    walkFrame: 0,
+    walkTick: 0,
+    // player effects
+    playerFlash: 0,
+    // canvas size
+    vw: 390, vh: 260,
+  });
+  const joystickRef  = useRef(null);
+  const markerRef    = useRef(null);
+  const markerPosRef = useRef(null);
+  const animRef      = useRef(null);
+  const entitiesRef  = useRef(stateRef.current.entities);
+  const bossHpRef    = useRef(bossHp);
+  useEffect(() => { bossHpRef.current = bossHp; }, [bossHp]);
+  const questIndicatorsRef = useRef(questIndicators||{});
+  useEffect(() => { questIndicatorsRef.current = questIndicators||{}; }, [questIndicators]);
+  const onMobDeathRef = useRef(onMobDeath);
+  useEffect(() => { onMobDeathRef.current = onMobDeath; }, [onMobDeath]);
+
+  // External navigation (quest tracker click-to-go)
+  useEffect(() => {
+    if (!navTarget) return;
+    stateRef.current.moveTarget = { x: navTarget.x, y: navTarget.y };
+    onNavConsumed && onNavConsumed();
+  }, [navTarget, onNavConsumed]);
+
+  // Init map once
+  if (!mapRef.current) mapRef.current = generateMap();
+
+  // Draw pixel tile
+  const drawTile = useCallback((ctx, tile, px, py, size, tick) => {
+    const colors = TILE_COLORS[tile] || TILE_COLORS[T.GRASS];
+    const ci = (tick + px + py) % colors.length;
+    ctx.fillStyle = colors[ci];
+    ctx.fillRect(px, py, size, size);
+
+    // Decoration
+    if (tile === T.GRASS) {
+      ctx.fillStyle = 'rgba(60,180,40,0.18)';
+      ctx.fillRect(px+2, py+2, 4, 4);
+    } else if (tile === T.WATER || tile === T.DEEP_WATER) {
+      const wOff = Math.sin(tick*0.05 + px*0.1) * 2;
+      ctx.fillStyle = 'rgba(80,160,255,0.12)';
+      ctx.fillRect(px+4+wOff, py+8, 14, 3);
+      ctx.fillRect(px+10-wOff, py+18, 10, 3);
+    } else if (tile === T.PATH) {
+      ctx.fillStyle = 'rgba(200,160,80,0.15)';
+      ctx.fillRect(px+1, py+1, size-2, size-2);
+    } else if (tile === T.SHRINE) {
+      ctx.fillStyle = 'rgba(200,150,255,0.3)';
+      ctx.fillRect(px+8, py+8, 16, 16);
+      ctx.fillStyle = '#C8A84B';
+      ctx.fillRect(px+14, py+4, 4, 24);
+      ctx.fillRect(px+6, py+12, 20, 4);
+    } else if (tile === T.FLOWER) {
+      ctx.fillStyle = '#FF80C0';
+      ctx.fillRect(px+10, py+10, 4, 4);
+      ctx.fillStyle = '#FFE040';
+      ctx.fillRect(px+18, py+14, 4, 4);
+    }
+  }, []);
+
+  const drawTree = useCallback((ctx, px, py, size, tick) => {
+    // Trunk
+    ctx.fillStyle = '#4A2A0A';
+    ctx.fillRect(px+12, py+20, 8, 12);
+    // Canopy
+    const g = ctx.createRadialGradient(px+size/2, py+10, 2, px+size/2, py+10, 14);
+    g.addColorStop(0, '#2A6010');
+    g.addColorStop(0.6, '#1A4808');
+    g.addColorStop(1, '#0E2804');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(px+size/2, py+12, 13, 0, Math.PI*2);
+    ctx.fill();
+    // Highlight
+    ctx.fillStyle = 'rgba(80,220,40,0.18)';
+    ctx.beginPath();
+    ctx.arc(px+size/2-3, py+8, 6, 0, Math.PI*2);
+    ctx.fill();
+  }, []);
+
+  const drawRock = useCallback((ctx, px, py) => {
+    ctx.fillStyle = '#343448';
+    ctx.beginPath();
+    ctx.moveTo(px+16, py+4);
+    ctx.lineTo(px+28, py+14);
+    ctx.lineTo(px+24, py+28);
+    ctx.lineTo(px+8,  py+28);
+    ctx.lineTo(px+4,  py+16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(200,200,255,0.15)';
+    ctx.beginPath();
+    ctx.moveTo(px+16, py+5);
+    ctx.lineTo(px+26, py+13);
+    ctx.lineTo(px+20, py+8);
+    ctx.closePath();
+    ctx.fill();
+  }, []);
+
+  const drawPlayer = useCallback((ctx, sx, sy, walkFrame, flash) => {
+    const wf = Math.floor(walkFrame) % 4;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(sx, sy+14, 10, 4, 0, 0, Math.PI*2); ctx.fill();
+    // Robe
+    ctx.fillStyle = flash > 0 ? '#FFFFFF' : '#2A3A6A';
+    ctx.beginPath();
+    ctx.moveTo(sx-8, sy);
+    ctx.lineTo(sx-10, sy+14);
+    ctx.lineTo(sx, sy+16);
+    ctx.lineTo(sx+10, sy+14);
+    ctx.lineTo(sx+8, sy);
+    ctx.closePath();
+    ctx.fill();
+    // Leg sway
+    if (wf === 0 || wf === 2) {
+      ctx.fillStyle = '#1A2A5A';
+      ctx.fillRect(sx-5, sy+12, 4, 5);
+      ctx.fillRect(sx+1, sy+12, 4, 5);
+    } else {
+      ctx.fillStyle = '#1A2A5A';
+      ctx.fillRect(sx-6, sy+12, 4, 5);
+      ctx.fillRect(sx+2, sy+12, 4, 5);
+    }
+    // Body emblem
+    ctx.fillStyle = '#C8A84B';
+    ctx.fillRect(sx-2, sy+3, 4, 6);
+    // Head
+    ctx.fillStyle = flash > 0 ? '#FFFFFF' : '#1C1C2C';
+    ctx.beginPath(); ctx.arc(sx, sy-6, 8, 0, Math.PI*2); ctx.fill();
+    // Hair bun
+    ctx.fillStyle = '#C8A84B';
+    ctx.fillRect(sx-2, sy-15, 4, 4);
+    ctx.beginPath(); ctx.arc(sx, sy-16, 3, 0, Math.PI*2); ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#FF8080';
+    ctx.fillRect(sx-4, sy-7, 3, 2);
+    ctx.fillRect(sx+1, sy-7, 3, 2);
+    // Sword glow
+    ctx.strokeStyle = 'rgba(80,160,255,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx+9, sy+10);
+    ctx.lineTo(sx+18, sy-10);
+    ctx.stroke();
+    ctx.fillStyle = '#80C0FF';
+    ctx.fillRect(sx+17, sy-12, 4, 4);
+  }, []);
+
+  const drawEntity = useCallback((ctx, e, sx, sy, tick) => {
+    if (e.hp <= 0) return;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath(); ctx.ellipse(sx, sy+e.size, e.size*0.9, e.size*0.35, 0, 0, Math.PI*2); ctx.fill();
+
+    if (e.type === 'boss') {
+      // Aura
+      const auraR = e.size + 8 + Math.sin(tick*0.05)*3;
+      const ag = ctx.createRadialGradient(sx, sy, 2, sx, sy, auraR);
+      ag.addColorStop(0, 'rgba(255,0,0,0.25)');
+      ag.addColorStop(1, 'rgba(255,0,0,0)');
+      ctx.fillStyle = ag;
+      ctx.beginPath(); ctx.arc(sx, sy, auraR, 0, Math.PI*2); ctx.fill();
+      // Body
+      ctx.fillStyle = '#3A0010';
+      ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#FF2020'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.stroke();
+      // Wings
+      ctx.fillStyle = 'rgba(150,0,30,0.7)';
+      ctx.beginPath(); ctx.moveTo(sx, sy-8); ctx.lineTo(sx-24, sy-18); ctx.lineTo(sx-18, sy); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(sx, sy-8); ctx.lineTo(sx+24, sy-18); ctx.lineTo(sx+18, sy); ctx.closePath(); ctx.fill();
+      // Eyes
+      ctx.fillStyle = '#FF4040';
+      ctx.fillRect(sx-7, sy-5, 5, 4);
+      ctx.fillRect(sx+2, sy-5, 5, 4);
+      ctx.fillStyle = '#FFD0D0';
+      ctx.fillRect(sx-6, sy-4, 2, 2);
+      ctx.fillRect(sx+3, sy-4, 2, 2);
+      // Crown
+      ctx.fillStyle = '#C8A84B';
+      for (let i = -2; i <= 2; i++) ctx.fillRect(sx+i*4-1, sy-e.size-6+Math.abs(i)*2, 2, 6-Math.abs(i)*2);
+      // HP bar
+      const bw = 50, bh = 4;
+      ctx.fillStyle = '#3A0000';
+      ctx.fillRect(sx-bw/2, sy-e.size-18, bw, bh);
+      ctx.fillStyle = '#FF2020';
+      ctx.fillRect(sx-bw/2, sy-e.size-18, bw*(e.hp/e.maxHp), bh);
+      ctx.strokeStyle = '#7A0000'; ctx.lineWidth = 1;
+      ctx.strokeRect(sx-bw/2, sy-e.size-18, bw, bh);
+
+    } else if (e.type === 'mob') {
+      const mt = e.mobType || 'demon';
+      // HP bar (shared)
+      const bw = 24;
+      ctx.fillStyle = '#1A0000';
+      ctx.fillRect(sx-bw/2, sy-e.size-9, bw, 3);
+      ctx.fillStyle = e.color;
+      ctx.fillRect(sx-bw/2, sy-e.size-9, bw*(e.hp/e.maxHp), 3);
+
+      if (mt === 'wolf') {
+        // Sói Xám — thân xám, tai nhọn
+        ctx.fillStyle = '#707080';
+        ctx.beginPath(); ctx.ellipse(sx, sy, e.size, e.size*0.75, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#909090';
+        ctx.beginPath(); ctx.moveTo(sx-5, sy-e.size+2); ctx.lineTo(sx-8, sy-e.size-6); ctx.lineTo(sx-1, sy-e.size); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(sx+5, sy-e.size+2); ctx.lineTo(sx+8, sy-e.size-6); ctx.lineTo(sx+1, sy-e.size); ctx.fill();
+        ctx.fillStyle = '#FF3030'; ctx.fillRect(sx-3, sy-2, 2, 2); ctx.fillRect(sx+1, sy-2, 2, 2);
+        ctx.fillStyle = '#FFF'; ctx.fillRect(sx-2, sy+2, 6, 2);
+
+      } else if (mt === 'water_demon') {
+        // Thủy Yêu — xanh lam, dạng sóng
+        const wob = Math.sin(tick*0.08)*2;
+        ctx.fillStyle = '#1040A0';
+        ctx.beginPath(); ctx.ellipse(sx, sy+wob, e.size, e.size*0.9, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#40C8FF'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.ellipse(sx, sy+wob, e.size, e.size*0.9, 0, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = '#80E8FF'; ctx.fillRect(sx-4, sy-3+wob, 3, 3); ctx.fillRect(sx+1, sy-3+wob, 3, 3);
+        // Tentacle
+        ctx.strokeStyle = '#2080D0'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(sx-e.size, sy+4); ctx.quadraticCurveTo(sx-e.size-8, sy+10+wob, sx-e.size-4, sy+16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sx+e.size, sy+4); ctx.quadraticCurveTo(sx+e.size+8, sy+10-wob, sx+e.size+4, sy+16); ctx.stroke();
+
+      } else if (mt === 'white_tiger') {
+        // Bạch Hổ — trắng bạc, to hơn
+        ctx.fillStyle = '#D0D8E8';
+        ctx.beginPath(); ctx.ellipse(sx, sy, e.size*1.1, e.size*0.85, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#8090B0'; ctx.lineWidth = 1;
+        // Vằn hổ
+        for (let i=-1;i<=1;i++) { ctx.beginPath(); ctx.moveTo(sx+i*5, sy-e.size+2); ctx.lineTo(sx+i*4, sy+e.size-2); ctx.stroke(); }
+        // Tai
+        ctx.fillStyle = '#E8EEF8';
+        ctx.beginPath(); ctx.moveTo(sx-6, sy-e.size+1); ctx.lineTo(sx-10, sy-e.size-7); ctx.lineTo(sx-2, sy-e.size); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(sx+6, sy-e.size+1); ctx.lineTo(sx+10, sy-e.size-7); ctx.lineTo(sx+2, sy-e.size); ctx.fill();
+        ctx.fillStyle = '#FF6060'; ctx.fillRect(sx-4, sy-2, 3, 3); ctx.fillRect(sx+1, sy-2, 3, 3);
+
+      } else if (mt === 'ruin_beast') {
+        // Phế Tích Thú — nâu đất, giáp đá
+        ctx.fillStyle = '#5A3A18';
+        ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#9A7040'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.stroke();
+        // Giáp đá
+        ctx.fillStyle = '#8A6030';
+        ctx.fillRect(sx-e.size+2, sy-4, 6, 8);
+        ctx.fillRect(sx+e.size-8, sy-4, 6, 8);
+        ctx.fillStyle = '#C09050'; ctx.fillRect(sx-3, sy-3, 3, 3); ctx.fillRect(sx+1, sy-3, 3, 3);
+
+      } else if (mt === 'fire_spirit') {
+        // Hỏa Linh — cam đỏ, aura lửa
+        const fp = Math.sin(tick*0.1)*3;
+        const fg = ctx.createRadialGradient(sx, sy, 1, sx, sy, e.size+4+fp);
+        fg.addColorStop(0, 'rgba(255,160,0,0.6)'); fg.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(sx, sy, e.size+4+fp, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#FF4000';
+        ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#FFD040';
+        ctx.beginPath(); ctx.arc(sx, sy, e.size*0.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#FFF'; ctx.fillRect(sx-3, sy-3, 2, 2); ctx.fillRect(sx+1, sy-3, 2, 2);
+
+      } else if (mt === 'dark_soldier') {
+        // Hắc Lâm Ác Binh — tím đen, giáp tối
+        ctx.fillStyle = '#1A0828';
+        ctx.beginPath(); ctx.ellipse(sx, sy, e.size*0.9, e.size, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#8040C0'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.ellipse(sx, sy, e.size*0.9, e.size, 0, 0, Math.PI*2); ctx.stroke();
+        // Mũ giáp
+        ctx.fillStyle = '#300850';
+        ctx.fillRect(sx-e.size+1, sy-e.size-4, (e.size*2)-2, 6);
+        // Mắt tím phát sáng
+        ctx.fillStyle = '#C060FF'; ctx.fillRect(sx-4, sy-3, 3, 3); ctx.fillRect(sx+1, sy-3, 3, 3);
+        // Vũ khí
+        ctx.strokeStyle = '#8040C0'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(sx+e.size, sy-e.size); ctx.lineTo(sx+e.size+4, sy+e.size); ctx.stroke();
+
+      } else {
+        // Demon / mặc định — Tà Binh
+        ctx.fillStyle = '#280008';
+        ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = e.color; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = e.color;
+        ctx.fillRect(sx-4, sy-3, 3, 3); ctx.fillRect(sx+1, sy-3, 3, 3);
+      }
+      // Tên mob nhỏ
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(sx-22, sy+e.size+2, 44, 10);
+      ctx.fillStyle = e.color; ctx.font = '7px monospace'; ctx.textAlign = 'center';
+      ctx.fillText(e.name, sx, sy+e.size+10);
+
+    } else if (e.type === 'npc') {
+      // Glow
+      const ng = ctx.createRadialGradient(sx, sy, 2, sx, sy, e.size+6);
+      ng.addColorStop(0, `${e.color}33`);
+      ng.addColorStop(1, 'transparent');
+      ctx.fillStyle = ng;
+      ctx.beginPath(); ctx.arc(sx, sy, e.size+6, 0, Math.PI*2); ctx.fill();
+      // Body — màu nền theo màu NPC
+      const npcBodyColors = { '#FFD040':'#203060', '#40D0FF':'#1A3020', '#C080FF':'#1A0830' };
+      ctx.fillStyle = npcBodyColors[e.color] || '#202040';
+      ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = e.color; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(sx, sy, e.size, 0, Math.PI*2); ctx.stroke();
+      // ! indicator by quest state
+      const qi=questIndicatorsRef.current[e.id];
+      const qiColor=qi==='done'?'#40FF80':qi==='active'?'#FFD040':qi==='available'?'#FF8040':'rgba(200,168,75,0.5)';
+      const qiChar=qi==='done'?'✓':qi==='active'?'?':'!';
+      // Bounce animation
+      const bounce=Math.sin(tick*0.06)*2;
+      // Glow behind indicator
+      ctx.fillStyle=qiColor+'44';
+      ctx.beginPath(); ctx.arc(sx, sy-e.size-10+bounce, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle=qiColor;
+      ctx.font='bold 11px monospace';
+      ctx.textAlign='center';
+      ctx.fillText(qiChar, sx, sy-e.size-4+bounce);
+    }
+
+    // Name tag
+    if (e.type !== 'mob') {
+      ctx.fillStyle = 'rgba(0,0,0,0.65)';
+      ctx.fillRect(sx-30, sy+e.size+3, 60, 12);
+      ctx.fillStyle = e.type==='boss'?'#FF8080':e.type==='npc'?e.color:'#FF6060';
+      ctx.font = '8px "Noto Serif SC", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(e.name, sx, sy+e.size+12);
+    }
+  }, []);
+
+  const drawParticle = useCallback((ctx, p) => {
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    if (p.type === 'spark') {
+      ctx.shadowColor = p.color; ctx.shadowBlur = 4;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+    } else {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }, []);
+
+  // Main game loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const s = stateRef.current;
+    const map = mapRef.current;
+    const PSPEED = 2.2;
+    const TILE = TILE_SIZE;
+    let lastTime = 0;
+
+    let resizeTimer = null;
+    const applyResize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const w   = canvas.offsetWidth  || 390;
+      const h   = canvas.offsetHeight || 260;
+      // Bỏ qua nếu kích thước không thay đổi (tránh reset canvas thừa)
+      if (canvas.width === Math.round(w * dpr) && canvas.height === Math.round(h * dpr)) return;
+      canvas.width  = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      s.vw = w;
+      s.vh = h;
+      s._dpr = dpr;
+    };
+    // Debounce: chỉ apply sau 120ms im lặng, tránh gọi liên tục khi xoay màn hình
+    const resize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(applyResize, 120);
+    };
+    applyResize(); // lần đầu apply ngay
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    const spawnParticle = (x, y, color) => {
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.random()*Math.PI*2;
+        const speed = Math.random()*2+0.5;
+        s.particles.push({ x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, color, alpha:1, decay:0.04+Math.random()*0.03, type: Math.random()<0.5?'spark':'orb', r:2+Math.random()*2 });
+      }
+    };
+
+    let vigCache = null, vigW = 0, vigH = 0;
+
+    const loop = (time) => {
+      const dt = Math.min(time - lastTime, 50);
+      lastTime = time;
+      s.tick++;
+
+      const { vw, vh } = s;
+      ctx.clearRect(0, 0, vw, vh);
+
+      // ── PLAYER MOVEMENT ──
+      const p = s.player;
+      let dx = s.jsDir.x, dy = s.jsDir.y;
+      const jsMag = Math.sqrt(dx*dx+dy*dy);
+      if (jsMag > 0) {
+        dx /= jsMag; dy /= jsMag;
+      }
+
+      // Click-to-move
+      if (s.moveTarget) {
+        const tx = s.moveTarget.x - p.x, ty = s.moveTarget.y - p.y;
+        const dist = Math.sqrt(tx*tx+ty*ty);
+        if (dist < 6) {
+          s.moveTarget = null;
+        } else {
+          const speed = Math.min(dist/6, 1);
+          dx = tx/dist * speed;
+          dy = ty/dist * speed;
+        }
+      }
+
+      // Apply movement with collision
+      if (dx !== 0 || dy !== 0) {
+        const nx = p.x + dx*PSPEED;
+        const ny = p.y + dy*PSPEED;
+        const tc = Math.floor(nx/TILE), tr = Math.floor(ny/TILE);
+        if (tr >= 0 && tr < ROWS && tc >= 0 && tc < COLS && !isBlocking(map[tr][tc])) {
+          p.x = Math.max(32, Math.min(WORLD_W-32, nx));
+          p.y = Math.max(32, Math.min(WORLD_H-32, ny));
+        }
+        // Walk animation
+        s.walkTick++;
+        if (s.walkTick > 8) { s.walkFrame = (s.walkFrame + 1) % 4; s.walkTick = 0; }
+        // Trail particles occasionally
+        if (s.tick % 6 === 0) spawnParticle(p.x, p.y+12, '#C8A84B');
+      }
+
+      // ── CAMERA ──
+      s.camera.x = Math.max(0, Math.min(WORLD_W - vw, p.x - vw/2));
+      s.camera.y = Math.max(0, Math.min(WORLD_H - vh, p.y - vh/2));
+      const camX = s.camera.x, camY = s.camera.y;
+
+      // ── DRAW MAP TILES ──
+      const startC = Math.max(0, Math.floor(camX/TILE));
+      const startR = Math.max(0, Math.floor(camY/TILE));
+      const endC   = Math.min(COLS, startC + Math.ceil(vw/TILE) + 2);
+      const endR   = Math.min(ROWS, startR + Math.ceil(vh/TILE) + 2);
+
+      for (let r = startR; r < endR; r++) {
+        for (let c = startC; c < endC; c++) {
+          const tile = map[r][c];
+          const px = c*TILE - camX, py = r*TILE - camY;
+          if (tile === T.TREE) {
+            drawTile(ctx, T.GRASS, px, py, TILE, s.tick);
+          } else if (tile === T.ROCK) {
+            drawTile(ctx, T.STONE, px, py, TILE, s.tick);
+          } else {
+            drawTile(ctx, tile, px, py, TILE, s.tick);
+          }
+        }
+      }
+
+      // ── DRAW DECORATIONS (trees/rocks on top pass) ──
+      for (let r = startR; r < endR; r++) {
+        for (let c = startC; c < endC; c++) {
+          const tile = map[r][c];
+          const px = c*TILE - camX, py = r*TILE - camY;
+          if (tile === T.TREE) drawTree(ctx, px, py, TILE, s.tick);
+          else if (tile === T.ROCK) drawRock(ctx, px, py);
+        }
+      }
+
+      // ── MOVE TARGET MARKER ──
+      if (s.moveTarget) {
+        const mx = s.moveTarget.x - camX, my = s.moveTarget.y - camY;
+        const pulse = Math.sin(s.tick*0.15)*3;
+        ctx.strokeStyle = 'rgba(200,168,75,0.8)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          const a = i*Math.PI/2 + s.tick*0.03;
+          const r1 = 8+pulse, r2 = 14+pulse;
+          ctx.moveTo(mx+Math.cos(a)*r1, my+Math.sin(a)*r1);
+          ctx.lineTo(mx+Math.cos(a)*r2, my+Math.sin(a)*r2);
+        }
+        ctx.stroke();
+      }
+
+      // ── PARTICLES ──
+      for (let i = s.particles.length-1; i >= 0; i--) {
+        const pt = s.particles[i];
+        pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.04;
+        pt.alpha -= pt.decay;
+        if (pt.alpha <= 0) { s.particles.splice(i, 1); continue; }
+        drawParticle(ctx, { ...pt, x: pt.x-camX, y: pt.y-camY });
+      }
+
+      // ── ENTITIES ──
+      const entities = s.entities;
+      // Detect newly dead mobs → trigger loot + death FX
+      for (const e of entities) {
+        if (e.hp <= 0 && e.type !== 'npc' && !s.processedDeadIds.has(e.id)) {
+          s.processedDeadIds.add(e.id);
+          onMobDeathRef.current && onMobDeathRef.current({...e});
+          // Death burst particles
+          for (let i=0;i<12;i++) {
+            const a=Math.random()*Math.PI*2, sp=Math.random()*3+1;
+            s.particles.push({x:e.x,y:e.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,color:e.color||'#FF6040',alpha:1,decay:0.04,type:'spark',r:3});
+          }
+        }
+      }
+      // Remove permanently dead non-NPC entities
+      s.entities = entities.filter(e => e.type==='npc' || e.hp > 0);
+      for (const e of s.entities) {
+        if (e.hp <= 0) continue;
+        // Mob AI: patrol slowly
+        if (e.type === 'mob' && e.speed > 0) {
+          const hx = e.homeX ?? WORLD_W/2;
+          const hy = e.homeY ?? WORLD_H/2;
+          const phase = s.tick*0.008 + e.id*2.3;
+          const orbitR = 55 + (e.id % 7)*12;
+          const ox = hx + Math.cos(phase)*orbitR;
+          const oy = hy + Math.sin(phase)*orbitR*0.7;
+          const mdx = ox-e.x, mdy = oy-e.y;
+          const md = Math.sqrt(mdx*mdx+mdy*mdy);
+          if (md > 2) { e.x += (mdx/md)*e.speed*0.6; e.y += (mdy/md)*e.speed*0.6; }
+          // Attack player if close
+          const pdx = p.x-e.x, pdy = p.y-e.y;
+          const pd = Math.sqrt(pdx*pdx+pdy*pdy);
+          if (pd < 40 && s.tick % 120 === e.id % 120) {
+            spawnParticle(e.x, e.y, '#FF4040');
+          }
+        }
+        const sx = e.x - camX, sy = e.y - camY;
+        if (sx > -60 && sx < vw+60 && sy > -60 && sy < vh+60) {
+          drawEntity(ctx, e, sx, sy, s.tick);
+        }
+      }
+
+      // ── PLAYER ──
+      const psx = p.x - camX, psy = p.y - camY;
+      if (s.playerFlash > 0) s.playerFlash--;
+      drawPlayer(ctx, psx, psy, s.walkFrame, s.playerFlash);
+
+      // ── WATER shimmer overlay ──
+      ctx.fillStyle = 'rgba(80,140,255,0.03)';
+      ctx.fillRect(0, 0, vw, vh);
+
+      // ── VIGNETTE (cached gradient, chỉ tạo lại khi kích thước thay đổi) ──
+      if (!vigCache || vigW !== vw || vigH !== vh) {
+        vigW = vw; vigH = vh;
+        vigCache = ctx.createRadialGradient(vw/2, vh/2, vh*0.3, vw/2, vh/2, vh*0.85);
+        vigCache.addColorStop(0, 'transparent');
+        vigCache.addColorStop(1, 'rgba(0,0,0,0.55)');
+      }
+      ctx.fillStyle = vigCache;
+      ctx.fillRect(0, 0, vw, vh);
+
+      // ── COORD HINT ──
+      ctx.fillStyle = 'rgba(200,168,75,0.3)';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${Math.round(p.x)},${Math.round(p.y)}`, 4, vh-4);
+
+      animRef.current = requestAnimationFrame(loop);
+    };
+
+    animRef.current = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      clearTimeout(resizeTimer);
+      ro.disconnect();
+    };
+  }, [drawTile, drawTree, drawRock, drawPlayer, drawEntity, drawParticle]);
+
+  // Joystick handlers
+  const jsStartHandler = useCallback((e) => {
+    e.preventDefault();
+    const base = joystickRef.current;
+    if (!base) return;
+    const rect = base.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const pt = e.touches ? e.touches[0] : e;
+    stateRef.current.jsActive = true;
+    stateRef.current.jsOrigin = { x: cx, y: cy };
+    stateRef.current.moveTarget = null;
+  }, []);
+
+  const jsMoveHandler = useCallback((e) => {
+    e.preventDefault();
+    if (!stateRef.current.jsActive) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const { jsOrigin } = stateRef.current;
+    const vdx = pt.clientX - jsOrigin.x, vdy = pt.clientY - jsOrigin.y;
+    const dist = Math.sqrt(vdx*vdx+vdy*vdy);
+    const maxR = 26;
+    const clamp = Math.min(dist, maxR);
+    const ratio = dist > 0 ? clamp/dist : 0;
+    // Thumb di chuyển theo viewport (visual feedback đúng)
+    const thumb = joystickRef.current?.querySelector('.joystick-thumb');
+    if (thumb) { thumb.style.transform = `translate(calc(-50% + ${vdx*ratio}px), calc(-50% + ${vdy*ratio}px)`; }
+    // Không còn rotate-trick: tọa độ viewport khớp trực tiếp với game
+    stateRef.current.jsDir = { x: vdx/Math.max(dist,1), y: vdy/Math.max(dist,1) };
+  }, []);
+
+  const jsEndHandler = useCallback((e) => {
+    e.preventDefault();
+    stateRef.current.jsActive = false;
+    stateRef.current.jsDir = { x:0, y:0 };
+    const thumb = joystickRef.current?.querySelector('.joystick-thumb');
+    if (thumb) thumb.style.transform = 'translate(-50%, -50%)';
+  }, []);
+
+  // Click-to-move + attack
+  const handleCanvasClick = useCallback((e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    // Tọa độ click thẳng vào canvas, không cần bù rotate
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const s = stateRef.current;
+    const worldX = cx + s.camera.x, worldY = cy + s.camera.y;
+
+    // Check if clicked on enemy
+    let hit = false;
+    for (const ent of s.entities) {
+      if (ent.hp <= 0) continue;
+      const dx = worldX - ent.x, dy = worldY - ent.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist < ent.size + 10) {
+        // Attack entity
+        const dmg = Math.random() < 0.3 ? Math.floor(Math.random()*15000+8000) : Math.floor(Math.random()*8000+2000);
+        const isCrit = dmg > 12000;
+        // Damage to entity
+        ent.hp = Math.max(0, ent.hp - dmg);
+        if (ent.type === 'boss') setBossHp(ent.hp);
+        // Floating number
+        spawnFloat(cx - 40, cy - 20, isCrit ? 'crit' : 'normal');
+        // Particles
+        for (let i = 0; i < 5; i++) {
+          const a = Math.random()*Math.PI*2, sp = Math.random()*3+1;
+          s.particles.push({ x:ent.x, y:ent.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, color:'#FF6040', alpha:1, decay:0.06, type:'spark', r:2 });
+        }
+        // Flash player
+        if (ent.type === 'npc') {
+          onNpcClick && onNpcClick(ent);
+        }
+        hit = true;
+        break;
+      }
+    }
+
+    if (!hit) {
+      // Click-to-move
+      const tileC = Math.floor(worldX/TILE_SIZE), tileR = Math.floor(worldY/TILE_SIZE);
+      if (tileR >= 0 && tileR < ROWS && tileC >= 0 && tileC < COLS && !isBlocking(mapRef.current[tileR][tileC])) {
+        s.moveTarget = { x: worldX, y: worldY };
+      }
+    }
+  }, [setBossHp, spawnFloat, onNpcClick]);
+
+  // Auto-fight: periodically attack nearest enemy
+  useEffect(() => {
+    if (!autoFight) return;
+    const t = setInterval(() => {
+      const s = stateRef.current;
+      const p = s.player;
+      let nearest = null, nearDist = Infinity;
+      for (const e of s.entities) {
+        if (e.hp <= 0 || e.type === 'npc') continue;
+        const dx = p.x-e.x, dy = p.y-e.y;
+        const d = Math.sqrt(dx*dx+dy*dy);
+        if (d < nearDist) { nearDist = d; nearest = e; }
+      }
+      if (!nearest) return;
+      // Move toward
+      const dx = nearest.x-p.x, dy = nearest.y-p.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      if (d > 80) { s.moveTarget = { x: nearest.x - (dx/d)*50, y: nearest.y - (dy/d)*50 }; }
+      else {
+        const dmg = Math.random()<0.35 ? Math.floor(Math.random()*15000+8000) : Math.floor(Math.random()*8000+2000);
+        nearest.hp = Math.max(0, nearest.hp - dmg);
+        if (nearest.type === 'boss') setBossHp(nearest.hp);
+        const sx = nearest.x - s.camera.x, sy = nearest.y - s.camera.y;
+        spawnFloat(sx-40, sy-20, dmg>12000?'crit':'normal');
+        for (let i=0;i<4;i++) { const a=Math.random()*Math.PI*2,sp=Math.random()*2+1; s.particles.push({x:nearest.x,y:nearest.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,color:'#FF6040',alpha:1,decay:0.07,type:'spark',r:2}); }
+      }
+    }, 1200);
+    return () => clearInterval(t);
+  }, [autoFight, setBossHp, spawnFloat]);
+
+  const player = stateRef.current.player;
+
+  return (
+    <div style={{ position:'relative', width:'100%', height:'100%' }}>
+      <canvas
+        ref={canvasRef}
+        className="game-world-canvas"
+        onClick={handleCanvasClick}
+        style={{ cursor:'crosshair' }}
+      />
+
+      {/* Joystick */}
+      <div className="joystick-wrap" ref={joystickRef}>
+        <div
+          className="joystick-base"
+          onMouseDown={jsStartHandler}
+          onMouseMove={jsMoveHandler}
+          onMouseUp={jsEndHandler}
+          onMouseLeave={jsEndHandler}
+          onTouchStart={jsStartHandler}
+          onTouchMove={jsMoveHandler}
+          onTouchEnd={jsEndHandler}
+        >
+          <div className="joystick-thumb" />
+        </div>
+      </div>
+
+      {/* Floating damage */}
+      {floats.map(f => (
+        <DamageNumber key={f.id} value={f.value} type={f.type} x={f.x} y={f.y} />
+      ))}
+
+      {/* Hint */}
+      <div style={{ position:'absolute', bottom:8, right:8, fontSize:9, color:'rgba(200,168,75,0.4)', pointerEvents:'none', textAlign:'right', letterSpacing:1 }}>
+        Joystick / Click di chuyển<br/>Click quái để tấn công
+      </div>
+    </div>
+  );
+}
+
+// ─── Data constants — tất cả đã chuyển sang data.js ─────────────
+
+// ─── Panel components (giữ nguyên) ──────────────────────────
+function BossHPBar({hp,maxHp,name}) {
+  const pct=hp/maxHp;
+  return (<div className="boss-bar-wrap">
+    <div className="boss-bar-title">{name}</div>
+    <div className="boss-bar-outer"><div className="boss-bar-fill" style={{width:`${pct*100}%`}}/><div className="boss-bar-text">{hp.toLocaleString()} / {maxHp.toLocaleString()}</div></div>
+    <div className="boss-bar-phase">{pct>0.66?'Giai đoạn 1':pct>0.33?'Giai đoạn 2 · Điên Cuồng':'Giai đoạn 3 · Tuyệt Cảnh'}</div>
+  </div>);
+}
+
+function CharacterPanel({onClose,onEquip}) {
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={460} title="Thuộc Tính" color="gold"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 16px'}}>
+      <div className="char-avatar-section"><AvatarFrame size={64} hp={85} showHp={false}/>
+        <div className="char-name-block"><div className="char-name">Thanh Vân Tử</div><div className="char-title">Thái Thượng Trưởng Lão</div><div className="char-server">Môn Phái Thanh Vân · Khu Bích Lạc</div></div>
+      </div>
+      <Ornament width={268} height={16} color={COLORS.gold}/>
+      <div className="stat-grid">{CHAR_STATS.map(s=>(<div key={s.label} className="stat-row"><span className="stat-label">{s.label}</span><span className="stat-value">{s.value}</span></div>))}</div>
+      <Ornament width={268} height={16} color={COLORS.gold}/>
+      <div className="char-cultivation"><div className="cult-label">Tiến độ Tu Vi</div><StatBar width={260} value={68} max={100} type="exp"/><div className="cult-num">68 / 100 vạn Tu Vi</div></div>
+      <div className="panel-btns">
+        <GameButton width={80} height={28} label="Trang Bị" variant="gold" onClick={()=>{onEquip&&onEquip();onClose();}}/>
+        <GameButton width={80} height={28} label="Kỹ Năng" variant="jade"/>
+        <GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/>
+      </div>
+    </div>
+  </div></div>);
+}
+
+// SELL_PRICE, EQUIP_TYPE_SLOT, CONSUMABLE_TYPES — từ data.js
+
+// ─── BÍ KÍP EFFECTS ──────────────────────────────────────────
+const BOOK_EFFECTS = {
+  b_basic:   { type:'skillpoint', amount:3,  skillIdx:null, skillName:'Điểm Ngộ Đạo',    desc:'Lĩnh ngộ thiên cơ, nhận được 3 Điểm Ngộ Đạo có thể dùng học kỹ năng bất kỳ.' },
+  b_fire:    { type:'skill',      amount:2,  skillIdx:1,    skillName:'Liệt Diễm Quyết', desc:'Hỏa hành tâm pháp thượng cổ, Liệt Diễm Quyết tăng 2 cấp, uy lực đại tăng.' },
+  b_dark:    { type:'skill',      amount:2,  skillIdx:7,    skillName:'Ám Ảnh Thuật',    desc:'Hắc ám huyền công Ma Tộc, Ám Ảnh Thuật tăng 2 cấp, ám khống địch thủ cực kỳ hiệu quả.' },
+  b_sword:   { type:'skill',      amount:3,  skillIdx:0,    skillName:'Ngự Kiếm Trảm',   desc:'Tuyệt học Ngự Kiếm Thanh Vân Môn truyền thừa, Ngự Kiếm Trảm tăng 3 cấp!' },
+  b_thunder: { type:'skill',      amount:2,  skillIdx:2,    skillName:'Lôi Đình Kích',   desc:'Thiên lôi trận pháp thượng cổ, Lôi Đình Kích tăng 2 cấp, diện sát thương tăng mạnh.' },
+};
+
+// ─── BOOK LEARN MODAL ────────────────────────────────────────
+function BookLearnModal({book, effect, onConfirm, onClose}) {
+  const [phase, setPhase] = useState('idle'); // idle → opening → learned
+  const rarityInfo = (window.ITEM_RARITY||{})[book.rarity]||{color:'#FFD040',name:'Huyền Thoại'};
+
+  const handleLearn = () => {
+    setPhase('opening');
+    setTimeout(() => setPhase('learned'), 900);
+  };
+
+  return (
+    <div className="panel-overlay" onClick={phase==='learned'?onClose:undefined}>
+      <div className="panel-popup" style={{maxWidth:280}} onClick={e=>e.stopPropagation()}>
+        <div className="panel-svg-wrap"><PanelFrame width={280} height={340} title="Học Bí Kíp" color="blue"/></div>
+        <div className="panel-content" style={{top:38,padding:'0 18px',display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+
+          {/* Book icon with glow */}
+          <div style={{position:'relative',marginTop:4}}>
+            <div style={{
+              width:64,height:64,borderRadius:4,border:`2px solid ${rarityInfo.color}`,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              background:`${rarityInfo.color}11`,
+              boxShadow: phase==='opening'||phase==='learned' ? `0 0 24px ${rarityInfo.color}88` : `0 0 8px ${rarityInfo.color}44`,
+              transition:'box-shadow 0.4s ease',
+            }}>
+              <ItemIcon type="book" size={48} rarity={book.rarity}/>
+            </div>
+            {phase==='learned'&&(
+              <div style={{position:'absolute',top:-8,right:-8,fontSize:18,animation:'goldPulse 0.6s ease'}}>✨</div>
+            )}
+          </div>
+
+          {/* Book name */}
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:12,fontWeight:'bold',color:rarityInfo.color,marginBottom:2}}>{book.name}</div>
+            <div style={{fontSize:8,color:rarityInfo.color,opacity:0.7}}>{'★'.repeat(book.rarity)} {rarityInfo.name}</div>
+          </div>
+
+          {/* Effect preview */}
+          <div style={{width:'100%',background:'rgba(0,0,0,0.35)',border:'1px solid rgba(200,168,75,0.2)',borderRadius:3,padding:'8px 10px',textAlign:'center'}}>
+            {effect.type==='skillpoint'
+              ? <div style={{fontSize:11,color:'#FFD040',marginBottom:4}}>✦ +{effect.amount} Điểm Ngộ Đạo</div>
+              : <div style={{fontSize:11,color:'#80C0FF',marginBottom:4}}>⚡ {effect.skillName} <span style={{color:'#40FF80'}}>+{effect.amount} cấp</span></div>
+            }
+            <div style={{fontSize:9,color:'#888',lineHeight:1.5}}>{effect.desc}</div>
+          </div>
+
+          {/* Result after learning */}
+          {phase==='learned'&&(
+            <div style={{width:'100%',background:'rgba(64,255,128,0.08)',border:'1px solid rgba(64,255,128,0.3)',borderRadius:3,padding:'6px 10px',textAlign:'center',animation:'goldPulse 0.5s ease'}}>
+              <div style={{fontSize:12,color:'#40FF80',fontWeight:'bold'}}>
+                {effect.type==='skillpoint' ? `🌟 +${effect.amount} Điểm Ngộ Đạo!` : `🌟 ${effect.skillName} đã tăng cấp!`}
+              </div>
+              <div style={{fontSize:9,color:'#888',marginTop:2}}>Bí kíp đã được hấp thụ hoàn toàn</div>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div style={{display:'flex',gap:8,marginTop:4}}>
+            {phase==='idle'&&<GameButton width={110} height={30} label="📖 Học Ngay" variant="jade" onClick={handleLearn}/>}
+            {phase==='opening'&&<div style={{fontSize:10,color:'#FFD040',padding:'6px 0',fontStyle:'italic'}}>Đang hấp thụ bí kíp...</div>}
+            {phase==='learned'&&<GameButton width={110} height={30} label="✓ Hoàn Thành" variant="gold" onClick={()=>{onConfirm();onClose();}}/>}
+            {phase!=='opening'&&phase!=='learned'&&<GameButton width={80} height={30} label="Hủy" variant="dark" onClick={onClose}/>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+const TYPE_LABELS = {
+  sword:'Kiếm',dao:'Đao',staff:'Trượng',bow:'Cung',
+  helm:'Mũ Giáp',chest:'Áo Giáp',legs:'Quần Giáp',boots:'Giày',belt:'Đai Lưng',
+  ring:'Nhẫn',necklace:'Vòng Cổ',offhand:'Phù Khí',
+  pill:'Đan Dược',material:'Nguyên Liệu',book:'Bí Kíp',gem:'Linh Thạch',
+};
+
+function StatDiff({label,val,cmp,color}) {
+  const diff = cmp!=null ? val-cmp : null;
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:4,padding:'1px 0'}}>
+      <span style={{fontSize:8,color:'#666',width:28,flexShrink:0}}>{label}</span>
+      <span style={{fontSize:9,color,fontFamily:'monospace',fontWeight:'bold'}}>+{val.toLocaleString()}</span>
+      {diff!=null&&diff!==0&&<span style={{fontSize:8,fontFamily:'monospace',color:diff>0?'#40FF80':'#FF6060'}}>({diff>0?'+':''}{diff.toLocaleString()})</span>}
+      {diff===0&&<span style={{fontSize:8,color:'#555'}}>(-)</span>}
+    </div>
+  );
+}
+
+function InventoryPanel({onClose,invItems,setInvItems,gold,setGold,equip,setEquip,showNotif,setHp,setMp,onLearnBook}) {
+  const [selected,setSelected]=useState(null);
+  const [confirmDrop,setConfirmDrop]=useState(false);
+  const rawSelected=(selected!==null&&invItems[selected]?.type!=='empty')?invItems[selected]:null;
+  // Merge với ITEMS từ items.js để lấy đủ desc, atk, def, hp, mp...
+  const selectedItem = rawSelected
+    ? { ...(window.ITEMS?.[rawSelected.id]||{}), ...rawSelected }
+    : null;
+  const totalItems=invItems.filter(i=>i.type!=='empty').length;
+
+  const removeItem=(idx,qty=1)=>{setInvItems(prev=>{const next=[...prev];const it={...next[idx]};if(it.count>qty){it.count-=qty;next[idx]=it;}else next[idx]={type:'empty',rarity:1,name:'',count:0};return next;});setSelected(null);setConfirmDrop(false);};
+
+  const handleUse=()=>{
+    if(!selectedItem) return;
+    const {type,name,rarity}=selectedItem;
+    // Bí kíp → mở modal học
+    if(type==='book'){
+      const effect=BOOK_EFFECTS[selectedItem.id];
+      if(!effect){showNotif(`✗ Bí kíp ${name} chưa có hiệu ứng!`);return;}
+      onLearnBook&&onLearnBook({item:selectedItem,slotIdx:selected,effect});
+      return;
+    }
+    if((CONSUMABLE_TYPES||['pill']).includes(type)){
+      if(selectedItem.hp_restore) setHp(h=>Math.min(100,h+selectedItem.hp_restore));
+      if(selectedItem.mp_restore) setMp(m=>Math.min(100,m+selectedItem.mp_restore));
+      showNotif(`✦ Dùng ${name}!`); removeItem(selected,1); return;
+    }
+    const slot=(window.ITEM_TYPE_SLOT||EQUIP_TYPE_SLOT||{})[type];
+    if(slot){
+      const prev=equip[slot];
+      setEquip(e=>({...e,[slot]:{...selectedItem}}));
+      if(prev){setInvItems(items=>{const next=[...items];const ei=next.findIndex(i=>i.type==='empty');if(ei!==-1)next[ei]={...prev,count:1};return next;});}
+      removeItem(selected,1); showNotif(`⚔ Đã trang bị ${name}!`); return;
+    }
+    showNotif(`✗ Không thể sử dụng ${name}`);
+  };
+
+  const handleSell=()=>{
+    if(!selectedItem) return;
+    const price=(SELL_PRICE||{5:80000,4:25000,3:8000,2:2000,1:500})[selectedItem.rarity]||500;
+    setGold(g=>g+price); removeItem(selected,1);
+    showNotif(`💰 Bán ${selectedItem.name}: +${price.toLocaleString()} Linh Thạch!`);
+  };
+
+  const handleDrop=()=>{
+    if(!confirmDrop){setConfirmDrop(true);return;}
+    showNotif(`🗑 Đã vứt ${selectedItem.name}`); removeItem(selected,1);
+  };
+
+  const handleSort=()=>{
+    const order=['sword','dao','staff','bow','helm','chest','legs','boots','belt','ring','necklace','offhand','pill','book','gem','material','empty'];
+    setInvItems(prev=>{
+      const real=prev.filter(i=>i.type!=='empty');
+      const empties=prev.filter(i=>i.type==='empty');
+      real.sort((a,b)=>b.rarity!==a.rarity?b.rarity-a.rarity:order.indexOf(a.type)-order.indexOf(b.type));
+      return[...real,...empties];
+    });
+    setSelected(null); showNotif('🔃 Đã sắp xếp hành nang!');
+  };
+
+  // Item detail computed values
+  const rarityInfo = selectedItem ? (window.ITEM_RARITY||{})[selectedItem.rarity]||{name:'Thường',color:'#AAA'} : null;
+  const equippedItem = selectedItem ? (equip||{})[(window.ITEM_TYPE_SLOT||EQUIP_TYPE_SLOT||{})[selectedItem.type]] : null;
+  const hasEquipStats = selectedItem && (selectedItem.atk>0||selectedItem.def>0||selectedItem.hp>0||selectedItem.mp>0);
+  const sellPrice = selectedItem ? (SELL_PRICE||{5:80000,4:25000,3:8000,2:2000,1:500})[selectedItem.rarity]||500 : 0;
+  const isPill = selectedItem && (CONSUMABLE_TYPES||['pill']).includes(selectedItem.type);
+  const canEquip = selectedItem && !!(window.ITEM_TYPE_SLOT||EQUIP_TYPE_SLOT||{})[selectedItem.type];
+
+  return (<div className="panel-overlay" onClick={()=>{onClose();setConfirmDrop(false);}}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={510} title="Hành Nang" color="gold"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 12px'}}>
+      {/* Header */}
+      <div className="inv-header">
+        <span className="inv-gold">💰 {gold.toLocaleString()}</span>
+        <span className="inv-space">{totalItems}/24 ô</span>
+        <button className="quest-track-btn" onClick={handleSort} style={{fontSize:8,padding:'1px 6px'}}>⇅ Sắp xếp</button>
+      </div>
+
+      {/* Grid 6×4 */}
+      <div className="inv-grid" style={{gridTemplateColumns:'repeat(6,1fr)',gap:3}}>
+        {invItems.map((item,i)=>{
+          const rc=item.type!=='empty'?(window.ITEM_RARITY||{})[item.rarity]?.color:'rgba(200,168,75,0.1)';
+          return(<div key={i}
+            className={`inv-slot${selected===i?' inv-slot-sel':''}${item.type==='empty'?' inv-slot-empty':''}`}
+            style={{borderColor:item.type!=='empty'?rc:undefined,boxShadow:selected===i&&item.type!=='empty'?`0 0 6px ${rc}44`:undefined}}
+            onClick={()=>{setSelected(selected===i?null:i);setConfirmDrop(false);}}>
+            <ItemIcon type={item.type} size={32} rarity={item.rarity} count={item.count>1?item.count:undefined}/>
+          </div>);
+        })}
+      </div>
+
+      {/* Detail section */}
+      {selectedItem ? (
+        <div style={{marginTop:5,background:'rgba(0,0,0,0.35)',border:`1px solid ${rarityInfo.color}44`,borderRadius:3,padding:'7px 8px'}}>
+          {/* Row 1: icon + name/rarity/type */}
+          <div style={{display:'flex',gap:8,marginBottom:5}}>
+            <div style={{flexShrink:0,width:44,height:44,border:`1px solid ${rarityInfo.color}66`,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',background:`${rarityInfo.color}11`,boxShadow:`0 0 8px ${rarityInfo.color}33`}}>
+              <ItemIcon type={selectedItem.type} size={36} rarity={selectedItem.rarity}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:11,fontWeight:'bold',color:rarityInfo.color,lineHeight:1.3,marginBottom:1}}>{selectedItem.name}{selectedItem.count>1&&<span style={{fontSize:9,color:'#999'}}> ×{selectedItem.count}</span>}</div>
+              <div style={{display:'flex',alignItems:'center',gap:5}}>
+                <span style={{fontSize:9,color:rarityInfo.color,letterSpacing:1}}>{'★'.repeat(selectedItem.rarity)}</span>
+                <span style={{fontSize:8,color:rarityInfo.color,opacity:0.8}}>{rarityInfo.name}</span>
+              </div>
+              <div style={{fontSize:8,color:'#888',marginTop:1}}>{TYPE_LABELS[selectedItem.type]||selectedItem.type}</div>
+            </div>
+          </div>
+
+          {/* Equipment stats + comparison */}
+          {hasEquipStats&&(
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 12px',margin:'4px 0',padding:'4px 6px',background:'rgba(0,0,0,0.2)',borderRadius:2}}>
+              {selectedItem.atk>0&&<StatDiff label="ATK" val={selectedItem.atk} cmp={equippedItem?.atk} color="#FF8060"/>}
+              {selectedItem.def>0&&<StatDiff label="DEF" val={selectedItem.def} cmp={equippedItem?.def} color="#60C0FF"/>}
+              {selectedItem.hp>0&&<StatDiff label="HP"  val={selectedItem.hp}  cmp={equippedItem?.hp}  color="#FF6060"/>}
+              {selectedItem.mp>0&&<StatDiff label="MP"  val={selectedItem.mp}  cmp={equippedItem?.mp}  color="#8080FF"/>}
+              {equippedItem&&<div style={{gridColumn:'1/-1',fontSize:7,color:'#555',marginTop:2}}>so sánh với: {equippedItem.name}</div>}
+            </div>
+          )}
+
+          {/* Pill restore info */}
+          {isPill&&(
+            <div style={{margin:'4px 0',padding:'3px 6px',background:'rgba(64,255,128,0.05)',border:'1px solid rgba(64,255,128,0.15)',borderRadius:2,display:'flex',gap:10}}>
+              {selectedItem.hp_restore&&<span style={{fontSize:9,color:'#FF8080'}}>❤ Hồi {selectedItem.hp_restore}% HP</span>}
+              {selectedItem.mp_restore&&<span style={{fontSize:9,color:'#8080FF'}}>💧 Hồi {selectedItem.mp_restore}% MP</span>}
+            </div>
+          )}
+
+          {/* Description */}
+          <div style={{fontSize:9,color:'#888',lineHeight:1.5,margin:'4px 0',fontStyle:'italic',borderTop:'1px solid rgba(200,168,75,0.08)',paddingTop:4}}>{selectedItem.desc||'Không có mô tả.'}</div>
+
+          {/* Actions */}
+          <div style={{display:'flex',gap:4,marginTop:5,alignItems:'center'}}>
+            <GameButton width={canEquip?58:isPill?58:selectedItem.type==='book'?62:0} height={22}
+              label={canEquip?'⚔ Trang Bị':isPill?'✦ Dùng':selectedItem.type==='book'?'📖 Học':''}
+              variant={selectedItem.type==='book'?'gold':'jade'}
+              onClick={handleUse}
+              style={{display:canEquip||isPill||selectedItem.type==='book'?'block':'none'}}/>
+            {!canEquip&&!isPill&&<GameButton width={58} height={22} label="Sử Dụng" variant="jade" onClick={handleUse}/>}
+            <GameButton width={58} height={22} label={`💰 ${(sellPrice/1000).toFixed(0)}k`} variant="red" onClick={handleSell}/>
+            <GameButton width={confirmDrop?70:50} height={22} label={confirmDrop?'Xác Nhận':'🗑 Vứt'} variant={confirmDrop?'red':'dark'} onClick={handleDrop}/>
+            {confirmDrop&&<button style={{fontSize:8,background:'none',border:'none',color:'#666',cursor:'pointer'}} onClick={()=>setConfirmDrop(false)}>Hủy</button>}
+          </div>
+        </div>
+      ) : (
+        <div style={{marginTop:5,height:120,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,background:'rgba(0,0,0,0.2)',borderRadius:3,border:'1px dashed rgba(200,168,75,0.1)'}}>
+          <span style={{fontSize:18,opacity:0.2}}>⬡</span>
+          <span style={{fontSize:9,color:'#555',fontStyle:'italic'}}>Chọn vật phẩm để xem chi tiết</span>
+        </div>
+      )}
+
+      <div className="panel-btns" style={{marginTop:5}}>
+        <GameButton width={80} height={26} label="Đóng" variant="dark" onClick={onClose}/>
+      </div>
+    </div>
+  </div></div>);
+}
+
+function SkillPanel({onClose,skillLevels,setSkillLevels,skillPoints,setSkillPoints,showNotif}) {
+  const SKILL_DEFS=[
+    {type:'sword',name:'Ngự Kiếm Trảm',maxLv:10,baseAtk:800,desc:'Kiếm ý trảm địch, sát thương cực cao'},
+    {type:'fire',name:'Liệt Diễm Quyết',maxLv:10,baseAtk:600,desc:'Phóng ngọn lửa thiêu đốt diện rộng'},
+    {type:'thunder',name:'Lôi Đình Kích',maxLv:10,baseAtk:700,desc:'Triệu lôi điện, tấn công diện rộng'},
+    {type:'ice',name:'Hàn Băng Phong',maxLv:10,baseAtk:500,desc:'Đóng băng kẻ thù, giảm tốc độ 50%'},
+    {type:'wind',name:'Tật Phong Bộ',maxLv:10,baseAtk:400,desc:'Cưỡi gió, tăng tốc độ và né tránh'},
+    {type:'light',name:'Hộ Thể Quang',maxLv:10,baseAtk:300,desc:'Kim quang hộ thể, giảm sát thương nhận'},
+    {type:'earth',name:'Địa Liệt Kích',maxLv:10,baseAtk:650,desc:'Địa khí cuộn trào, kẻ thù bị choáng'},
+    {type:'dark',name:'Ám Ảnh Thuật',maxLv:10,baseAtk:550,desc:'Ám ảnh mê hoặc, giảm công kích địch 30%'},
+  ];
+  const [selected,setSelected]=useState(null);
+  const handleLevelUp=(i)=>{if(skillPoints<=0){showNotif('✗ Không đủ Điểm Ngộ Đạo!');return;}if(skillLevels[i]>=SKILL_DEFS[i].maxLv){showNotif('✗ Kỹ năng đã đạt cấp tối đa!');return;}setSkillLevels(prev=>{const n=[...prev];n[i]++;return n;});setSkillPoints(p=>p-1);showNotif(`✦ Nâng cấp ${SKILL_DEFS[i].name} lên Lv.${skillLevels[i]+1}!`);};
+  const handleReset=()=>{setSkillLevels(SKILL_DEFS.map(()=>1));setSkillPoints(p=>p+skillLevels.reduce((s,lv)=>s+Math.max(0,lv-1),0));showNotif('🔄 Đã đặt lại tất cả kỹ năng!');setSelected(null);};
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={470} title="Tu Luyện Kỹ Năng" color="blue"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 14px'}}>
+      <div className="skill-pts-bar"><span className="skill-pts-label">Điểm Ngộ Đạo còn lại</span><span className="skill-pts-val">{skillPoints}</span></div>
+      <div className="skill-list-panel">{SKILL_DEFS.map((sk,i)=>{const lv=skillLevels[i];const isMax=lv>=sk.maxLv;const dmg=Math.round(sk.baseAtk*(1+lv*0.15));return(<div key={i} className="skill-row" style={{cursor:'pointer',border:selected===i?'1px solid var(--gold-dark)':'1px solid rgba(200,168,75,0.1)'}} onClick={()=>setSelected(selected===i?null:i)}><SkillIcon type={sk.type} size={36}/><div className="skill-info"><div className="skill-name">{sk.name} <span className="skill-lv">Lv.{lv}/{sk.maxLv}</span></div><div className="skill-desc">{sk.desc}</div><div className="skill-effect">⚔ Sát thương: {dmg.toLocaleString()}</div><StatBar width={120} value={lv} max={sk.maxLv} type="exp"/></div><GameButton width={52} height={22} label={isMax?'MAX':'Nâng'} variant={isMax?'dark':skillPoints>0?'gold':'dark'} state={isMax||skillPoints<=0?'disabled':'normal'} onClick={e=>{e.stopPropagation();handleLevelUp(i);}}/></div>);})}</div>
+      <div className="panel-btns"><GameButton width={100} height={28} label="Đặt Lại" variant="red" onClick={handleReset}/><GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/></div>
+    </div>
+  </div></div>);
+}
+
+function QuestPanel({onClose,quests,setQuests,gold,setGold,showNotif,trackedQuest,setTrackedQuest,onNavigate}) {
+  const [selected,setSelected]=useState(null);
+  const handleSubmit=(q)=>{if(!q.done){showNotif('✗ Nhiệm vụ chưa hoàn thành!');return;}const r=q.reward;if(!r)return;setGold(g=>g+r.gold);setQuests(prev=>prev.filter(x=>x.id!==q.id));setSelected(null);if(trackedQuest===q.id)setTrackedQuest(null);showNotif(`🏆 Nộp nhiệm vụ! +${r.gold.toLocaleString()} Linh Thạch!`);};
+  const handleAbandon=(q)=>{setQuests(prev=>prev.filter(x=>x.id!==q.id));setSelected(null);if(trackedQuest===q.id)setTrackedQuest(null);showNotif(`⚠ Đã từ bỏ nhiệm vụ: ${q.name}`);};
+  const reqLvColor=lv=>lv<=10?'#60FF80':lv<=20?'#FFD040':lv<=30?'#FF8040':'#FF4040';
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={460} title="Nhật Ký Nhiệm Vụ" color="jade"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 14px'}}>
+      <div style={{fontSize:9,color:COLORS.textGoldDim,padding:'4px 0 3px',borderBottom:'1px solid rgba(200,168,75,0.1)',marginBottom:4}}>Nhiệm vụ: <b style={{color:COLORS.jade}}>{quests.length}</b> đang thực hiện · <span style={{color:'#888',fontSize:8}}>Click tên NV để dẫn đường</span></div>
+      <div className="quest-list">{quests.length===0&&<div style={{textAlign:'center',color:'#666',fontSize:10,padding:'20px 0',fontStyle:'italic'}}>Không có nhiệm vụ nào</div>}
+        {quests.map(q=>{const r=q.reward;const isTracked=trackedQuest===q.id;const isSel=selected===q.id;const npc=NPC_COORDS[q.npcId];const farm=QUEST_FARM_ZONES[q.id];return(<div key={q.id} className={`quest-item${q.done?' quest-done':''}`} style={{cursor:'pointer',border:isSel?'1px solid rgba(62,207,160,0.4)':'1px solid rgba(200,168,75,0.1)',marginBottom:6}} onClick={()=>setSelected(isSel?null:q.id)}>
+          <div className="quest-name"><span className="quest-indicator">{q.done?'✓':'►'}</span>{isTracked&&<span style={{fontSize:8,color:'#40FF80'}}>★</span>}<span style={{color:'#FF8040',fontSize:7,border:'1px solid rgba(255,128,64,0.4)',borderRadius:2,padding:'0 2px',flexShrink:0}}>Lv.{q.reqLevel}</span>{q.name}</div>
+          <StatBar width={220} value={q.progress} max={q.total} type={q.done?'exp':'hp'}/>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:3}}>
+            <div className="quest-prog">{q.progress}/{q.total}</div>
+            <div style={{display:'flex',gap:4}}>
+              <button className={`quest-track-btn${isTracked?' tracking':''}`} onClick={e=>{e.stopPropagation();setTrackedQuest(isTracked?null:q.id);}}>{isTracked?'★ Đang theo':'Theo dõi'}</button>
+              {q.done&&npc&&<button className="quest-track-btn" style={{borderColor:'#3ECFA0',color:'#3ECFA0'}} onClick={e=>{e.stopPropagation();onNavigate&&onNavigate(npc.x,npc.y);onClose();showNotif(`🧭 Tự động đến ${npc.name}...`);}}>↩ Nộp NV</button>}
+            </div>
+          </div>
+          {!q.done&&farm&&<div style={{marginTop:2,cursor:'pointer'}} onClick={e=>{e.stopPropagation();onNavigate&&onNavigate(farm.x,farm.y);onClose();showNotif(`🧭 Đến: ${farm.desc}`);}}>
+            <span style={{fontSize:8,color:'#60C8FF',textDecoration:'underline',textUnderlineOffset:2}}>📍 {farm.desc}</span>
+          </div>}
+          {q.done&&<div className="quest-complete-badge">Hoàn Thành</div>}
+          {isSel&&r&&<div style={{marginTop:5,padding:'4px 6px',background:'rgba(0,0,0,0.3)',borderRadius:2}}><div className="reward-title">Phần thưởng:</div><div className="reward-list"><span style={{fontSize:9,color:COLORS.gold,fontFamily:'monospace'}}>+{r.gold.toLocaleString()}</span><span style={{fontSize:9,color:'#FFD040',fontFamily:'monospace'}}>+{r.exp.toLocaleString()} Tu Vi</span><span style={{fontSize:9,color:COLORS.jade}}>{r.items}</span></div>{!q.done&&<button className="quest-track-btn" style={{marginTop:4,color:'#FF6060',borderColor:'rgba(255,96,96,0.3)'}} onClick={e=>{e.stopPropagation();handleAbandon(q);}}>✕ Từ Bỏ</button>}</div>}
+        </div>);})}
+      </div>
+      <div className="panel-btns" style={{marginTop:4}}>
+        {quests.some(q=>q.done)&&<GameButton width={110} height={28} label="Nộp Tất Cả" variant="jade" onClick={()=>{const dq=quests.filter(q=>q.done);let tg=0;dq.forEach(q=>{if(q.reward)tg+=q.reward.gold;});setGold(g=>g+tg);setQuests(prev=>prev.filter(q=>!q.done));showNotif(`🏆 Nộp ${dq.length} nhiệm vụ! +${tg.toLocaleString()} Linh Thạch!`);}}/>}
+        <GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/>
+      </div>
+    </div>
+  </div></div>);
+}
+
+function ShopPanel({onClose,showNotif,gold,setGold}) {
+  const items=[{icon:'pill',rarity:4,name:'Đại Hoàn Đan',rawPrice:12000,desc:'Hồi phục nhiều khí huyết'},{icon:'pill',rarity:3,name:'Hồi Linh Đan',rawPrice:8000,desc:'Hồi phục linh lực nhanh'},{icon:'gem',rarity:5,name:'Long Hồn Tinh',rawPrice:88000,desc:'Vật liệu cường hóa tuyệt phẩm'},{icon:'book',rarity:4,name:'Phá Ma Quyết',rawPrice:50000,desc:'Khắc chế kỹ năng Ma Tộc'},{icon:'ring',rarity:3,name:'Tụ Linh Hoàn',rawPrice:30000,desc:'Tăng giới hạn linh lực'},{icon:'material',rarity:2,name:'Thép Tinh Luyện',rawPrice:3500,desc:'Vật liệu rèn trang bị'}];
+  const handleBuy=(item)=>{if(gold<item.rawPrice){showNotif('✗ Không đủ Linh Thạch!');return;}setGold(g=>g-item.rawPrice);showNotif(`✦ Mua ${item.name} thành công!`);};
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={450} title="Linh Bảo Các" color="red"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 14px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0 4px',fontSize:10}}><span style={{color:COLORS.gold}}>Linh Thạch: <b>{gold.toLocaleString()}</b></span><span style={{color:COLORS.cyan,fontSize:9}}>Ưu Đãi Có Hạn</span></div>
+      <Ornament width={272} height={12} color={COLORS.red}/>
+      <div style={{padding:'4px 0'}}>{items.map((item,i)=>(<div key={i} className="shop-item-row"><ItemIcon type={item.icon} size={32} rarity={item.rarity}/><div style={{flex:1}}><div className="shop-item-name">{item.name}</div><div style={{fontSize:9,color:COLORS.textGoldDim}}>{item.desc}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3}}><span className="shop-item-price" style={{color:gold>=item.rawPrice?'#00FFFF':'#FF4040'}}>{item.rawPrice.toLocaleString()}</span><GameButton width={44} height={20} label="Mua" variant="red" state={gold<item.rawPrice?'disabled':'normal'} onClick={()=>handleBuy(item)}/></div></div>))}</div>
+      <div className="panel-btns"><GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/></div>
+    </div>
+  </div></div>);
+}
+
+function GuildPanel({onClose,gold,setGold,showNotif}) {
+  const [tab,setTab]=useState('members');
+  const members=[{name:'Thanh Vân Tử',rank:'Bang Chủ',contrib:980000,online:true,isMe:true},{name:'Thiên Kiếm Khách',rank:'Trưởng Lão',contrib:620000,online:true,isMe:false},{name:'Lăng Tiêu Tiên',rank:'Trưởng Lão',contrib:540000,online:false,isMe:false},{name:'Kiếm Ma',rank:'Tinh Nhuệ',contrib:310000,online:true,isMe:false}];
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={400} title="Thanh Vân Bang" color="red"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 14px'}}>
+      <div className="guild-tabs">{[['members','Thành Viên'],['missions','Nhiệm Vụ']].map(([k,l])=>(<button key={k} className={`guild-tab${tab===k?' active':''}`} onClick={()=>setTab(k)}>{l}</button>))}</div>
+      {tab==='members'&&<div>{members.map((m,i)=>(<div key={i} className="guild-member-row" style={{background:m.isMe?'rgba(200,168,75,0.06)':'none'}}><div style={{display:'flex',alignItems:'center',gap:5}}><div style={{width:6,height:6,borderRadius:'50%',background:m.online?'#40FF80':'#404040',flexShrink:0}}/><span className="guild-member-name" style={{color:m.isMe?COLORS.gold:COLORS.textWhite}}>{m.isMe?'[我] ':''}{m.name}</span></div><span className="guild-member-rank">[{m.rank}]</span><span className="guild-contrib">{m.contrib.toLocaleString()}</span></div>))}</div>}
+      {tab==='missions'&&<div style={{padding:'4px 0',color:COLORS.textGoldDim,fontSize:9}}>Nhiệm vụ bang đang cập nhật...</div>}
+      <div className="panel-btns"><GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/></div>
+    </div>
+  </div></div>);
+}
+
+function EquipmentPanel({onClose,equip,setEquip,showNotif}) {
+  const [selectedKey,setSelectedKey]=useState(null);
+  const [enhanceAnim,setEnhanceAnim]=useState(false);
+  const leftSlots=EQUIP_SLOT_DEFS.slice(0,4),rightSlots=EQUIP_SLOT_DEFS.slice(4);
+  const totalPower=Math.round(Object.values(equip).reduce((sum,item)=>!item?sum:sum+(item.atk||0)+(item.def||0)*1.5+(item.hp||0)*0.5+(item.mp||0)*0.3,15000));
+  const rarityColor=r=>r===5?'#FF8000':r===4?'#A040FF':r===3?'#4080FF':r===2?'#40A040':'#808080';
+  const rarityName=r=>r===5?'Thần Phẩm':r===4?'Tiên Phẩm':r===3?'Địa Phẩm':r===2?'Nhân Phẩm':'Phàm Phẩm';
+  const selectedItem=selectedKey?equip[selectedKey]:null;
+  const renderSlot=slotDef=>{const item=equip[slotDef.key];const isSel=selectedKey===slotDef.key;return(<div key={slotDef.key} className={'equip-slot'+(isSel?' equip-slot-active':'')+(!item?' equip-slot-empty':'')} onClick={()=>setSelectedKey(prev=>prev===slotDef.key?null:slotDef.key)}>{item?<ItemIcon type={item.type} size={34} rarity={item.rarity}/>:<span className="equip-slot-empty-icon">+</span>}<div className="equip-slot-label">{slotDef.label}</div></div>);};
+  return (<div className="panel-overlay" onClick={onClose}><div className="panel-popup" onClick={e=>e.stopPropagation()}>
+    <div className="panel-svg-wrap"><PanelFrame width={300} height={490} title="Trang Bị" color="gold"/></div>
+    <div className="panel-content" style={{top:38,padding:'0 14px'}}>
+      <div className="equip-power"><span className="equip-power-label">Tổng Sức Chiến</span><span className={'equip-power-val'+(enhanceAnim?' enhance-flash':'')}>{totalPower.toLocaleString()}</span></div>
+      <div className="equip-layout"><div className="equip-col">{leftSlots.map(renderSlot)}</div><div className="equip-silhouette"><EquipSilhouette equip={equip}/></div><div className="equip-col">{rightSlots.map(renderSlot)}</div></div>
+      {selectedKey&&selectedItem?(<div className="equip-detail"><div className="equip-detail-header"><span className="equip-detail-name" style={{color:rarityColor(selectedItem.rarity)}}>{selectedItem.name}</span><span className="equip-detail-rarity" style={{color:rarityColor(selectedItem.rarity)}}>{rarityName(selectedItem.rarity)}</span></div><div className="equip-detail-stars" style={{color:rarityColor(selectedItem.rarity)}}>{`★`.repeat(selectedItem.rarity)}</div><div className="equip-detail-stats">{selectedItem.atk>0&&<span className="equip-stat equip-stat-atk">ATK +{selectedItem.atk.toLocaleString()}</span>}{selectedItem.def>0&&<span className="equip-stat equip-stat-def">DEF +{selectedItem.def.toLocaleString()}</span>}{selectedItem.hp>0&&<span className="equip-stat equip-stat-hp">HP +{selectedItem.hp.toLocaleString()}</span>}{selectedItem.mp>0&&<span className="equip-stat equip-stat-mp">MP +{selectedItem.mp.toLocaleString()}</span>}</div><div className="equip-detail-desc">{selectedItem.desc}</div><div className="equip-detail-btns"><GameButton width={100} height={24} label="Cường Hóa" variant="gold" onClick={()=>{setEnhanceAnim(true);setTimeout(()=>setEnhanceAnim(false),600);showNotif(`⚡ Cường hóa ${selectedItem.name} thành công! +1`);}}/><GameButton width={80} height={24} label="Tháo Ra" variant="dark" onClick={()=>{setEquip(e=>({...e,[selectedKey]:null}));setSelectedKey(null);showNotif('Đã tháo trang bị!');}}/></div></div>)
+      :(<div className="equip-detail"><div className="equip-empty-hint">{selectedKey?'Ô trống · Có thể trang bị từ Hành Nang':'Chọn một ô trang bị để xem chi tiết'}</div></div>)}
+      <div className="panel-btns"><GameButton width={120} height={28} label="Cường Hóa Tất Cả" variant="gold" onClick={()=>showNotif('⚡ Đã cường hóa tất cả! Sức chiến +2.000')}/><GameButton width={80} height={28} label="Đóng" variant="dark" onClick={onClose}/></div>
+    </div>
+  </div></div>);
+}
+
+function DialogueBox({onClose, npc, playerLevel, activeQuests, questPool, onAcceptQuest, onTurnIn}) {
+  const [mode,setMode]=useState('talk');
+  const [line,setLine]=useState(0);
+  const [selectedQuest,setSelectedQuest]=useState(null);
+
+  const npcData=(NPC_DATA||[]).find(n=>n.id===npc.id)||{};
+  const lines=npcData.dialogue||['Đạo Hữu, có điều gì cần ta giúp đỡ?'];
+
+  // Quest lists
+  const myActiveQuests=(activeQuests||[]).filter(q=>q.npcId===npc.id);
+  const myDoneQuests=myActiveQuests.filter(q=>q.done);
+  const myInProgress=myActiveQuests.filter(q=>!q.done);
+  const myPoolQuests=(questPool||[]).filter(q=>q.npcId===npc.id);
+  const availablePool=myPoolQuests.filter(q=>q.reqLevel<=(playerLevel||1));
+  const lockedPool=myPoolQuests.filter(q=>q.reqLevel>(playerLevel||1));
+  const hasAnything=myActiveQuests.length>0||myPoolQuests.length>0;
+
+  // ── MODE: talk ───────────────────────────────────────────────
+  if(mode==='talk') {
+    const isDone=line>=lines.length-1;
+    const choices=[
+      ...(myDoneQuests.length>0?[{label:`✓ Nộp nhiệm vụ (${myDoneQuests.length})`,action:()=>{ setSelectedQuest(myDoneQuests[0]); setMode('turn_in'); }}]:[]),
+      ...(hasAnything?[{label:'📋 Xem nhiệm vụ',action:()=>setMode('quest_list')}]:[]),
+      {label:'👋 Tạm biệt',action:onClose},
+    ];
+    return (<div className="dialogue-wrap"><div className="dialogue-box">
+      <div className="dialogue-inner">
+        <div className="dialogue-portrait"><AvatarFrame size={52} hp={100} showHp={false}/><div className="dialogue-name" style={{color:npc.color||'var(--gold)'}}>{npc.name}</div></div>
+        <div className="dialogue-text-area">
+          <div className="dialogue-text">{lines[line]}</div>
+          {!isDone
+            ?<button className="dialogue-next" onClick={()=>setLine(l=>l+1)}>▶ Tiếp theo</button>
+            :<div className="dialogue-responses">{choices.map((c,i)=><button key={i} className="dialogue-response" onClick={c.action}>{c.label}</button>)}</div>}
+        </div>
+      </div>
+      <button className="dialogue-close" onClick={onClose}>✕</button>
+    </div></div>);
+  }
+
+  // ── MODE: quest_list ─────────────────────────────────────────
+  if(mode==='quest_list') {
+    const sections=[
+      {label:'✓ Hoàn Thành — Nộp ngay',quests:myDoneQuests,cls:'q-done'},
+      {label:'► Đang thực hiện',quests:myInProgress,cls:'q-active'},
+      {label:'! Nhiệm vụ mới',quests:availablePool,cls:'q-available'},
+      {label:'🔒 Cần cấp cao hơn',quests:lockedPool,cls:'q-locked'},
+    ].filter(s=>s.quests.length>0);
+    return (<div className="dialogue-wrap"><div className="dialogue-box">
+      <div className="dialogue-inner" style={{flexDirection:'column',gap:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+          <button className="dlg-back" onClick={()=>setMode('talk')}>◀ Quay lại</button>
+          <span style={{fontSize:10,color:'var(--gold)'}}>Nhiệm vụ — {npc.name}</span>
+        </div>
+        <div className="dlg-quest-list">
+          {sections.map(sec=>(<div key={sec.label}>
+            <div style={{fontSize:8,color:'var(--gold-dim)',padding:'3px 0 2px',borderBottom:'1px solid rgba(200,168,75,0.1)',marginBottom:3}}>{sec.label}</div>
+            {sec.quests.map(q=>{
+              const isLocked=sec.cls==='q-locked';
+              return(<div key={q.id} className={`dlg-quest-item ${sec.cls}`} onClick={()=>{if(isLocked)return;setSelectedQuest(q);setMode(q.done?'turn_in':'quest_detail');}}>
+                <div className="dlg-qrow">
+                  <span className="dlg-qstate">{q.done?'✓':sec.cls==='q-available'?'!':'►'}</span>
+                  <span className="dlg-qname">{q.name}</span>
+                  <span className="dlg-qlevel">Lv.{q.reqLevel}</span>
+                </div>
+                {!q.done&&q.progress>0&&<div style={{fontSize:8,color:'#888',marginTop:2}}>{q.progress}/{q.total}</div>}
+              </div>);
+            })}
+          </div>))}
+          {sections.length===0&&<div style={{color:'#666',fontSize:10,padding:'10px 0',textAlign:'center'}}>Không có nhiệm vụ nào</div>}
+        </div>
+      </div>
+      <button className="dialogue-close" onClick={onClose}>✕</button>
+    </div></div>);
+  }
+
+  // ── MODE: quest_detail ───────────────────────────────────────
+  if(mode==='quest_detail'&&selectedQuest) {
+    const q=selectedQuest;
+    const isAccepted=myActiveQuests.some(a=>a.id===q.id);
+    return (<div className="dialogue-wrap"><div className="dialogue-box">
+      <div className="dialogue-inner" style={{flexDirection:'column',gap:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+          <button className="dlg-back" onClick={()=>setMode('quest_list')}>◀ Quay lại</button>
+          <span style={{fontSize:9,color:'#FF8040',border:'1px solid rgba(255,128,64,0.3)',borderRadius:2,padding:'0 3px'}}>Lv.{q.reqLevel}</span>
+          <span style={{fontSize:10,color:'var(--gold)',fontWeight:'bold'}}>{q.name}</span>
+        </div>
+        <div className="dlg-detail-desc">{q.desc}</div>
+        {q.progress>0&&<div style={{fontSize:9,color:'#888'}}>Tiến độ: {q.progress}/{q.total}</div>}
+        {q.reward&&<div className="dlg-reward-box">
+          <div className="dlg-reward-title">Phần thưởng</div>
+          <div className="dlg-reward-row">
+            <span className="dlg-reward-val" style={{color:'#FFD040'}}>+{q.reward.gold.toLocaleString()} Linh Thạch</span>
+            <span className="dlg-reward-val" style={{color:'#80FFFF'}}>+{q.reward.exp.toLocaleString()} Tu Vi</span>
+            <span className="dlg-reward-val" style={{color:'#3ECFA0'}}>{q.reward.items}</span>
+          </div>
+        </div>}
+        {isAccepted
+          ?<div style={{fontSize:9,color:'#888',textAlign:'center',padding:'4px'}}>Đã nhận nhiệm vụ</div>
+          :<button className="dlg-accept-btn" onClick={()=>{onAcceptQuest&&onAcceptQuest(q);setMode('quest_list');}}>✦ Nhận Nhiệm Vụ</button>}
+      </div>
+      <button className="dialogue-close" onClick={onClose}>✕</button>
+    </div></div>);
+  }
+
+  // ── MODE: turn_in ─────────────────────────────────────────────
+  if(mode==='turn_in'&&selectedQuest) {
+    const q=selectedQuest;
+    // If multiple done quests, show list to pick
+    if(!q.done||myDoneQuests.length>1&&mode==='turn_in'&&!selectedQuest.done) {
+      setSelectedQuest(myDoneQuests[0]);
+    }
+    return (<div className="dialogue-wrap"><div className="dialogue-box">
+      <div className="dialogue-inner" style={{flexDirection:'column',gap:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+          <button className="dlg-back" onClick={()=>setMode('quest_list')}>◀ Quay lại</button>
+          <span style={{fontSize:10,color:'#40FF80'}}>✓ Hoàn Thành Nhiệm Vụ</span>
+        </div>
+        {myDoneQuests.length>1&&<div className="dlg-quest-list" style={{marginBottom:6}}>
+          {myDoneQuests.map(dq=><div key={dq.id} className={`dlg-quest-item q-done`} style={{border:selectedQuest.id===dq.id?'1px solid #40FF80':undefined}} onClick={()=>setSelectedQuest(dq)}>
+            <div className="dlg-qrow"><span className="dlg-qstate">✓</span><span className="dlg-qname">{dq.name}</span></div>
+          </div>)}
+        </div>}
+        <div style={{fontSize:10,color:'var(--text-white)',lineHeight:1.6,marginBottom:4}}>
+          {`"${npcData.dialogue?.[npcData.dialogue.length-1]||'Ta rất vui lòng nhận lại nhiệm vụ của Đạo Hữu!'}"`}
+        </div>
+        {q.reward&&<div className="dlg-reward-box">
+          <div className="dlg-reward-title">Nhận phần thưởng</div>
+          <div className="dlg-reward-row">
+            <span className="dlg-reward-val" style={{color:'#FFD040'}}>+{q.reward.gold.toLocaleString()} Linh Thạch</span>
+            <span className="dlg-reward-val" style={{color:'#80FFFF'}}>+{q.reward.exp.toLocaleString()} Tu Vi</span>
+            <span className="dlg-reward-val" style={{color:'#3ECFA0'}}>{q.reward.items}</span>
+          </div>
+        </div>}
+        <button className="dlg-turnin-btn" onClick={()=>{onTurnIn&&onTurnIn(q);if(myDoneQuests.length<=1)onClose();else{setSelectedQuest(myDoneQuests.find(d=>d.id!==q.id));}}}>⚜ Nhận Thưởng & Hoàn Thành</button>
+      </div>
+      <button className="dialogue-close" onClick={onClose}>✕</button>
+    </div></div>);
+  }
+
+  return null;
+}
+
+function ChatBox({messages,onClose,onSend}) {
+  const [inputVal,setInputVal]=useState('');
+  const endRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'});},[messages]);
+  const handleSend=()=>{const t=inputVal.trim();if(!t)return;onSend(t);setInputVal('');};
+  return (<div className="chat-panel">
+    <div className="chat-header"><span className="chat-title">Kênh: Thế Giới</span><button className="chat-close-btn" onClick={onClose}>✕</button></div>
+    <div className="chat-messages">{messages.map(m=>(<div key={m.id} className="chat-msg"><span className="chat-name" style={{color:m.color}}>[{m.name}]</span><span className="chat-text">{m.text}</span></div>))}<div ref={endRef}/></div>
+    <div className="chat-input-row"><input type="text" className="chat-input-real" value={inputVal} onChange={e=>setInputVal(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')handleSend();}} placeholder="Nhập tin nhắn..." maxLength={50}/><button className="chat-send" onClick={handleSend}>Gửi</button></div>
+  </div>);
+}
+
+// ─── LOOT LOG ────────────────────────────────────────────────
+function LootLog({log}) {
+  if(!log.length) return null;
+  return (
+    <div className="loot-log">
+      {log.map(entry=>(
+        <div key={entry.id} className={`loot-entry${entry.fading?' fading':''}`}
+          style={{borderColor:(entry.entries[entry.entries.length-1]?.color||'rgba(200,168,75,0.5)')}}>
+          {entry.entries.map((e,i)=>(
+            <div key={i} className="loot-entry-line" style={{color:e.color}}>
+              {e.text}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── APP CHÍNH ───────────────────────────────────────────────
+function App() {
+  const [showChar,setShowChar]=useState(false);
+  const [showInv,setShowInv]=useState(false);
+  const [showSkill,setShowSkill]=useState(false);
+  const [showQuest,setShowQuest]=useState(false);
+  const [showDialogue,setShowDialogue]=useState(false);
+  const [showChat,setShowChat]=useState(false);
+  const [showShop,setShowShop]=useState(false);
+  const [showGuild,setShowGuild]=useState(false);
+  const [showEquip,setShowEquip]=useState(false);
+  const [dialogueNpc,setDialogueNpc]=useState(null);
+  const [equip,setEquip]=useState(DEFAULT_EQUIP);
+  const [invItems,setInvItems]=useState(()=>{
+    const base = [...(INVENTORY_ITEMS||[])];
+    // pad to 24 slots
+    while(base.length < 24) base.push({type:'empty',rarity:1,name:'',count:0});
+    return base;
+  });
+  const invItemsRef = useRef(invItems);
+  useEffect(()=>{ invItemsRef.current = invItems; }, [invItems]);
+  const [lootLog,setLootLog]=useState([]);
+  const lootLogIdRef = useRef(0);
+  const [gold,setGold]=useState(2480000);
+  const [trackerCollapsed,setTrackerCollapsed]=useState(false);
+  const [quests,setQuests]=useState(QUESTS); // backward-compat alias
+  const DEMO_ACCEPTED=[1,2,9];
+  const [activeQuests,setActiveQuests]=useState(()=>QUESTS.filter(q=>DEMO_ACCEPTED.includes(q.id)));
+  const [questPool,setQuestPool]=useState(()=>QUESTS.filter(q=>!DEMO_ACCEPTED.includes(q.id)));
+  const [playerLevel]=useState(15);
+  const [skillLevels,setSkillLevels]=useState([10,8,7,6,9,5,4,3]);
+  const [skillPoints,setSkillPoints]=useState(5);
+  const [trackedQuest,setTrackedQuest]=useState(1);
+  const [hp,setHp]=useState(82);
+  const [mp,setMp]=useState(65);
+  const [exp,setExp]=useState(68);
+  const [bossHp,setBossHp]=useState(234500);
+  const [floats,setFloats]=useState([]);
+  const [skillCDs,setSkillCDs]=useState([0,0,0,0,0,0,0,0]);
+  const [activeSkill,setActiveSkill]=useState(null);
+  const [chatMessages,setChatMessages]=useState(INITIAL_CHAT);
+  const [notifText,setNotifText]=useState(null);
+  const [autoFight,setAutoFight]=useState(false);
+  const [learnBookData,setLearnBookData]=useState(null);
+  const floatIdRef=useRef(0);
+  const chatIdRef=useRef(100);
+  const skillCDsRef=useRef(skillCDs);
+  useEffect(()=>{skillCDsRef.current=skillCDs;},[skillCDs]);
+
+  const [playerPos,setPlayerPos]=useState({x:WORLD_W/2,y:WORLD_H/2+160});
+  const [navTarget,setNavTarget]=useState(null);
+
+  // NPC indicators: 'done' > 'active' > 'available'
+  const questIndicators=useMemo(()=>{
+    const map={};
+    for(const n of (NPC_DATA||[])){
+      const nAct=activeQuests.filter(q=>q.npcId===n.id);
+      const nDone=nAct.filter(q=>q.done);
+      const nAvail=questPool.filter(q=>q.npcId===n.id&&q.reqLevel<=playerLevel);
+      if(nDone.length>0)map[n.id]='done';
+      else if(nAct.length>0)map[n.id]='active';
+      else if(nAvail.length>0)map[n.id]='available';
+    }
+    return map;
+  },[activeQuests,questPool,playerLevel]);
+
+  const showNotif=useCallback((text)=>{setNotifText(text);setTimeout(()=>setNotifText(null),3000);},[]);
+
+  const handleMobDeath=useCallback((mob)=>{
+    if(!window.rollDrops) return;
+    const {items:drops, gold:goldDrop}=window.rollDrops(mob.mobType||'demon', mob.lv||1);
+    if(goldDrop>0) setGold(g=>g+goldDrop);
+    const inv=[...invItemsRef.current];
+    const pickedUp=[];
+    let bagFull=false;
+    for(const drop of drops){
+      if(drop.stackable){
+        const idx=inv.findIndex(s=>s.id===drop.id);
+        if(idx>=0){ inv[idx]={...inv[idx],count:inv[idx].count+drop.count}; pickedUp.push(drop); continue; }
+      }
+      const emptyIdx=inv.findIndex(s=>s.type==='empty');
+      if(emptyIdx>=0){ inv[emptyIdx]={...drop}; pickedUp.push(drop); }
+      else bagFull=true;
+    }
+    setInvItems(inv);
+    // Loot log entries
+    const entries=[];
+    if(goldDrop>0) entries.push({text:`+${goldDrop.toLocaleString()} Linh Thạch`,color:'#FFD040'});
+    for(const d of pickedUp){
+      const rc=(window.ITEM_RARITY||{})[d.rarity]?.color||'#AAAAAA';
+      entries.push({text:`${d.name}${d.count>1?` ×${d.count}`:''}`,color:rc});
+    }
+    if(entries.length>0){
+      const id=++lootLogIdRef.current;
+      setLootLog(prev=>[...prev.slice(-5),{id,entries,fading:false}]);
+      setTimeout(()=>setLootLog(prev=>prev.map(l=>l.id===id?{...l,fading:true}:l)),3500);
+      setTimeout(()=>setLootLog(prev=>prev.filter(l=>l.id!==id)),4000);
+    }
+    if(bagFull) showNotif('⚠ Túi đồ đã đầy! Không thể nhặt thêm.');
+  },[showNotif]);
+
+  const spawnFloat=useCallback((x,y,type='normal')=>{
+    const value=type==='heal'?Math.floor(Math.random()*3000+500):Math.floor(Math.random()*8000+1000);
+    const id=floatIdRef.current++;
+    setFloats(f=>[...f,{id,x,y,value,type}]);
+    setTimeout(()=>setFloats(f=>f.filter(ft=>ft.id!==id)),1800);
+  },[]);
+
+  const triggerSkill=useCallback((i)=>{
+    setActiveSkill(i);
+    setTimeout(()=>setActiveSkill(null),300);
+    const cdTime=SKILLS[i].baseCd;
+    if(cdTime>0){
+      setSkillCDs(cds=>{const n=[...cds];n[i]=1;return n;});
+      const steps=60;let elapsed=0;
+      const iv=setInterval(()=>{elapsed++;setSkillCDs(cds=>{const n=[...cds];n[i]=Math.max(0,1-elapsed/steps);return n;});if(elapsed>=steps)clearInterval(iv);},(cdTime*1000)/steps);
+    }
+    showNotif(`Dùng kỹ năng: ${SKILLS[i].name}`);
+  },[showNotif]);
+
+  const handleSkillClick=useCallback((i)=>{if(skillCDs[i]>0)return;triggerSkill(i);},[skillCDs,triggerSkill]);
+
+  // HP/MP regen
+  useEffect(()=>{const t=setInterval(()=>{setHp(h=>Math.min(100,h+0.4));setMp(m=>Math.min(100,m+0.8));setExp(e=>Math.min(100,e+0.08));},2000);return()=>clearInterval(t);},[]);
+
+  // Clock
+  useEffect(()=>{const update=()=>{const el=document.getElementById('game-time');if(el)el.textContent=new Date().toLocaleTimeString('vi-VN',{hour12:false});};update();const t=setInterval(update,1000);return()=>clearInterval(t);},[]);
+
+  // Boss attacks player
+  useEffect(()=>{const t=setInterval(()=>{setHp(h=>Math.max(5,h-(Math.random()*6+1)));setMp(m=>Math.max(0,m-(Math.random()*2+1)));},3500);return()=>clearInterval(t);},[]);
+
+  // Auto chat
+  useEffect(()=>{const msgs=[{name:'Kiếm Ma',text:'Một kiếm phá ma!',color:'#C880FF'},{name:'Thiên Kiếm Khách',text:'Cố lên!',color:'#80D0FF'},{name:'Lăng Tiêu Tiên',text:'Trị liệu ra, cứ xông đi!',color:'#80FF80'},{name:'Hệ Thống',text:'Nguyên Soái vào trạng thái điên cuồng!',color:'#FF4040'},{name:'Thanh Vân Tử',text:'Đừng sợ, tiếp tục!',color:'#FFD060'}];let idx=0;const t=setInterval(()=>{const m=msgs[idx++%msgs.length];const id=chatIdRef.current++;setChatMessages(prev=>[...prev.slice(-8),{...m,id}]);},4000);return()=>clearInterval(t);},[]);
+
+  // Auto-fight skills
+  useEffect(()=>{if(!autoFight)return;const t=setInterval(()=>{const currentCDs=skillCDsRef.current;const available=SKILLS.map((_,i)=>i).filter(i=>currentCDs[i]===0);if(available.length===0)return;const idx=available[Math.floor(Math.random()*available.length)];triggerSkill(idx);},1500);return()=>clearInterval(t);},[autoFight,triggerSkill]);
+
+  const handleSendChat=useCallback((text)=>{const id=chatIdRef.current++;setChatMessages(prev=>[...prev.slice(-8),{id,name:'Thanh Vân Tử',text,color:'#FFD060'}]);},[]);
+
+  const handleNpcClick=useCallback((npc)=>{
+    if(npc.type==='npc'){
+      setDialogueNpc(npc);
+      setShowDialogue(true);
+    }
+  },[]);
+
+  const sysBtns=[
+    {label:'Nhân Vật',icon:'👤',action:()=>setShowChar(true)},
+    {label:'Trang Bị',icon:'⚔️',action:()=>setShowEquip(true)},
+    {label:'Hành Nang',icon:'🎒',action:()=>setShowInv(true)},
+    {label:'Kỹ Năng',icon:'✨',action:()=>setShowSkill(true)},
+    {label:'Nhiệm Vụ',icon:'📋',action:()=>setShowQuest(true)},
+    {label:'Cửa Hàng',icon:'🏪',action:()=>setShowShop(true)},
+    {label:'Bang Phái',icon:'⚜',action:()=>setShowGuild(true)},
+  ];
+
+  return (
+    <div className="game-root">
+      <div className="game-bg"><div className="bg-layer-sky"/></div>
+      <div className="cloud-deco cloud-1"><CloudDecoration width={200} color="#8090C0"/></div>
+      <div className="cloud-deco cloud-2"><CloudDecoration width={160} color="#9090B0"/></div>
+      <div className="cloud-deco cloud-3"><CloudDecoration width={120} color="#7080A0"/></div>
+
+      {notifText&&<div className="sys-notif"><span className="notif-icon">⚡</span>{notifText}</div>}
+
+      {/* HUD top */}
+      <div className="hud-top">
+        <div className="hud-player-block">
+          <div className="hud-avatar" onClick={()=>setShowChar(true)}><AvatarFrame size={54} hp={hp} showHp={true}/></div>
+          <div className="hud-bars">
+            {[{label:'Khí',cls:'hp-icon',val:hp,type:'hp'},{label:'Linh',cls:'mp-icon',val:mp,type:'mp'},{label:'Ngộ',cls:'exp-icon',val:exp,type:'exp'}].map(b=>(
+              <div key={b.label} className="hud-bar-row">
+                <span className={`hud-bar-icon ${b.cls}`}>{b.label}</span>
+                <StatBar width={120} value={b.val} max={100} type={b.type}/>
+                <span className="hud-bar-num">{Math.round(b.val)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="hud-target">
+          <div className="target-label">Mục tiêu: Nguyên Soái Ma Tộc</div>
+          <StatBar width={100} value={bossHp} max={234500} type="boss"/>
+          <div className="target-hp-num">{bossHp.toLocaleString()}</div>
+        </div>
+        <div className="hud-minimap">
+          <MinimapFrame size={104} playerX={playerPos.x} playerY={playerPos.y} worldW={WORLD_W} worldH={WORLD_H}/>
+          <div className="minimap-zone">Thanh Vân Sơn</div>
+        </div>
+      </div>
+
+      {/* Boss bar */}
+      <div className="boss-bar-area">
+        <BossHPBar hp={bossHp} maxHp={234500} name="Nguyên Soái Ma Tộc · Huyết Sát"/>
+      </div>
+
+      {/* ═══ GAME WORLD — Top-down canvas ═══ */}
+      <div className="game-world">
+        <TopDownMap
+          bossHp={bossHp}
+          setBossHp={setBossHp}
+          floats={floats}
+          setFloats={setFloats}
+          spawnFloat={spawnFloat}
+          onNpcClick={handleNpcClick}
+          showNotif={showNotif}
+          autoFight={autoFight}
+          navTarget={navTarget}
+          onNavConsumed={()=>setNavTarget(null)}
+          questIndicators={questIndicators}
+          onMobDeath={handleMobDeath}
+        />
+
+        {/* Loot log */}
+        <LootLog log={lootLog}/>
+        <div className="quest-tracker">
+          <div className="tracker-title" style={{position:'relative'}}>
+            <button className="tracker-toggle" onClick={()=>setTrackerCollapsed(c=>!c)}>{trackerCollapsed?'▶':'▼'}</button>
+            <Ornament width={120} height={12} color={COLORS.gold}/>
+            <div className="tracker-head">Theo Dõi Nhiệm Vụ</div>
+            <Ornament width={120} height={12} color={COLORS.gold}/>
+          </div>
+          <div className={`tracker-body${trackerCollapsed?' collapsed':''}`} style={{maxHeight:200}}>
+            {activeQuests.map(q=>{
+              const farm=QUEST_FARM_ZONES[q.id];
+              const npc=NPC_COORDS[q.npcId];
+              return (<div key={q.id} className="tracker-quest" style={{opacity:trackedQuest===q.id?1:0.6}}>
+                <div className="tracker-qname"><span className={q.done?'tq-done':'tq-active'}>{q.done?'✓':'►'}</span>{trackedQuest===q.id&&<span style={{color:'#40FF80',fontSize:7}}>★</span>}<span style={{fontSize:7,color:'#FF8040',border:'1px solid rgba(255,128,64,0.3)',borderRadius:2,padding:'0 2px',flexShrink:0}}>Lv{q.reqLevel}</span>{q.name}</div>
+                {!q.done&&farm&&<span className="tracker-nav-link" onClick={()=>{setNavTarget({x:farm.x,y:farm.y});showNotif(`🧭 Đang đến: ${farm.desc}`);}}>📍 {farm.desc}</span>}
+                {q.done&&npc&&<span className="tracker-nav-npc" onClick={()=>{setNavTarget({x:npc.x,y:npc.y});showNotif(`🧭 Về nộp NV cho ${npc.name}...`);}}>↩ Về nộp NV cho {npc.name}</span>}
+                <div className="tracker-prog">{q.progress}/{q.total}</div>
+              </div>);
+            })}
+          </div>
+        </div>
+
+        {/* System menu */}
+        <div className="sys-menu">
+          {sysBtns.map((btn,i)=>(<button key={i} className="sys-btn" onClick={btn.action}><span className="sys-icon">{btn.icon}</span><span className="sys-label">{btn.label}</span></button>))}
+        </div>
+
+        {/* Chat */}
+        {showChat?(
+          <ChatBox messages={chatMessages} onClose={()=>setShowChat(false)} onSend={handleSendChat}/>
+        ):(
+          <div className="chat-bubble" onClick={()=>setShowChat(true)} style={{bottom:94}}>
+            <div className="chat-last-msg">
+              <span className="chat-name" style={{color:chatMessages[chatMessages.length-1]?.color}}>[{chatMessages[chatMessages.length-1]?.name}]</span>
+              <span className="chat-text-snip">{chatMessages[chatMessages.length-1]?.text}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Skill bar */}
+      <div className="skill-bar-wrap">
+        <div className="skill-bar-bg"/>
+        <div className="skill-bar">
+          <div className="skill-aux-btns">
+            <button className="aux-btn" onClick={()=>{spawnFloat(60,80,'heal');setHp(h=>Math.min(100,h+20));setMp(m=>Math.max(0,m-30));showNotif('Dùng Đại Hoàn Đan, hồi phục khí huyết');}}>
+              <span>Khí</span><span className="aux-label">Hồi Máu</span>
+            </button>
+            <button className="aux-btn aux-blue" onClick={()=>{setMp(m=>Math.min(100,m+40));showNotif('Dùng Hồi Linh Đan, hồi phục linh lực');}}>
+              <span>Linh</span><span className="aux-label">Hồi Linh</span>
+            </button>
+          </div>
+          <div className="skill-slots">
+            {SKILLS.map((sk,i)=>(<div key={i} className={`skill-slot ${activeSkill===i?'skill-slot-active':''}`} onClick={()=>handleSkillClick(i)}>
+              <SkillButton size={38} cooldown={skillCDs[i]} baseCd={sk.baseCd||1} keyLabel={sk.key} active={activeSkill===i} icon={<SkillIcon type={sk.type} size={22}/>}/>
+              <div className="skill-name-label">{sk.name}</div>
+            </div>))}
+          </div>
+          <div className="auto-attack-wrap">
+            <button className="auto-btn" onClick={()=>showNotif('Hãy click vào NPC trên bản đồ để nói chuyện!')}><span className="auto-icon">💬</span><span className="auto-label">Đối Thoại</span></button>
+            <button className={`auto-btn auto-red ${autoFight?'auto-active':''}`} onClick={()=>{setAutoFight(f=>!f);showNotif(autoFight?'Tự động chiến đấu đã TẮT':'Tự động chiến đấu đã BẬT');}}>
+              <span className="auto-icon">⚔</span><span className="auto-label">{autoFight?'Dừng':'Tự Động'}</span>
+            </button>
+          </div>
+        </div>
+        <div className="bar-ornament"><Ornament width={340} height={10} color={COLORS.gold}/></div>
+      </div>
+
+      {/* Info bar */}
+      <div className="hud-info-bar">
+        <span className="info-server">Khu Bích Lạc-1</span><span className="info-sep">·</span>
+        <span className="info-zone">Thanh Vân Sơn</span><span className="info-sep">·</span>
+        <span className="info-time" id="game-time">00:00:00</span><span className="info-sep">·</span>
+        <span className="info-fps">60 FPS</span>
+      </div>
+
+      {showChar&&<CharacterPanel onClose={()=>setShowChar(false)} onEquip={()=>setShowEquip(true)}/>}
+      {showInv&&<InventoryPanel onClose={()=>setShowInv(false)} invItems={invItems} setInvItems={setInvItems} gold={gold} setGold={setGold} equip={equip} setEquip={setEquip} showNotif={showNotif} setHp={setHp} setMp={setMp}
+        onLearnBook={({item,slotIdx,effect})=>{setLearnBookData({item,slotIdx,effect});setShowInv(false);}}
+      />}
+      {showSkill&&<SkillPanel onClose={()=>setShowSkill(false)} skillLevels={skillLevels} setSkillLevels={setSkillLevels} skillPoints={skillPoints} setSkillPoints={setSkillPoints} showNotif={showNotif}/>}
+      {showQuest&&<QuestPanel onClose={()=>setShowQuest(false)} quests={activeQuests} setQuests={setActiveQuests} gold={gold} setGold={setGold} showNotif={showNotif} trackedQuest={trackedQuest} setTrackedQuest={setTrackedQuest} onNavigate={(x,y)=>setNavTarget({x,y})}/>}
+      {showShop&&<ShopPanel onClose={()=>setShowShop(false)} showNotif={showNotif} gold={gold} setGold={setGold}/>}
+      {showGuild&&<GuildPanel onClose={()=>setShowGuild(false)} gold={gold} setGold={setGold} showNotif={showNotif}/>}
+      {showEquip&&<EquipmentPanel onClose={()=>setShowEquip(false)} equip={equip} setEquip={setEquip} showNotif={showNotif}/>}
+      {learnBookData&&<BookLearnModal
+        book={learnBookData.item}
+        effect={learnBookData.effect}
+        onClose={()=>setLearnBookData(null)}
+        onConfirm={()=>{
+          const {slotIdx,effect}=learnBookData;
+          if(effect.type==='skillpoint'){
+            setSkillPoints(p=>p+effect.amount);
+            showNotif(`📖 Học xong! +${effect.amount} Điểm Ngộ Đạo`);
+          } else if(effect.type==='skill'&&effect.skillIdx!=null){
+            setSkillLevels(prev=>{
+              const n=[...prev];
+              n[effect.skillIdx]=Math.min(10,(n[effect.skillIdx]||0)+effect.amount);
+              return n;
+            });
+            showNotif(`📖 ${effect.skillName} tăng ${effect.amount} cấp!`);
+          }
+          // Xóa bí kíp khỏi inventory
+          setInvItems(prev=>{
+            const next=[...prev];
+            const it={...next[slotIdx]};
+            if(it.count>1){it.count-=1;next[slotIdx]=it;}
+            else next[slotIdx]={type:'empty',rarity:1,name:'',count:0,id:null};
+            return next;
+          });
+        }}
+      />}
+      {showDialogue&&dialogueNpc&&<DialogueBox
+        onClose={()=>setShowDialogue(false)}
+        npc={dialogueNpc}
+        playerLevel={playerLevel}
+        activeQuests={activeQuests}
+        questPool={questPool}
+        onAcceptQuest={(q)=>{
+          setQuestPool(p=>p.filter(x=>x.id!==q.id));
+          setActiveQuests(a=>[...a,{...q}]);
+          showNotif(`📋 Nhận nhiệm vụ: ${q.name}`);
+        }}
+        onTurnIn={(q)=>{
+          setActiveQuests(a=>a.filter(x=>x.id!==q.id));
+          if(q.reward){setGold(g=>g+q.reward.gold);}
+          showNotif(`🏆 Hoàn thành: ${q.name}! +${q.reward?.gold?.toLocaleString()||0} Linh Thạch`);
+        }}
+      />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+
+  <script>
+/* ── Landscape detection ──
+   - Mobile landscape thật  → ls-active + ls-native
+   - Mobile dọc (portrait)  → ls-portrait  → overlay yêu cầu xoay máy
+   - Desktop (≥768px min)   → không làm gì, giữ 430px căn giữa
+*/
+(function () {
+  var html = document.documentElement;
+
+  function applyLayout() {
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    var isLS     = W > H;
+    var isMobile = Math.min(W, H) < 768;
+
+    html.classList.remove('ls-active', 'ls-native', 'ls-portrait');
+
+    if (!isMobile) return;
+
+    if (isLS) {
+      html.classList.add('ls-active', 'ls-native');
+    } else {
+      // Portrait trên mobile → hiện overlay, ẩn game
+      html.classList.add('ls-portrait');
+    }
+  }
+
+  window.addEventListener('resize', applyLayout);
+  window.addEventListener('orientationchange', function () {
+    setTimeout(applyLayout, 150);
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLayout);
+  } else {
+    applyLayout();
+  }
+}());
+  </script>
+</body>
+</html>
